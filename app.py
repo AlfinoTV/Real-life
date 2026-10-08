@@ -5,7 +5,7 @@ st.set_page_config(
     page_title="School Life & Economy Simulator", page_icon="🏫", layout="wide"
 )
 
-# --- EXaktes HTML/CSS Design ---
+# --- DESIGN & CSS ---
 st.markdown(
     """
     <style>
@@ -29,17 +29,17 @@ st.markdown(
         margin-bottom: 20px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
-    .clock-display {
+    .counter-display {
         font-family: monospace;
-        font-size: 1.8rem;
+        font-size: 2rem;
         font-weight: bold;
         color: #38bdf8;
         background: #0f172a;
-        padding: 10px 20px;
-        border-radius: 8px;
+        padding: 15px;
+        border-radius: 10px;
         border: 1px solid #334155;
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
     }
     h1, h2, h3, h4 {
         color: #f8fafc !important;
@@ -75,7 +75,6 @@ if "money" not in st.session_state:
   st.session_state.loan = 0.0
   st.session_state.housing = {"name": "Keine", "rent": 0.0}
 
-  # Erweiterte Verträge
   st.session_state.contracts = {
       "Handyvertrag": {"active": False, "cost": 1.2},
       "WLAN / Glasfaser": {"active": False, "cost": 1.5},
@@ -88,86 +87,93 @@ if "money" not in st.session_state:
   }
 
   st.session_state.active_lesson = "Freistunde"
-  st.session_state.current_rate = 0.0
+  st.session_state.current_rate = 0.0  # € pro Minute
+  st.session_state.is_running = False
+  st.session_state.elapsed_seconds = 0
 
 
-def decay_stats():
-  st.session_state.food = max(0.0, st.session_state.food - 0.2)
-  st.session_state.drink = max(0.0, st.session_state.drink - 0.3)
-  st.session_state.sleep = max(0.0, st.session_state.sleep - 0.1)
-
-
-# --- 2. SIDEBAR STATUS ---
-with st.sidebar:
-  st.markdown("## 🏫 Lebensstatus")
+# --- 2. VITALWERTE OBEN (Statt Sidebar) ---
+st.markdown("### 📊 Status & Vitalwerte")
+col_v1, col_v2, col_v3, col_v4 = st.columns(4)
+with col_v1:
   st.metric("Geld auf der Hand", f"{st.session_state.money:.2f} €")
-  st.markdown("---")
-  st.markdown("### 🔋 Vitalwerte")
+with col_v2:
   st.progress(
       int(st.session_state.food), text=f"Essen: {int(st.session_state.food)}%"
   )
+with col_v3:
   st.progress(
       int(st.session_state.drink),
       text=f"Trinken: {int(st.session_state.drink)}%",
   )
+with col_v4:
   st.progress(
       int(st.session_state.sleep),
-      text=f"Schlaf / Energie: {int(st.session_state.sleep)}%",
+      text=f"Energie: {int(st.session_state.sleep)}%",
   )
+
+st.markdown("---")
 
 # --- 3. TABS (NAVIGATION) ---
 tab_dash, tab_schedule, tab_shop, tab_housing, tab_bank, tab_contracts = st.tabs([
-    "📊 Dashboard",
-    "📚 Stundenplan",
+    "📊 Dashboard & Timer",
+    "📅 Stundenplan (Schulmanager)",
     "🛒 Supermarkt",
     "🏠 Wohnung",
     "🏦 Bank",
     "📱 Verträge",
 ])
 
-# --- TAB 1: DASHBOARD ---
+# --- TAB 1: DASHBOARD & LIVE-TIMER ---
 with tab_dash:
-  st.markdown("### ⏱️ Live-Timer & Dashboard")
+  st.markdown("### ⏱️ Automatischer Live-Timer")
 
-  # Cleane Live-Uhr im UI
-  current_time_str = time.strftime("%H:%M:%S")
-  st.markdown(
-      f'<div class="clock-display">🕒 System-Zeit: {current_time_str}</div>',
-      unsafe_allow_html=True,
-  )
+  # Steuerungs-Buttons oben im Dashboard
+  c_ctrl1, c_ctrl2, c_ctrl3, c_ctrl4 = st.columns(4)
+  with c_ctrl1:
+    if st.button("▶️ Start"):
+      st.session_state.is_running = True
+      st.rerun()
+  with c_ctrl2:
+    if st.button("⏹️ Stopp"):
+      st.session_state.is_running = False
+      st.rerun()
+  with c_ctrl3:
+    if st.button("☕ Freistunde"):
+      st.session_state.active_lesson = "Freistunde"
+      st.session_state.current_rate = 0.0
+      st.success("Auf Freistunde gewechselt (0 €/Min)")
+      st.rerun()
+  with c_ctrl4:
+    if st.button("💰 Auszahlen"):
+      st.session_state.money += st.session_state.pending_earnings
+      st.success(f"{st.session_state.pending_earnings:.2f} € ausgezahlt!")
+      st.session_state.pending_earnings = 0.0
+      st.rerun()
 
-  col1, col2 = st.columns(2, gap="large")
+  st.markdown("<br>", unsafe_allow_html=True)
 
-  with col1:
+  col_d1, col_d2 = st.columns(2, gap="large")
+
+  with col_d1:
+    # Live-Counter Box
     st.markdown(
         f"""
         <div class="custom-card">
-            <h4>Aktive Aktivität: <span style="color: #38bdf8;">{st.session_state.active_lesson}</span></h4>
-            <p style="font-size: 1.1rem; margin-top: 10px;">Verdienst-Rate: <b>{st.session_state.current_rate:.2f} € / Min</b></p>
+            <h4>Aktives Fach: <span style="color: #38bdf8;">{st.session_state.active_lesson}</span></h4>
+            <p>Verdienst-Rate: <b>{st.session_state.current_rate:.2f} € / Min</b></p>
             <hr style="border-color: #334155;">
-            <p style="font-size: 1.2rem;">Bereits verdient: <b>{st.session_state.pending_earnings:.2f} €</b></p>
+            <div class="counter-display">
+                Verdient: {st.session_state.pending_earnings:.4f} €<br>
+                <span style="font-size: 1rem; color: #94a3b8;">Zeit: {st.session_state.elapsed_seconds} Sek.</span>
+            </div>
+            <p>Status: {'🟢 Läuft' if st.session_state.is_running else '🔴 Gestoppt'}</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    c_btn1, c_btn2 = st.columns(2)
-    with c_btn1:
-      if st.button("Auszahlen"):
-        st.session_state.money += st.session_state.pending_earnings
-        st.success(
-            f"{st.session_state.pending_earnings:.2f} € ausgezahlt! 💰"
-        )
-        st.session_state.pending_earnings = 0.0
-        st.rerun()
-    with c_btn2:
-      if st.button("1 Min. arbeiten"):
-        st.session_state.pending_earnings += st.session_state.current_rate
-        st.session_state.total_earnings += st.session_state.current_rate
-        decay_stats()
-        st.rerun()
-
-  with col2:
+  with col_d2:
     st.markdown('<div class="custom-card">', unsafe_allow_html=True)
     st.subheader("💤 Schlaf eintragen")
     sleep_hours = st.number_input(
@@ -205,32 +211,63 @@ with tab_dash:
       )
       st.rerun()
 
-# --- TAB 2: STUNDENPLAN ---
+  # Wenn der Timer läuft, im Sekundentakt hochzählen und Werte abbauen
+  if st.session_state.is_running:
+    time.sleep(1)
+    st.session_state.elapsed_seconds += 1
+    # Verdienst pro Sekunde berechnen (Rate ist pro Minute, also / 60)
+    earned_per_sec = st.session_state.current_rate / 60.0
+    st.session_state.pending_earnings += earned_per_sec
+    st.session_state.total_earnings += earned_per_sec
+
+    # Vitalwerte im Hintergrund leicht senken
+    st.session_state.food = max(0.0, st.session_state.food - 0.005)
+    st.session_state.drink = max(0.0, st.session_state.drink - 0.008)
+    st.session_state.sleep = max(0.0, st.session_state.sleep - 0.003)
+    st.rerun()
+
+# --- TAB 2: STUNDENPLAN (SCHULMANAGER-STIL) ---
 with tab_schedule:
-  st.subheader("📚 Stundenplan & Fächer auswählen")
-  st.write("Klicke auf ein Fach, um es als aktuelle Aktivität festzulegen:")
+  st.subheader("📅 Stundenplan (Schulmanager Ansicht)")
+  st.write(
+      "Wähle dein aktuelles Fach aus. Jedes Fach generiert einen anderen"
+      " Verdienst pro Minute beim Lernen:"
+  )
 
   fächer = [
-      {"name": "Mathematik", "rate": 0.50},
-      {"name": "Physik (LK)", "rate": 0.60},
-      {"name": "Informatik", "rate": 0.55},
-      {"name": "Geschichte", "rate": 0.40},
-      {"name": "Chemie", "rate": 0.50},
-      {"name": "Kunst", "rate": 0.35},
-      {"name": "Freistunde", "rate": 0.00},
-      {"name": "Eigenes Projekt (Zocken/Lernen)", "rate": 0.50},
+      {"name": "Mathematik", "rate": 0.50, "lehrer": "Herr Müller"},
+      {"name": "Physik (LK)", "rate": 0.60, "lehrer": "Frau Schmidt"},
+      {"name": "Informatik", "rate": 0.55, "lehrer": "Herr Weber"},
+      {"name": "Geschichte", "rate": 0.40, "lehrer": "Frau Wagner"},
+      {"name": "Chemie", "rate": 0.50, "lehrer": "Herr Fischer"},
+      {"name": "Kunst", "rate": 0.35, "lehrer": "Frau Becker"},
+      {"name": "Freistunde", "rate": 0.00, "lehrer": "Keiner"},
+      {
+          "name": "Eigenes Projekt (Zocken/Lernen)",
+          "rate": 0.50,
+          "lehrer": "Selbst",
+      },
   ]
 
-  cols = st.columns(3)
+  cols = st.columns(2)
   for i, f in enumerate(fächer):
-    with cols[i % 3]:
-      if st.button(f"{f['name']}\n({f['rate']:.2f} €/m)", key=f"fach_{i}"):
+    with cols[i % 2]:
+      st.markdown(
+          f"""
+            <div class="custom-card" style="padding: 15px; margin-bottom: 10px;">
+                <h4>📚 {f['name']}</h4>
+                <p style="margin: 0; color: #94a3b8;">Lehrkraft: {f['lehrer']} | Verdienst: <b>{f['rate']:.2f} € / Min</b></p>
+            </div>
+            """,
+          unsafe_allow_html=True,
+      )
+      if st.button(f"Fach aktivieren: {f['name']}", key=f"schul_f_{i}"):
         st.session_state.active_lesson = f["name"]
         st.session_state.current_rate = f["rate"]
-        st.success(f'Gewählt: {f["name"]}')
+        st.success(f'Stundenplan aktualisiert auf: {f["name"]}')
         st.rerun()
 
-# --- TAB 3: SUPERMARKT (ERWEITERT) ---
+# --- TAB 3: SUPERMARKT ---
 with tab_shop:
   st.subheader("🛒 Supermarkt — Großes Sortiment")
   col_drink, col_food = st.columns(2)
@@ -329,7 +366,7 @@ with tab_bank:
       else:
         st.error("Nicht genug Geld oder kein Kredit offen!")
 
-# --- TAB 6: VERTRÄGE (ERWEITERT) ---
+# --- TAB 6: VERTRÄGE ---
 with tab_contracts:
   st.subheader("📱 Abos & Verträge verwalten")
   st.write("Verwalte deine täglichen Fixkosten durch Abos und Verträge:")
