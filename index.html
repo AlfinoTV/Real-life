@@ -70,8 +70,9 @@
         .timer-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0; }
         .timer-circle {
             width: 170px; height: 170px; border-radius: 50%;
-            background: conic-gradient(var(--accent-orange) 0deg, var(--border) 0deg);
+            background: conic-gradient(var(--accent-blue) 0deg, var(--border) 0deg);
             display: flex; align-items: center; justify-content: center; position: relative;
+            transition: background 0.2s linear;
         }
         .timer-inner {
             width: 135px; height: 135px; background-color: var(--card-bg); border-radius: 50%;
@@ -177,10 +178,16 @@
                 <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Min</div>
                 <div class="timer-subtext" style="color: #fff;">Bereits verdient: <span id="session-earned" class="money">0.00 €</span></div>
                 
+                <!-- Streak & Melden Info -->
+                <div id="streak-info" style="font-size: 0.8rem; color: var(--accent-orange); margin-top: 6px;">
+                    Aktuelle Melde-Streak (dieses Fach): <strong>0x</strong> (Bonus: +0.00 €)
+                </div>
+
                 <div class="timer-controls">
                     <button class="action-btn" onclick="toggleTimer()">Start / Stop</button>
+                    <button class="action-btn" style="background-color: var(--accent-blue);" onclick="raiseHand()">🙋‍♂️ Melden</button>
                     <button class="action-btn" style="background-color: var(--accent-orange);" onclick="startFreistunde()">Freistunde</button>
-                    <button class="action-btn" style="background-color: var(--accent-blue);" onclick="claimEarnings()">Auszahlen</button>
+                    <button class="action-btn" onclick="claimEarnings()">Auszahlen</button>
                 </div>
             </div>
 
@@ -363,7 +370,6 @@
             pendingEarnings: 0.00,
             totalEarnings: 0.00,
             totalTaxes: 0.00,
-            taxToday: 0.00,
             food: 80,
             drink: 80,
             sleep: 80,
@@ -376,7 +382,8 @@
             timerSeconds: 0,
             startTimeEpoch: null,
             editMode: false,
-            currentEditCoords: { hour: null, day: null }
+            currentEditCoords: { hour: null, day: null },
+            streaks: {} // Speichert Melde-Streaks fachintern pro Tag
         };
 
         let timetableData = {};
@@ -396,12 +403,12 @@
             10: [["Freistunde","-","-", 0], ["Freistunde","-","-", 0], ["s2","SP 2","Pi", 0.4], ["g3","1.03","Hö", 0.4], ["Freistunde","-","-", 0]]
         };
 
-        // Lade Speicherstände wenn vorhanden
         function loadGame() {
             let saved = localStorage.getItem("schoolSimState");
             if (saved) {
                 let parsed = JSON.parse(saved);
                 gameState = { ...gameState, ...parsed };
+                if(!gameState.streaks) gameState.streaks = {};
             }
             let savedTable = localStorage.getItem("schoolSimTable");
             if (savedTable) {
@@ -436,7 +443,6 @@
             checkAutoCurrentLesson();
             updateUI();
 
-            // Wenn Timer lief vor dem Schließen, berechne verflossene Zeit nach
             if (gameState.isTimerRunning && gameState.startTimeEpoch) {
                 let nowEpoch = Date.now();
                 let diffSeconds = Math.floor((nowEpoch - gameState.startTimeEpoch) / 1000);
@@ -446,7 +452,6 @@
                 gameState.totalEarnings += earnedExtra;
             }
 
-            // Haupt-Interval für Timer & automatischen Stat-Abfall (alle 1 Sek)
             setInterval(() => {
                 if (gameState.isTimerRunning) {
                     gameState.timerSeconds++;
@@ -460,7 +465,6 @@
                 }
             }, 1000);
 
-            // Alle 60 Sekunden Stats (Essen, Trinken, Schlaf) minimal senken
             setInterval(() => {
                 gameState.food = Math.max(0, gameState.food - 0.2);
                 gameState.drink = Math.max(0, gameState.drink - 0.3);
@@ -469,7 +473,6 @@
                 saveGame();
             }, 60000);
 
-            // Prüfe Auto-Stunde alle 30 Sek
             setInterval(checkAutoCurrentLesson, 30000);
         };
 
@@ -517,6 +520,7 @@
                 gameState.currentRate = cellData.rate !== undefined ? cellData.rate : 0.50;
                 document.getElementById("timer-status").innerText = cellData.subject.toUpperCase();
                 document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2) + " €";
+                updateStreakDisplay();
             }
         }
 
@@ -568,6 +572,7 @@
                     gameState.currentRate = lesson.rate !== undefined ? lesson.rate : 0.50;
                     document.getElementById("timer-status").innerText = lesson.subject.toUpperCase();
                     document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2) + " €";
+                    updateStreakDisplay();
                 }
                 infoBox.innerText = `Erkannt: ${detectedHour}. Stunde (${lesson.subject} - ${gameState.currentRate} €/Min)`;
             } else {
@@ -589,16 +594,18 @@
                 gameState.startTimeEpoch = Date.now();
                 document.getElementById("timer-status").innerText = gameState.activeLesson.toUpperCase();
             }
+            updateStreakDisplay();
             saveGame();
         }
 
         function startFreistunde() {
             gameState.isTimerRunning = false;
             gameState.activeLesson = "Freistunde";
-            gameState.currentRate = 0; // Freistunde bringt kein Geld
+            gameState.currentRate = 0;
             gameState.timerSeconds = 0;
             document.getElementById("timer-status").innerText = "FREISTUNDE (0 €)";
             document.getElementById("current-rate").innerText = "0.00 €";
+            updateStreakDisplay();
             updateTimerDisplay();
             saveGame();
         }
@@ -611,68 +618,87 @@
             }
             gameState.activeLesson = activityName;
             gameState.currentRate = 0.50;
-            gameState.timerSeconds = 0;
             gameState.isTimerRunning = true;
             gameState.startTimeEpoch = Date.now();
             document.getElementById("timer-status").innerText = activityName.toUpperCase();
             document.getElementById("current-rate").innerText = "0.50 €";
+            updateStreakDisplay();
             saveGame();
         }
 
-        function claimEarnings() {
-            if (gameState.pendingEarnings <= 0) {
-                alert("Kein Guthaben zum Auszahlen vorhanden!");
+        // --- MELEN- & STREAK-SYSTEM ---
+        function raiseHand() {
+            if (!gameState.activeLesson || gameState.activeLesson.toLowerCase().includes("freistunde")) {
+                alert("Du kannst dich in Freistunden oder ohne aktives Fach nicht melden!");
                 return;
             }
+            let subjectKey = gameState.activeLesson.toLowerCase();
+            let todayKey = new Date().toDateString();
+
+            if (!gameState.streaks[todayKey]) {
+                gameState.streaks[todayKey] = {};
+            }
+            if (!gameState.streaks[todayKey][subjectKey]) {
+                gameState.streaks[todayKey][subjectKey] = 0;
+            }
+
+            gameState.streaks[todayKey][subjectKey]++;
+            let streakCount = gameState.streaks[todayKey][subjectKey];
+
+            // Je öfter gemeldet, desto höher der Bonus (z.B. Basis 0.20€ * Streak)
+            let bonusMoney = 0.20 * streakCount;
+            gameState.pendingEarnings += bonusMoney;
+            gameState.totalEarnings += bonusMoney;
+
+            updateStreakDisplay();
+            updateUI();
+            saveGame();
+            
+            // Kleines Feedback
+            alert(`Gut mitgearbeitet! (${gameState.activeLesson}) Streak: ${streakCount}x | Bonus: +${bonusMoney.toFixed(2)} € direkt gutgeschrieben!`);
+        }
+
+        function updateStreakDisplay() {
+            let subjectKey = (gameState.activeLesson || "allgemein").toLowerCase();
+            let todayKey = new Date().toDateString();
+            let streakCount = (gameState.streaks[todayKey] && gameState.streaks[todayKey][subjectKey]) ? gameState.streaks[todayKey][subjectKey] : 0;
+            let currentBonus = 0.20 * streakCount;
+
+            document.getElementById("streak-info").innerHTML = 
+                `Aktuelle Melde-Streak (${gameState.activeLesson || "Kein Fach"}): <strong>${streakCount}x</strong> (Bonus: +${currentBonus.toFixed(2)} €)`;
+        }
+
+        function claimEarnings() {
             gameState.money += gameState.pendingEarnings;
-            alert(`Erfolgreich ${gameState.pendingEarnings.toFixed(2)} € ausgezahlt!`);
             gameState.pendingEarnings = 0;
             updateUI();
             saveGame();
         }
 
-        function logRealSleep() {
-            let hours = parseFloat(document.getElementById("sleep-hours-input").value);
-            if (isNaN(hours) || hours <= 0) {
-                alert("Bitte gültige Stunden eingeben!");
-                return;
-            }
-            let recovered = Math.min(100, hours * 12.5); // 8h = 100%
-            gameState.sleep = Math.min(100, gameState.sleep + recovered);
-            alert(`${hours} Stunden Schlaf eingetragen! Energie aufgeladen.`);
-            document.getElementById("sleep-hours-input").value = "";
-            updateUI();
-            saveGame();
-        }
-
-        function updateTimerDisplay() {
-            let m = Math.floor(gameState.timerSeconds / 60);
-            let s = gameState.timerSeconds % 60;
-            document.getElementById("timer-clock").innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-        }
-
-        function buyItem(type, amount, price) {
-            if (gameState.money < price) {
+        function buyItem(type, amount, cost) {
+            if (gameState.money < cost) {
                 alert("Nicht genug Geld!");
                 return;
             }
-            gameState.money -= price;
-            if (type === 'food') gameState.food = Math.min(100, gameState.food + amount);
-            if (type === 'drink') gameState.drink = Math.min(100, gameState.drink + amount);
+            gameState.money -= cost;
+            if (type === 'food') {
+                gameState.food = Math.min(100, gameState.food + amount);
+            } else if (type === 'drink') {
+                gameState.drink = Math.min(100, gameState.drink + amount);
+            }
             updateUI();
             saveGame();
         }
 
         function setHousing(name, rent, water, electricity) {
             gameState.housing = { name, rent, water, electricity };
-            alert(name + " gemietet!");
+            document.getElementById("current-housing").innerText = name;
             updateUI();
             saveGame();
         }
 
-        function toggleContract(name, cost) {
-            gameState.activeContracts[name] = !gameState.activeContracts[name];
-            alert("Vertragsstatus geändert.");
+        function toggleContract(key, cost) {
+            gameState.activeContracts[key] = !gameState.activeContracts[key];
             updateUI();
             saveGame();
         }
@@ -685,52 +711,61 @@
         }
 
         function payLoan(amount) {
-            if (gameState.money < amount || gameState.loan < amount) {
-                alert("Nicht genug Geld!");
+            let pay = Math.min(amount, gameState.loan);
+            if (gameState.money < pay) {
+                alert("Nicht genug Geld zum Tilgen!");
                 return;
             }
-            gameState.loan -= amount;
-            gameState.money -= amount;
+            gameState.money -= pay;
+            gameState.loan -= pay;
             updateUI();
             saveGame();
         }
 
-        function getContractsCost() {
-            let c = 0;
-            if (gameState.activeContracts.phone) c += 1.2;
-            if (gameState.activeContracts.wifi) c += 1.5;
-            if (gameState.activeContracts.netflix) c += 0.6;
-            if (gameState.activeContracts.spotify) c += 0.4;
-            return c;
-        }
-
-        function getHousingCost() {
-            return gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
-        }
-
-        function getFixedCosts() {
-            return getHousingCost() + getContractsCost();
+        function logRealSleep() {
+            let hours = parseFloat(document.getElementById("sleep-hours-input").value);
+            if (isNaN(hours) || hours <= 0) {
+                alert("Bitte gültige Stunden eingeben!");
+                return;
+            }
+            let restore = Math.min(100, hours * 12.5);
+            gameState.sleep = restore;
+            updateUI();
+            saveGame();
+            alert(`Schlaf eingetragen! Energie auf ${restore}% aufgeladen.`);
         }
 
         function endDay() {
-            if(gameState.isTimerRunning) {
-                gameState.isTimerRunning = false;
-                document.getElementById("timer-status").innerText = "BEREIT";
+            let fixedTotal = gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
+            for (let k in gameState.activeContracts) {
+                if (gameState.activeContracts[k]) {
+                    if (k === 'phone') fixedTotal += 1.20;
+                    if (k === 'wifi') fixedTotal += 1.50;
+                    if (k === 'netflix') fixedTotal += 0.60;
+                    if (k === 'spotify') fixedTotal += 0.40;
+                }
             }
-
-            let fixed = getFixedCosts();
-            let tax = gameState.pendingEarnings * 0.20;
-            let net = gameState.pendingEarnings - tax - fixed;
-
-            gameState.money += net;
-            gameState.taxToday = tax;
-            gameState.totalTaxes += tax;
-            gameState.pendingEarnings = 0;
-            gameState.timerSeconds = 0;
-
-            updateUI();
+            gameState.money -= fixedTotal;
+            claimEarnings();
             saveGame();
-            alert(`Tagesabschluss!\nNetto nach Steuern & Fixkosten: ${net.toFixed(2)} €`);
+            alert(`Tag beendet! Fixkosten in Höhe von ${fixedTotal.toFixed(2)} € wurden abgezogen.`);
+        }
+
+        function updateTimerDisplay() {
+            let mins = Math.floor(gameState.timerSeconds / 60);
+            let secs = gameState.timerSeconds % 60;
+            document.getElementById("timer-clock").innerText = 
+                (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
+            document.getElementById("session-earned").innerText = gameState.pendingEarnings.toFixed(2) + " €";
+
+            // Äußeren Timer-Kreis (Conic Gradient) basierend auf Sekunden einer Minute (0 - 60s) füllen
+            let progressDeg = (secs / 60) * 360;
+            let circle = document.getElementById("timer-circle");
+            if (gameState.isTimerRunning) {
+                circle.style.background = `conic-gradient(var(--accent-blue) ${progressDeg}deg, var(--border) ${progressDeg}deg)`;
+            } else {
+                circle.style.background = `conic-gradient(var(--border) 360deg, var(--border) 360deg)`;
+            }
         }
 
         function updateUI() {
@@ -739,20 +774,28 @@
             document.getElementById("header-drink").innerText = Math.round(gameState.drink) + "%";
             document.getElementById("header-sleep").innerText = Math.round(gameState.sleep) + "%";
 
-            document.getElementById("fill-food").style.width = gameState.food + "%";
             document.getElementById("val-food").innerText = Math.round(gameState.food) + "%";
-            document.getElementById("fill-drink").style.width = gameState.drink + "%";
-            document.getElementById("val-drink").innerText = Math.round(gameState.drink) + "%";
-            document.getElementById("fill-sleep").style.width = gameState.sleep + "%";
-            document.getElementById("val-sleep").innerText = Math.round(gameState.sleep) + "%";
+            document.getElementById("fill-food").style.width = gameState.food + "%";
 
-            document.getElementById("dash-total-fixed").innerText = getFixedCosts().toFixed(2) + " €";
-            document.getElementById("current-housing").innerText = gameState.housing.name;
+            document.getElementById("val-drink").innerText = Math.round(gameState.drink) + "%";
+            document.getElementById("fill-drink").style.width = gameState.drink + "%";
+
+            document.getElementById("val-sleep").innerText = Math.round(gameState.sleep) + "%";
+            document.getElementById("fill-sleep").style.width = gameState.sleep + "%";
+
+            let fixedTotal = gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
+            for (let k in gameState.activeContracts) {
+                if (gameState.activeContracts[k]) {
+                    if (k === 'phone') fixedTotal += 1.20;
+                    if (k === 'wifi') fixedTotal += 1.50;
+                    if (k === 'netflix') fixedTotal += 0.60;
+                    if (k === 'spotify') fixedTotal += 0.40;
+                }
+            }
+            document.getElementById("dash-total-fixed").innerText = fixedTotal.toFixed(2) + " €";
             document.getElementById("loan-status").innerText = gameState.loan.toFixed(2) + " €";
             document.getElementById("stat-earnings").innerText = gameState.totalEarnings.toFixed(2) + " €";
-            document.getElementById("stat-taxes").innerText = gameState.totalTaxes.toFixed(2) + " €";
-            document.getElementById("session-earned").innerText = gameState.pendingEarnings.toFixed(2) + " €";
-            document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2) + " €";
+
             updateTimerDisplay();
         }
     </script>
