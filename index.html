@@ -199,6 +199,15 @@
                 <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Min <span id="rate-bonus-text" style="font-size:0.75rem; color:var(--accent-blue);"></span></div>
                 <div class="timer-subtext" style="color: var(--accent-orange);">Noch nicht ausgezahlt: <span id="session-earned">0.00 €</span></div>
                 
+                <!-- Manuelles Zeit nachtragen Feld -->
+                <div style="background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-top: 12px; font-size: 0.85rem; text-align: left;">
+                    <strong>Vergangene Zeit nachtragen:</strong>
+                    <div style="display: flex; gap: 8px; margin-top: 6px;">
+                        <input type="number" id="manual-minutes-input" placeholder="Minuten (z.B. 45)" min="1" max="600" style="flex:1; padding: 6px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px;">
+                        <button class="action-btn" onclick="logManualTime()" style="padding: 6px 10px; background-color: var(--accent-blue);">Nachtragen</button>
+                    </div>
+                </div>
+
                 <!-- Aktive Boni Box -->
                 <div class="active-buffs-box">
                     <strong>Aktive Boni:</strong>
@@ -579,12 +588,10 @@
                 }
             }, 500);
 
-            // Verbrauch Loop (Sinkt schneller, wenn der Timer läuft und KEINE Freistunde ist!)
             setInterval(() => {
                 let buffs = calculateBuffs();
                 let decayMod = buffs.generalDecayMod;
                 
-                // Faktor: 3x schnellerer Verbrauch während der Arbeit / aktivem Timer (außer bei Freistunde)
                 let workMultiplier = 1.0;
                 let isWorking = gameState.isTimerRunning && gameState.activeLesson && !gameState.activeLesson.toLowerCase().includes("freistunde");
                 if (isWorking) {
@@ -602,6 +609,41 @@
                 saveGame();
             }, 60000);
         };
+
+        // Funktion zum manuellen Nachtragen von Minuten
+        function logManualTime() {
+            let minutesInput = parseFloat(document.getElementById("manual-minutes-input").value);
+            if (isNaN(minutesInput) || minutesInput <= 0) {
+                alert("Bitte gib eine gültige Minutenanzahl ein!");
+                return;
+            }
+
+            let buffs = calculateBuffs();
+            let effectiveRate = gameState.currentRate > 0 ? (gameState.currentRate + buffs.rateBonus + buffs.baseRateBonus) : 0;
+            let earned = minutesInput * effectiveRate + minutesInput * buffs.passiveIncome;
+
+            gameState.pendingEarnings += earned;
+            gameState.totalEarnings += earned;
+
+            // Verbrauch für die nachgetragene Zeit anrechnen (falls nicht Freistunde)
+            let isWorking = gameState.activeLesson && !gameState.activeLesson.toLowerCase().includes("freistunde");
+            let workMultiplier = isWorking ? 3.0 : 1.0;
+            let decayMod = buffs.generalDecayMod;
+
+            // Da 1 Minute im Intervall normalerweise 1/60 Minute ist, multiplizieren wir den Verbrauch pro Minute entsprechend
+            gameState.food = Math.max(0, gameState.food - (0.2 * decayMod * buffs.foodDecayMod * workMultiplier * (minutesInput)));
+            gameState.drink = Math.max(0, gameState.drink - (0.3 * decayMod * buffs.drinkDecayMod * workMultiplier * (minutesInput)));
+            
+            let sleepVal = gameState.sleep - (0.1 * decayMod * buffs.sleepDecayMod * workMultiplier * (minutesInput));
+            if (buffs.minSleep > 0 && sleepVal < buffs.minSleep) sleepVal = buffs.minSleep;
+            gameState.sleep = Math.max(0, sleepVal);
+
+            document.getElementById("manual-minutes-input").value = "";
+            updateUI();
+            saveGame();
+
+            alert(`${minutesInput} Minuten erfolgreich nachgetragen!\n+${earned.toFixed(2)} € wurden deinem Zwischenspeicher gutgeschrieben.`);
+        }
 
         function calculateBuffs() {
             let buffs = {
