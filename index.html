@@ -88,11 +88,13 @@
             display: flex; justify-content: space-between; align-items: center;
             background: #21262d; padding: 12px; border-radius: 8px; border: 1px solid var(--border);
         }
+        .shop-info { font-size: 0.8rem; color: #8b949e; margin-top: 2px; }
         button.action-btn {
             background-color: var(--accent-green); color: #fff; border: none;
-            padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;
+            padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;
         }
         button.action-btn:hover { opacity: 0.9; }
+        button.action-btn:disabled { background-color: #30363d; color: #6e7681; cursor: not-allowed; }
         button.danger-btn { background-color: var(--danger); }
         .money { color: var(--accent-green); font-weight: bold; }
 
@@ -159,7 +161,7 @@
         <button class="tab-btn active" onclick="openTab(event, 'tab-dashboard')">Dashboard</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-schedule')">Stundenplan</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-supermarket')">Supermarkt</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-housing')">Wohnung (3D)</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-housing')">Wohnung & Möbel</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-bank')">Bank & Kredite</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-contracts')">Abos & Verträge</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-stats')">Statistik & Steuern</button>
@@ -181,7 +183,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Min</div>
+                <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Min <span id="rate-bonus-text" style="font-size:0.75rem; color:var(--accent-blue);"></span></div>
                 <div class="timer-subtext" style="color: var(--accent-orange);">Noch nicht ausgezahlt: <span id="session-earned">0.00 €</span></div>
                 
                 <!-- Streak & Melden Info -->
@@ -225,7 +227,7 @@
                 <div style="background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; font-size: 0.85rem;">
                     <strong style="color: var(--accent-blue);">Fixkosten pro Tag:</strong>
                     <div style="display: flex; justify-content: space-between; margin-top: 3px;">
-                        <span>Unterkunft & Abos:</span> <span id="dash-total-fixed" class="money">0.00 €</span>
+                        <span>Unterkunft, Möbel & Abos:</span> <span id="dash-total-fixed" class="money">0.00 €</span>
                     </div>
                 </div>
 
@@ -268,33 +270,44 @@
             <h2>Andere Aktivität starten</h2>
             <div style="display: flex; gap: 10px;">
                 <input type="text" id="custom-activity-input" placeholder="z.B. Lernen, Zocken..." style="flex: 1; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
-                <button class="action-btn" onclick="startCustomActivity()">Starten (0.50 €/Min)</button>
+                <button class="action-btn" onclick="startCustomActivity()">Starten</button>
             </div>
         </div>
     </div>
 
-    <!-- TAB 3: SUPERMARKT -->
+    <!-- TAB 3: SUPERMARKT (ERWEITERT) -->
     <div id="tab-supermarket" class="tab-content">
         <div class="card">
-            <h2>Getränke-Abteilung</h2>
+            <h2>Getränke- & Energy-Auswahl</h2>
             <div class="grid-shop">
-                <div class="shop-item"><span>Red Bull (2.50 €)</span><button class="action-btn" onclick="buyItem('drink', 25, 2.5)">Kaufen</button></div>
-                <div class="shop-item"><span>Club Mate (1.80 €)</span><button class="action-btn" onclick="buyItem('drink', 20, 1.8)">Kaufen</button></div>
-                <div class="shop-item"><span>Spezi (1.50 €)</span><button class="action-btn" onclick="buyItem('drink', 18, 1.5)">Kaufen</button></div>
-                <div class="shop-item"><span>Wasser (1.10 €)</span><button class="action-btn" onclick="buyItem('drink', 10, 1.1)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Leitungswasser (Gratis)</span><div class="shop-info">Wasser +5%</div></div><button class="action-btn" onclick="buyItem('drink', 5, 0)">Trinken</button></div>
+                <div class="shop-item"><div><span>Schulmilch (0.80 €)</span><div class="shop-info">Wasser +10%</div></div><button class="action-btn" onclick="buyItem('drink', 10, 0.8)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Apfelschorle (1.20 €)</span><div class="shop-info">Wasser +15%</div></div><button class="action-btn" onclick="buyItem('drink', 15, 1.2)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Mineralwasser 0,5l (1.10 €)</span><div class="shop-info">Wasser +12%</div></div><button class="action-btn" onclick="buyItem('drink', 12, 1.1)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Eistee Pfirsich (1.50 €)</span><div class="shop-info">Wasser +18%</div></div><button class="action-btn" onclick="buyItem('drink', 18, 1.5)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Mezzo Mix / Spezi (1.60 €)</span><div class="shop-info">Wasser +20%</div></div><button class="action-btn" onclick="buyItem('drink', 20, 1.6)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Club Mate (1.90 €)</span><div class="shop-info">Wasser +22%</div></div><button class="action-btn" onclick="buyItem('drink', 22, 1.9)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Red Bull (2.50 €)</span><div class="shop-info">Wasser +30%, Energie +10%</div></div><button class="action-btn" onclick="buyItem('drink', 30, 2.5, 'energy', 10)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Monster Energy (2.70 €)</span><div class="shop-info">Wasser +35%, Energie +15%</div></div><button class="action-btn" onclick="buyItem('drink', 35, 2.7, 'energy', 15)">Kaufen</button></div>
             </div>
         </div>
         <div class="card">
-            <h2>Essen & Snacks</h2>
+            <h2>Essen & Snacks Auswahl</h2>
             <div class="grid-shop">
-                <div class="shop-item"><span>Subway Menü (8.99 €)</span><button class="action-btn" onclick="buyItem('food', 55, 8.99)">Kaufen</button></div>
-                <div class="shop-item"><span>Ben & Jerry's (6.49 €)</span><button class="action-btn" onclick="buyItem('food', 40, 6.49)">Kaufen</button></div>
-                <div class="shop-item"><span>Schokolade (1.49 €)</span><button class="action-btn" onclick="buyItem('food', 18, 1.49)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Apfel von zuhause (Gratis)</span><div class="shop-info">Essen +8%</div></div><button class="action-btn" onclick="buyItem('food', 8, 0)">Essen</button></div>
+                <div class="shop-item"><div><span>Müsliriegel (0.90 €)</span><div class="shop-info">Essen +12%</div></div><button class="action-btn" onclick="buyItem('food', 12, 0.9)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Brezel vom Bäcker (1.20 €)</span><div class="shop-info">Essen +15%</div></div><button class="action-btn" onclick="buyItem('food', 15, 1.2)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Schokoriegel (1.40 €)</span><div class="shop-info">Essen +18%</div></div><button class="action-btn" onclick="buyItem('food', 18, 1.4)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Käsebrötchen (2.20 €)</span><div class="shop-info">Essen +25%</div></div><button class="action-btn" onclick="buyItem('food', 25, 2.2)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Döner Kebab (7.00 €)</span><div class="shop-info">Essen +50%</div></div><button class="action-btn" onclick="buyItem('food', 50, 7.0)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Subway Menü (8.99 €)</span><div class="shop-info">Essen +65%</div></div><button class="action-btn" onclick="buyItem('food', 65, 8.99)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Pizza Lieferung (11.50 €)</span><div class="shop-info">Essen +80%</div></div><button class="action-btn" onclick="buyItem('food', 80, 11.5)">Kaufen</button></div>
+                <div class="shop-item"><div><span>Ben & Jerry's Eis (6.49 €)</span><div class="shop-info">Essen +40%, Glücksgefühle</div></div><button class="action-btn" onclick="buyItem('food', 40, 6.49)">Kaufen</button></div>
             </div>
         </div>
     </div>
 
-    <!-- TAB 4: WOHNUNG -->
+    <!-- TAB 4: WOHNUNG & MÖBEL (MIT VORTEILEN) -->
     <div id="tab-housing" class="tab-content">
         <div class="card">
             <h2>Virtuelle 3D-Wohnung</h2>
@@ -309,10 +322,19 @@
         <div class="card">
             <h2>Immobilien-Markt</h2>
             <div class="grid-shop">
-                <div class="shop-item"><span>WG-Zimmer (10 € / Tag)</span><button class="action-btn" onclick="setHousing('WG', 10, 2, 3)">Mieten</button></div>
-                <div class="shop-item"><span>Moderne Wohnung (25 € / Tag)</span><button class="action-btn" onclick="setHousing('Wohnung', 25, 5, 8)">Mieten</button></div>
+                <div class="shop-item"><div><span>Kinderzimmer bei Eltern (0 € / Tag)</span><div class="shop-info">Keine Fixkosten</div></div><button class="action-btn" onclick="setHousing('Elternhaus', 0, 0, 0)">Einziehen</button></div>
+                <div class="shop-item"><div><span>WG-Zimmer (10 € / Tag)</span><div class="shop-info">Solide Basis</div></div><button class="action-btn" onclick="setHousing('WG', 10, 2, 3)">Mieten</button></div>
+                <div class="shop-item"><div><span>Moderne Wohnung (25 € / Tag)</span><div class="shop-info">Bessere Erholung</div></div><button class="action-btn" onclick="setHousing('Wohnung', 25, 5, 8)">Mieten</button></div>
+                <div class="shop-item"><div><span>Penthouse Loft (60 € / Tag)</span><div class="shop-info">Luxus pur</div></div><button class="action-btn" onclick="setHousing('Penthouse', 60, 10, 15)">Mieten</button></div>
             </div>
-            <p style="margin-top: 15px;">Aktuelle Unterkunft: <strong id="current-housing" style="color:var(--accent-blue);">Keine</strong></p>
+            <p style="margin-top: 15px;">Aktuelle Unterkunft: <strong id="current-housing" style="color:var(--accent-blue);">Elternhaus</strong></p>
+        </div>
+        
+        <div class="card">
+            <h2>Möbel & Einrichtung (Gibt aktive Boni!)</h2>
+            <div class="grid-shop" id="furniture-shop-container">
+                <!-- Wird per JS gerendert mit Vorteilen -->
+            </div>
         </div>
     </div>
 
@@ -328,15 +350,13 @@
         </div>
     </div>
 
-    <!-- TAB 6: VERTRÄGE -->
+    <!-- TAB 6: VERTRÄGE & ABOS (ERWEITERT MIT VORTEILEN) -->
     <div id="tab-contracts" class="tab-content">
         <div class="card">
-            <h2>Abos & Verträge</h2>
-            <div class="grid-shop">
-                <div class="shop-item"><span>Handy (1.20 €/Tag)</span><button class="action-btn" onclick="toggleContract('phone', 1.2)">An/Aus</button></div>
-                <div class="shop-item"><span>WLAN (1.50 €/Tag)</span><button class="action-btn" onclick="toggleContract('wifi', 1.5)">An/Aus</button></div>
-                <div class="shop-item"><span>Netflix (0.60 €/Tag)</span><button class="action-btn" onclick="toggleContract('netflix', 0.6)">An/Aus</button></div>
-                <div class="shop-item"><span>Spotify (0.40 €/Tag)</span><button class="action-btn" onclick="toggleContract('spotify', 0.4)">An/Aus</button></div>
+            <h2>Abos, Verträge & Services</h2>
+            <p style="font-size:0.85rem; color:#8b949e; margin-bottom:15px;">Jeder Vertrag schaltet nützliche Vorteile im Simulator frei!</p>
+            <div class="grid-shop" id="contracts-shop-container">
+                <!-- Per JS gerendert -->
             </div>
         </div>
     </div>
@@ -346,7 +366,7 @@
         <div class="card">
             <h2>Statistik & Steuerübersicht</h2>
             <p>Gesamteinnahmen (Brutto erarbeitet): <span id="stat-earnings" class="money">0.00 €</span></p>
-            <p>Insgesamt gezahlte Steuern (15%): <span id="stat-taxes" style="color: var(--danger);">0.00 €</span></p>
+            <p>Insgesamt gezahlte Steuern: <span id="stat-taxes" style="color: var(--danger);">0.00 €</span> <span id="tax-rate-display" style="font-size:0.8rem; color:var(--accent-blue);">(15% Standard)</span></p>
             
             <h3 style="font-size: 1rem; margin-top: 20px; color: #58a6ff;">Abrechnungs-Historie (Tagesabschluss)</h3>
             <div class="payout-log" id="payout-log-container">
@@ -377,15 +397,16 @@
     <script>
         let gameState = {
             money: 50.00,
-            pendingEarnings: 0.00, // Noch nicht ausgezahlt / zwischengespeichert
+            pendingEarnings: 0.00,
             totalEarnings: 0.00,
             totalTaxes: 0.00,
             food: 80,
             drink: 80,
             sleep: 80,
             loan: 0,
-            housing: { name: "Keine", rent: 0, water: 0, electricity: 0 },
-            activeContracts: { phone: false, wifi: false, netflix: false, spotify: false },
+            housing: { name: "Elternhaus", rent: 0, water: 0, electricity: 0 },
+            furniture: {}, // Key -> bool
+            contracts: {}, // Key -> bool
             activeLesson: null,
             currentRate: 0.50,
             isTimerRunning: false,
@@ -396,6 +417,27 @@
             streaks: {},
             payoutHistory: []
         };
+
+        // Erweiterte Möbel mit Vorteilen
+        const furnitureCatalog = [
+            { id: "desk", name: "Ergonomischer Schreibtisch", cost: 120, daily: 0.5, bonusText: "+0.10 € / Min Verdienst-Boost", effect: (s) => s.rateBonus = 0.10 },
+            { id: "chair", name: "Gaming-Stuhl", cost: 180, daily: 0.8, bonusText: "Schlaf sinkt 20% langsamer", effect: (s) => s.sleepDecayMod = 0.8 },
+            { id: "pc", name: "High-End Gaming PC", cost: 650, daily: 2.5, bonusText: "Generiert automatisch +0.20 €/Min passives Einkommen", effect: (s) => s.passiveIncome = 0.20 },
+            { id: "coffeemachine", name: "Kaffeemaschine", cost: 95, daily: 0.4, bonusText: "Trinken sinkt 25% langsamer", effect: (s) => s.drinkDecayMod = 0.75 },
+            { id: "bed", name: "Luxus-Boxspringbett", cost: 400, daily: 1.5, bonusText: "Echter Schlaf gibt 50% mehr Energie-Regeneration", effect: (s) => s.sleepBonus = 1.5 },
+            { id: "plants", name: "Zimmerpflanzen", cost: 40, daily: 0.1, bonusText: "Essen sinkt 10% langsamer", effect: (s) => s.foodDecayMod = 0.9 }
+        ];
+
+        // Erweiterte Verträge & Abos mit Vorteilen
+        const contractsCatalog = [
+            { id: "phone", name: "Smartphone-Flat", daily: 1.20, bonusText: "Melde-Streak Bonus verdoppelt sich (+0.40€ statt +0.20€)", effect: (s) => s.streakMultiplier = 2 },
+            { id: "wifi", name: "Highspeed Gigabit WLAN", daily: 1.50, bonusText: "+0.05 € / Min Grundverdienst in allen Fächern", effect: (s) => s.baseRateBonus = 0.05 },
+            { id: "netflix", name: "Netflix & Streaming", daily: 0.60, bonusText: "Schlaf-Wert sinkt in Freizeit niemals unter 20%", effect: (s) => s.minSleep = 20 },
+            { id: "spotify", name: "Spotify Music", daily: 0.40, bonusText: "+5% extra Bonus auf alle Trink-Regenerationen", effect: (s) => s.drinkBonus = 1.05 },
+            { id: "gym", name: "Fitnessstudio-Mitgliedschaft", daily: 2.00, bonusText: "Essen & Trinken verbrauchen sich insgesamt 15% langsamer", effect: (s) => s.generalDecayMod = 0.85 },
+            { id: "prime", name: "Express-Lieferdienst Abo", daily: 0.90, bonusText: "Supermarkt-Preise um 10% rabattiert", effect: (s) => s.shopDiscount = 0.9 },
+            { id: "taxadvisor", name: "Digitaler Steuerberater", daily: 3.50, bonusText: "Steuersatz sinkt von 15% auf 8%", effect: (s) => s.taxRate = 0.08 }
+        ];
 
         let timetableData = {};
         const daysCount = 5;
@@ -421,6 +463,8 @@
                 gameState = { ...gameState, ...parsed };
                 if(!gameState.streaks) gameState.streaks = {};
                 if(!gameState.payoutHistory) gameState.payoutHistory = [];
+                if(!gameState.furniture) gameState.furniture = {};
+                if(!gameState.contracts) gameState.contracts = {};
             }
             let savedTable = localStorage.getItem("schoolSimTable");
             if (savedTable) {
@@ -452,14 +496,17 @@
         window.onload = () => {
             loadGame();
             renderSchedule();
+            renderFurnitureShop();
+            renderContractsShop();
             checkAutoCurrentLesson();
 
-            // Hintergrund-Fortschritt berechnen, falls Timer lief
             if (gameState.isTimerRunning && gameState.startTimeEpoch) {
                 let nowEpoch = Date.now();
                 let diffSeconds = Math.floor((nowEpoch - gameState.startTimeEpoch) / 1000);
                 gameState.timerSeconds += diffSeconds;
-                let earnedExtra = (diffSeconds / 60) * gameState.currentRate;
+                let activeBuffs = calculateBuffs();
+                let earnedExtra = (diffSeconds / 60) * (gameState.currentRate + activeBuffs.rateBonus + activeBuffs.baseRateBonus);
+                earnedExtra += (diffSeconds / 60) * activeBuffs.passiveIncome;
                 gameState.pendingEarnings += earnedExtra;
                 gameState.totalEarnings += earnedExtra;
                 gameState.startTimeEpoch = nowEpoch;
@@ -467,13 +514,18 @@
 
             updateUI();
 
-            // Globaler Timer Loop
+            // Timer Loop
             setInterval(() => {
                 if (gameState.isTimerRunning) {
                     gameState.timerSeconds++;
-                    let earningsPerSec = gameState.currentRate / 60;
-                    gameState.pendingEarnings += earningsPerSec;
-                    gameState.totalEarnings += earningsPerSec;
+                    let buffs = calculateBuffs();
+                    let effectiveRate = gameState.currentRate > 0 ? (gameState.currentRate + buffs.rateBonus + buffs.baseRateBonus) : 0;
+                    let earningsPerSec = effectiveRate / 60;
+                    let passivePerSec = buffs.passiveIncome / 60;
+
+                    let totalSecEarn = earningsPerSec + passivePerSec;
+                    gameState.pendingEarnings += totalSecEarn;
+                    gameState.totalEarnings += totalSecEarn;
                     gameState.startTimeEpoch = Date.now();
                     updateTimerDisplay();
                     updateUI();
@@ -481,17 +533,57 @@
                 }
             }, 1000);
 
-            // Hunger / Durst / Schlaf Verbrauch
+            // Verbrauch Loop mit Buffs
             setInterval(() => {
-                gameState.food = Math.max(0, gameState.food - 0.2);
-                gameState.drink = Math.max(0, gameState.drink - 0.3);
-                gameState.sleep = Math.max(0, gameState.sleep - 0.1);
+                let buffs = calculateBuffs();
+                let decayMod = buffs.generalDecayMod;
+                gameState.food = Math.max(0, gameState.food - (0.2 * decayMod * buffs.foodDecayMod));
+                gameState.drink = Math.max(0, gameState.drink - (0.3 * decayMod * buffs.drinkDecayMod));
+                
+                let sleepVal = gameState.sleep - (0.1 * decayMod * buffs.sleepDecayMod);
+                if (buffs.minSleep > 0 && sleepVal < buffs.minSleep) sleepVal = buffs.minSleep;
+                gameState.sleep = Math.max(0, sleepVal);
+
                 updateUI();
                 saveGame();
             }, 60000);
 
             setInterval(checkAutoCurrentLesson, 30000);
         };
+
+        function calculateBuffs() {
+            let buffs = {
+                rateBonus: 0,
+                baseRateBonus: 0,
+                passiveIncome: 0,
+                sleepDecayMod: 1.0,
+                drinkDecayMod: 1.0,
+                foodDecayMod: 1.0,
+                generalDecayMod: 1.0,
+                sleepBonus: 1.0,
+                streakMultiplier: 1,
+                drinkBonus: 1.0,
+                shopDiscount: 1.0,
+                taxRate: 0.15,
+                minSleep: 0
+            };
+
+            // Möbel Effekte anwenden
+            furnitureCatalog.forEach(item => {
+                if (gameState.furniture[item.id]) {
+                    item.effect(buffs);
+                }
+            });
+
+            // Verträge Effekte anwenden
+            contractsCatalog.forEach(item => {
+                if (gameState.contracts[item.id]) {
+                    item.effect(buffs);
+                }
+            });
+
+            return buffs;
+        }
 
         function openTab(evt, tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -523,14 +615,67 @@
             }
         }
 
-        // --- TIMER & AUFGABENWECHSEL (Reset auf 0) ---
+        function renderFurnitureShop() {
+            const container = document.getElementById("furniture-shop-container");
+            container.innerHTML = "";
+            furnitureCatalog.forEach(item => {
+                let owned = gameState.furniture[item.id];
+                container.innerHTML += `<div class="shop-item">
+                    <div>
+                        <strong>${item.name}</strong> (${item.cost} € | ${item.daily} €/Tag)
+                        <div class="shop-info" style="color:var(--accent-blue);">Vorteil: ${item.bonusText}</div>
+                    </div>
+                    <button class="action-btn" ${owned ? 'disabled style="background:#30363d;color:#6e7681;"' : ''} onclick="buyFurniture('${item.id}', ${item.cost})">${owned ? 'Gekauft' : 'Kaufen'}</button>
+                </div>`;
+            });
+        }
+
+        function renderContractsShop() {
+            const container = document.getElementById("contracts-shop-container");
+            container.innerHTML = "";
+            contractsCatalog.forEach(item => {
+                let active = gameState.contracts[item.id];
+                container.innerHTML += `<div class="shop-item">
+                    <div>
+                        <strong>${item.name}</strong> (${item.daily} €/Tag)
+                        <div class="shop-info" style="color:var(--accent-blue);">Vorteil: ${item.bonusText}</div>
+                    </div>
+                    <button class="action-btn ${active ? 'danger-btn' : ''}" onclick="toggleContract('${item.id}')">${active ? 'Kündigen' : 'Abschließen'}</button>
+                </div>`;
+            });
+        }
+
+        function buyFurniture(id, cost) {
+            if (gameState.money < cost) {
+                alert("Nicht genug Guthaben!");
+                return;
+            }
+            gameState.money -= cost;
+            gameState.furniture[id] = true;
+            renderFurnitureShop();
+            updateUI();
+            saveGame();
+        }
+
+        function toggleContract(id) {
+            gameState.contracts[id] = !gameState.contracts[id];
+            renderContractsShop();
+            updateUI();
+            saveGame();
+        }
+
         function switchTask(newSubject, newRate) {
             gameState.activeLesson = newSubject;
             gameState.currentRate = newRate;
-            gameState.timerSeconds = 0; // Timer bei Aufgabenwechsel auf 0 zurücksetzen
+            gameState.timerSeconds = 0;
             gameState.startTimeEpoch = gameState.isTimerRunning ? Date.now() : null;
             document.getElementById("timer-status").innerText = newSubject.toUpperCase();
-            document.getElementById("current-rate").innerText = newRate.toFixed(2) + " €";
+            
+            let buffs = calculateBuffs();
+            let effectiveRate = newRate > 0 ? (newRate + buffs.rateBonus + buffs.baseRateBonus) : 0;
+            document.getElementById("current-rate").innerText = effectiveRate.toFixed(2) + " €";
+            document.getElementById("rate-bonus-text").innerText = (buffs.rateBonus > 0 || buffs.baseRateBonus > 0) ? `(inkl. Buffs)` : "";
+
             updateStreakDisplay();
             updateTimerDisplay();
             saveGame();
@@ -653,7 +798,8 @@
             gameState.streaks[todayKey][subjectKey]++;
             let streakCount = gameState.streaks[todayKey][subjectKey];
 
-            let bonusMoney = 0.20 * streakCount;
+            let buffs = calculateBuffs();
+            let bonusMoney = 0.20 * streakCount * buffs.streakMultiplier;
             gameState.pendingEarnings += bonusMoney;
             gameState.totalEarnings += bonusMoney;
 
@@ -668,37 +814,34 @@
             let subjectKey = (gameState.activeLesson || "allgemein").toLowerCase();
             let todayKey = new Date().toDateString();
             let streakCount = (gameState.streaks[todayKey] && gameState.streaks[todayKey][subjectKey]) ? gameState.streaks[todayKey][subjectKey] : 0;
-            let currentBonus = 0.20 * streakCount;
+            let buffs = calculateBuffs();
+            let currentBonus = 0.20 * streakCount * buffs.streakMultiplier;
 
             document.getElementById("streak-info").innerHTML = 
                 `Aktuelle Melde-Streak (${gameState.activeLesson || "Kein Fach"}): <strong>${streakCount}x</strong> (Bonus: +${currentBonus.toFixed(2)} €)`;
         }
 
-        // --- TAG BEENDEN & ABRECHNEN (STEUERN WERDEN HIER ABGEZOGEN) ---
         function endDay() {
             let gross = gameState.pendingEarnings;
+            let buffs = calculateBuffs();
             
-            // Fixkosten berechnen
+            // Fixkosten inkl Möbel & Abos
             let fixedTotal = gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
-            for (let k in gameState.activeContracts) {
-                if (gameState.activeContracts[k]) {
-                    if (k === 'phone') fixedTotal += 1.20;
-                    if (k === 'wifi') fixedTotal += 1.50;
-                    if (k === 'netflix') fixedTotal += 0.60;
-                    if (k === 'spotify') fixedTotal += 0.40;
-                }
-            }
+            furnitureCatalog.forEach(item => {
+                if (gameState.furniture[item.id]) fixedTotal += item.daily;
+            });
+            contractsCatalog.forEach(item => {
+                if (gameState.contracts[item.id]) fixedTotal += item.daily;
+            });
 
-            let taxRate = 0.15; // 15% Steuer
+            let taxRate = buffs.taxRate;
             let taxes = gross * taxRate;
             let netEarnings = gross - taxes;
 
-            // Auf Guthaben aufrechnen und Fixkosten abziehen
             gameState.money += netEarnings;
             gameState.money -= fixedTotal;
             gameState.totalTaxes += taxes;
 
-            // In Historie eintragen
             let payoutEntry = {
                 date: new Date().toLocaleTimeString() + " (" + new Date().toLocaleDateString() + ")",
                 gross: gross,
@@ -708,7 +851,6 @@
             };
             gameState.payoutHistory.unshift(payoutEntry);
 
-            // Zwischenspeicher zurücksetzen
             gameState.pendingEarnings = 0;
             gameState.timerSeconds = 0;
             gameState.isTimerRunning = false;
@@ -716,7 +858,7 @@
             updateUI();
             saveGame();
 
-            alert(`Tag beendet & abgerechnet!\n\nErarbeitetes Brutto: ${gross.toFixed(2)} €\nSteuern (15%): -${taxes.toFixed(2)} €\nNetto-Einnahme: +${netEarnings.toFixed(2)} €\nFixkosten abgezogen: -${fixedTotal.toFixed(2)} €`);
+            alert(`Tag beendet & abgerechnet!\n\nErarbeitetes Brutto: ${gross.toFixed(2)} €\nSteuern (${(taxRate*100).toFixed(0)}%): -${taxes.toFixed(2)} €\nNetto-Einnahme: +${netEarnings.toFixed(2)} €\nFixkosten & Abos abgezogen: -${fixedTotal.toFixed(2)} €`);
         }
 
         function renderPayoutHistory() {
@@ -729,20 +871,29 @@
             gameState.payoutHistory.forEach(entry => {
                 html += `<div class="log-entry">
                     <span>🕒 ${entry.date}</span>
-                    <span>Brutto: <strong>${entry.gross.toFixed(2)}€</strong> | Steuer (15%): <strong style="color:var(--danger)">-${entry.taxes.toFixed(2)}€</strong> | Netto: <strong style="color:var(--accent-green)">+${entry.net.toFixed(2)}€</strong> | Fixkosten: <strong style="color:var(--danger)">-${entry.fixed.toFixed(2)}€</strong></span>
+                    <span>Brutto: <strong>${entry.gross.toFixed(2)}€</strong> | Steuer: <strong style="color:var(--danger)">-${entry.taxes.toFixed(2)}€</strong> | Netto: <strong style="color:var(--accent-green)">+${entry.net.toFixed(2)}€</strong> | Fix: <strong style="color:var(--danger)">-${entry.fixed.toFixed(2)}€</strong></span>
                 </div>`;
             });
             container.innerHTML = html;
         }
 
-        function buyItem(type, amount, cost) {
+        function buyItem(type, amount, baseCost, extraType = null, extraAmount = 0) {
+            let buffs = calculateBuffs();
+            let cost = baseCost * buffs.shopDiscount;
             if (gameState.money < cost) {
                 alert("Nicht genug Guthaben!");
                 return;
             }
             gameState.money -= cost;
-            if (type === 'food') gameState.food = Math.min(100, gameState.food + amount);
-            else if (type === 'drink') gameState.drink = Math.min(100, gameState.drink + amount);
+            if (type === 'food') {
+                gameState.food = Math.min(100, gameState.food + amount);
+            } else if (type === 'drink') {
+                let actualDrink = amount * buffs.drinkBonus;
+                gameState.drink = Math.min(100, gameState.drink + actualDrink);
+                if (extraType === 'energy') {
+                    gameState.sleep = Math.min(100, gameState.sleep + extraAmount);
+                }
+            }
             updateUI();
             saveGame();
         }
@@ -750,12 +901,6 @@
         function setHousing(name, rent, water, electricity) {
             gameState.housing = { name, rent, water, electricity };
             document.getElementById("current-housing").innerText = name;
-            updateUI();
-            saveGame();
-        }
-
-        function toggleContract(key, cost) {
-            gameState.activeContracts[key] = !gameState.activeContracts[key];
             updateUI();
             saveGame();
         }
@@ -785,7 +930,8 @@
                 alert("Bitte gültige Stunden eingeben!");
                 return;
             }
-            let restore = Math.min(100, hours * 12.5);
+            let buffs = calculateBuffs();
+            let restore = Math.min(100, hours * 12.5 * buffs.sleepBonus);
             gameState.sleep = restore;
             updateUI();
             saveGame();
@@ -825,19 +971,22 @@
             document.getElementById("val-sleep").innerText = Math.round(gameState.sleep) + "%";
             document.getElementById("fill-sleep").style.width = gameState.sleep + "%";
 
+            // Fixkosten inkl Möbel & Verträge berechnen
             let fixedTotal = gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
-            for (let k in gameState.activeContracts) {
-                if (gameState.activeContracts[k]) {
-                    if (k === 'phone') fixedTotal += 1.20;
-                    if (k === 'wifi') fixedTotal += 1.50;
-                    if (k === 'netflix') fixedTotal += 0.60;
-                    if (k === 'spotify') fixedTotal += 0.40;
-                }
-            }
+            furnitureCatalog.forEach(item => {
+                if (gameState.furniture[item.id]) fixedTotal += item.daily;
+            });
+            contractsCatalog.forEach(item => {
+                if (gameState.contracts[item.id]) fixedTotal += item.daily;
+            });
+
             document.getElementById("dash-total-fixed").innerText = fixedTotal.toFixed(2) + " €";
             document.getElementById("loan-status").innerText = gameState.loan.toFixed(2) + " €";
             document.getElementById("stat-earnings").innerText = gameState.totalEarnings.toFixed(2) + " €";
             document.getElementById("stat-taxes").innerText = gameState.totalTaxes.toFixed(2) + " €";
+
+            let buffs = calculateBuffs();
+            document.getElementById("tax-rate-display").innerText = `(${(buffs.taxRate * 100).toFixed(0)}% aktiv)`;
 
             updateTimerDisplay();
         }
