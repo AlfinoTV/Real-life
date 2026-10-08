@@ -22,61 +22,35 @@
             margin: 0;
             padding: 20px;
         }
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        header { text-align: center; margin-bottom: 20px; }
         h1 { margin: 0; color: #fff; }
 
-        /* Tabs Navigation - SICHTBAR & KLAR */
+        /* Tabs Navigation */
         .tabs-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 25px;
-            background-color: var(--card-bg);
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
+            display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
+            margin-bottom: 25px; background-color: var(--card-bg); padding: 12px;
+            border-radius: 12px; border: 1px solid var(--border); max-width: 1200px; margin-left: auto; margin-right: auto;
         }
         .tab-btn {
-            background-color: #21262d;
-            color: var(--text-color);
-            border: 1px solid var(--border);
-            padding: 10px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
+            background-color: #21262d; color: var(--text-color); border: 1px solid var(--border);
+            padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;
         }
-        .tab-btn.active, .tab-btn:hover {
-            background-color: var(--accent-blue);
-            color: #fff;
-            border-color: var(--accent-blue);
-        }
+        .tab-btn.active, .tab-btn:hover { background-color: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
 
-        .tab-content {
-            display: none;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content { display: none; max-width: 1200px; margin: 0 auto; }
+        .tab-content.active { display: block; }
 
         .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            margin-bottom: 20px;
+            background-color: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-bottom: 20px;
         }
         h2 { font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0; color: #58a6ff; }
+
+        /* Dashboard Grid (Timer & Stats nebeneinander) */
+        .dashboard-flex {
+            display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch;
+        }
+        .dashboard-box { flex: 1; min-width: 300px; }
 
         /* Stats & Progress */
         .stat-bar-container { margin-bottom: 15px; }
@@ -87,19 +61,20 @@
         #fill-drink { background-color: var(--accent-blue); }
         #fill-sleep { background-color: var(--accent-green); }
 
-        /* Timer (Clean Design angelehnt an Vorlage) */
-        .timer-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 20px 0; }
+        /* Timer (Clean Design) */
+        .timer-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0; }
         .timer-circle {
-            width: 200px; height: 200px; border-radius: 50%;
+            width: 190px; height: 190px; border-radius: 50%;
             background: conic-gradient(var(--accent-orange) 0deg, var(--border) 0deg);
             display: flex; align-items: center; justify-content: center; position: relative;
         }
         .timer-inner {
-            width: 165px; height: 165px; background-color: var(--card-bg); border-radius: 50%;
+            width: 155px; height: 155px; background-color: var(--card-bg); border-radius: 50%;
             display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
         }
-        .timer-time { font-size: 1.8rem; font-weight: bold; color: #fff; }
-        .timer-title { font-size: 0.75rem; color: #8b949e; letter-spacing: 1px; margin-top: 4px; }
+        .timer-time { font-size: 1.7rem; font-weight: bold; color: #fff; }
+        .timer-title { font-size: 0.7rem; color: #8b949e; letter-spacing: 1px; margin-top: 2px; }
+        .timer-subtext { font-size: 0.85rem; color: var(--accent-green); margin-top: 5px; font-weight: bold; text-align: center; }
 
         /* Shop Grid */
         .grid-shop { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
@@ -114,17 +89,15 @@
         button.action-btn:hover { opacity: 0.9; }
         .money { color: var(--accent-green); font-weight: bold; }
 
-        /* 3D Room Simulation */
+        /* 3D Room */
         .scene-container {
             width: 100%; height: 250px; background: #010409; border-radius: 8px;
             perspective: 800px; display: flex; align-items: center; justify-content: center;
             overflow: hidden; border: 1px solid var(--border); margin-bottom: 15px;
         }
         .room-3d {
-            width: 180px; height: 130px; position: relative;
-            transform-style: preserve-3d;
-            transform: rotateX(-15deg) rotateY(25deg);
-            animation: rotateRoom 15s infinite linear;
+            width: 180px; height: 130px; position: relative; transform-style: preserve-3d;
+            transform: rotateX(-15deg) rotateY(25deg); animation: rotateRoom 15s infinite linear;
         }
         @keyframes rotateRoom {
             0% { transform: rotateX(-15deg) rotateY(0deg); }
@@ -140,17 +113,30 @@
 
         /* Stundenplan */
         table.schedule-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
-        table.schedule-table th, table.schedule-table td { border: 1px solid var(--border); padding: 8px; text-align: center; }
+        table.schedule-table th, table.schedule-table td { border: 1px solid var(--border); padding: 8px; text-align: center; vertical-align: middle; }
         table.schedule-table th { background-color: #21262d; }
-        .lesson-btn { background: #21262d; border: 1px solid var(--border); color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
-        .lesson-btn:hover { background: var(--accent-blue); }
+        .schedule-cell { cursor: pointer; padding: 6px; border-radius: 4px; transition: 0.2s; min-height: 40px; }
+        .schedule-cell:hover { background-color: #21262d; }
+        .cell-subject { font-weight: bold; color: var(--accent-blue); }
+        .cell-details { font-size: 0.7rem; color: #8b949e; }
+
+        /* Modal Popup */
+        .modal {
+            display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background-color: var(--card-bg); padding: 20px; border-radius: 12px;
+            border: 1px solid var(--border); width: 300px;
+        }
+        .modal-content input { width: 100%; padding: 8px; margin: 8px 0 15px 0; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 4px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
     <header>
         <h1>School Life & Economy Simulator</h1>
-        <p>Dein interaktiver Schul- und Lebens-Simulator mit echtem Budget & 3D-Wohnung</p>
+        <p>Dein interaktiver Schul- und Lebens-Simulator mit Stundenplan & Live-Timer</p>
     </header>
 
     <!-- TABS NAVIGATION MENÜ -->
@@ -164,51 +150,66 @@
         <button class="tab-btn" onclick="openTab(event, 'tab-stats')">Statistik</button>
     </div>
 
-    <!-- TAB 1: DASHBOARD -->
+    <!-- TAB 1: DASHBOARD (Timer & Stats nebeneinander) -->
     <div id="tab-dashboard" class="tab-content active">
-        <div class="card">
-            <h2>Finanz- & Lebensübersicht</h2>
-            <p>Guthaben (Netto): <span id="money-display" class="money">50.00 €</span></p>
-            <p>Heutige Steuern: <span id="tax-display">0.00 €</span></p>
-            <button class="action-btn" onclick="endDay()" style="width:100%; margin-bottom: 20px;">Tag beenden & Auszahlen</button>
-            
-            <div class="stat-bar-container">
-                <div class="stat-label"><span>Essen</span><span id="val-food">80%</span></div>
-                <div class="progress-bar"><div id="fill-food" class="progress-fill" style="width: 80%;"></div></div>
-            </div>
-            <div class="stat-bar-container">
-                <div class="stat-label"><span>Trinken</span><span id="val-drink">80%</span></div>
-                <div class="progress-bar"><div id="fill-drink" class="progress-fill" style="width: 80%;"></div></div>
-            </div>
-            <div class="stat-bar-container">
-                <div class="stat-label"><span>Schlaf / Energie</span><span id="val-sleep">80%</span></div>
-                <div class="progress-bar"><div id="fill-sleep" class="progress-fill" style="width: 80%;"></div></div>
-            </div>
-        </div>
-
-        <div class="card" style="text-align: center;">
-            <h2>Aktiver Unterrichts-Timer</h2>
-            <div class="timer-wrapper">
-                <div class="timer-circle" id="timer-circle">
-                    <div class="timer-inner">
-                        <div class="timer-time" id="timer-clock">00:00</div>
-                        <div class="timer-title" id="timer-status">BEREIT</div>
+        <div class="dashboard-flex">
+            <!-- Linke Box: Timer -->
+            <div class="card dashboard-box" style="text-align: center;">
+                <h2>Live-Timer & Verdienst</h2>
+                <div class="timer-wrapper">
+                    <div class="timer-circle" id="timer-circle">
+                        <div class="timer-inner">
+                            <div class="timer-time" id="timer-clock">00:00</div>
+                            <div class="timer-title" id="timer-status">BEREIT</div>
+                        </div>
                     </div>
                 </div>
+                <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Minute</div>
+                <div class="timer-subtext" style="color: #fff;">Bereits verdient: <span id="session-earned" class="money">0.00 €</span></div>
+                <p id="timer-info" style="font-size: 0.8rem; color: #8b949e; margin-top: 10px;">Klicke im Stundenplan auf eine Stunde, um zu starten.</p>
             </div>
-            <p id="timer-info">Wähle im Stundenplan eine Stunde aus und klicke "Da sein", um Geld zu verdienen.</p>
+
+            <!-- Rechte Box: Stats & Finanzen -->
+            <div class="card dashboard-box">
+                <h2>Finanzen & Lebensstatus</h2>
+                <p>Guthaben (Netto): <span id="money-display" class="money">50.00 €</span></p>
+                <p>Heutige Steuern: <span id="tax-display">0.00 €</span></p>
+                <button class="action-btn" onclick="endDay()" style="width:100%; margin-bottom: 20px;">Tag beenden & Auszahlen</button>
+                
+                <div class="stat-bar-container">
+                    <div class="stat-label"><span>Essen</span><span id="val-food">80%</span></div>
+                    <div class="progress-bar"><div id="fill-food" class="progress-fill" style="width: 80%;"></div></div>
+                </div>
+                <div class="stat-bar-container">
+                    <div class="stat-label"><span>Trinken</span><span id="val-drink">80%</span></div>
+                    <div class="progress-bar"><div id="fill-drink" class="progress-fill" style="width: 80%;"></div></div>
+                </div>
+                <div class="stat-bar-container">
+                    <div class="stat-label"><span>Schlaf / Energie</span><span id="val-sleep">80%</span></div>
+                    <div class="progress-bar"><div id="fill-sleep" class="progress-fill" style="width: 80%;"></div></div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- TAB 2: STUNDENPLAN -->
     <div id="tab-schedule" class="tab-content">
         <div class="card">
-            <h2>Stundenplan (Schulmanager Stil)</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 style="margin:0; border:none;">Stundenplan & Aktivitäten</h2>
+                <div>
+                    <label style="font-size: 0.85rem; cursor: pointer; background: #21262d; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);">
+                        <input type="checkbox" id="edit-mode-toggle" onchange="toggleEditMode()"> Bearbeitungsmodus
+                    </label>
+                </div>
+            </div>
+            <p style="font-size: 0.85rem; color: #8b949e;">Klicke im normalen Modus auf eine Stunde, um sie zu starten. Aktiviere den Bearbeitungsmodus, um Fächer, Räume und Lehrer zu ändern (oder Freistunden einzutragen).</p>
+            
             <div style="overflow-x: auto;">
                 <table class="schedule-table">
                     <thead>
                         <tr>
-                            <th>Stunde</th>
+                            <th>Std</th>
                             <th>Montag</th>
                             <th>Dienstag</th>
                             <th>Mittwoch</th>
@@ -218,6 +219,16 @@
                     </thead>
                     <tbody id="schedule-body"></tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Eigene Aktivität eintragen -->
+        <div class="card">
+            <h2>Andere Aktivität starten</h2>
+            <p style="font-size: 0.85rem; color: #8b949e;">Machst du gerade etwas anderes (z.B. lernen, arbeiten, zocken)? Trage es hier ein und verdiene Geld:</p>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="custom-activity-input" placeholder="z.B. Programmieren, Zimmer aufräumen..." style="flex: 1; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
+                <button class="action-btn" onclick="startCustomActivity()">Aktivität starten</button>
             </div>
         </div>
     </div>
@@ -311,6 +322,23 @@
         </div>
     </div>
 
+    <!-- MODAL FÜR BEARBEITUNG -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Stunde bearbeiten</h2>
+            <label>Fach (oder "Freistunde"):</label>
+            <input type="text" id="modal-subject" placeholder="z.B. Mathematik oder Freistunde">
+            <label>Raum:</label>
+            <input type="text" id="modal-room" placeholder="z.B. 1.01">
+            <label>Lehrer:</label>
+            <input type="text" id="modal-teacher" placeholder="z.B. Müller">
+            <div style="display: flex; gap: 10px;">
+                <button class="action-btn" onclick="saveLessonEdit()" style="flex:1;">Speichern</button>
+                <button class="action-btn" onclick="closeModal()" style="flex:1; background:var(--danger);">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let gameState = {
             money: 50.00,
@@ -326,21 +354,44 @@
             activeContracts: { phone: false, wifi: false, netflix: false, spotify: false, insurance: false },
             activeLesson: null,
             timerSeconds: 0,
-            timerInterval: null
+            timerInterval: null,
+            editMode: false,
+            currentEditCoords: { hour: null, day: null }
         };
 
-        const timetable = {
-            1: ["PH", "PH", "Wu", "GEO", "D1"],
-            2: ["m1", "PH", "Wu", "GEO", "D1"],
-            3: ["PH", "D1", "gk3", "m1", "rel1"],
-            4: ["PH", "D1", "gk3", "m1", "rel1"],
-            5: ["-", "bk2", "e1", "bio2", "bio2"],
-            6: ["-", "bk2", "e1", "D1", "bio2"],
-            7: ["-", "GEO", "lth", "PH", "GEO"],
-            8: ["-", "GEO", "lth", "e1", "GEO"],
-            9: ["-", "-", "s2", "g3", "-"],
-            10: ["-", "-", "s2", "g3", "-"]
+        // Stundenplan-Datenstruktur: [Hour][Day] = { subject, room, teacher }
+        let timetableData = {};
+        const daysCount = 5;
+        const hoursCount = 10;
+
+        // Initialisiere mit Beispieldaten
+        const sampleInit = {
+            1: [["PH","PH1","Wu"], ["PH","PH1","Wu"], ["Wu","1.01","Mü"], ["GEO","GEO","Kl"], ["D1","1.01","Mü"]],
+            2: [["m1","1.04","Ga"], ["PH","PH1","Wu"], ["Wu","1.01","Mü"], ["GEO","GEO","Kl"], ["D1","1.01","Mü"]],
+            3: [["PH","PH1","Wu"], ["D1","1.01","Mü"], ["gk3","1.01","Kl"], ["m1","1.04","Ga"], ["rel1","1.01","Im"]],
+            4: [["PH","PH1","Wu"], ["D1","1.01","Mü"], ["gk3","1.01","Kl"], ["m1","1.04","Ga"], ["rel1","1.01","Im"]],
+            5: [["Freistunde","-","-"], ["bk2","BK 3","Mai"], ["e1","1.01","Be"], ["bio2","BIO 2","Mg"], ["bio2","NWT","-"]],
+            6: [["Freistunde","-","-"], ["bk2","BK 3","Mai"], ["e1","1.01","Be"], ["D1","1.01","Mü"], ["bio2","NWT","-"]],
+            7: [["Freistunde","-","-"], ["GEO","GEO","Kl"], ["lth","SH","Mü"], ["PH","PH1","Wu"], ["GEO","GEO","Kl"]],
+            8: [["Freistunde","-","-"], ["GEO","GEO","Kl"], ["lth","SH","Mü"], ["e1","1.01","Be"], ["GEO","GEO","Kl"]],
+            9: [["Freistunde","-","-"], ["Freistunde","-","-"], ["s2","SP 2","Pi"], ["g3","1.03","Hö"], ["Freistunde","-","-"]],
+            10: [["Freistunde","-","-"], ["Freistunde","-","-"], ["s2","SP 2","Pi"], ["g3","1.03","Hö"], ["Freistunde","-","-"]]
         };
+
+        for(let h=1; h<=hoursCount; h++) {
+            timetableData[h] = {};
+            for(let d=0; d<daysCount; d++) {
+                if(sampleInit[h] && sampleInit[h][d]) {
+                    timetableData[h][d] = {
+                        subject: sampleInit[h][d][0],
+                        room: sampleInit[h][d][1],
+                        teacher: sampleInit[h][d][2]
+                    };
+                } else {
+                    timetableData[h][d] = { subject: "Freistunde", room: "-", teacher: "-" };
+                }
+            }
+        }
 
         function openTab(evt, tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -349,45 +400,92 @@
             evt.currentTarget.classList.add('active');
         }
 
-        function initSchedule() {
+        function toggleEditMode() {
+            gameState.editMode = document.getElementById("edit-mode-toggle").checked;
+            renderSchedule();
+        }
+
+        function renderSchedule() {
             const tbody = document.getElementById("schedule-body");
-            for (let hour = 1; hour <= 10; hour++) {
+            tbody.innerHTML = "";
+            for (let hour = 1; hour <= hoursCount; hour++) {
                 let row = `<tr><td><strong>${hour}</strong></td>`;
-                for (let d = 0; d < 5; d++) {
-                    let subject = timetable[hour][d];
-                    if (subject !== "-") {
-                        row += `<td>${subject}<br><button class="lesson-btn" onclick="startLesson('${subject}')">Da sein</button></td>`;
-                    } else {
-                        row += `<td>-</td>`;
-                    }
+                for (let d = 0; d < daysCount; d++) {
+                    let cellData = timetableData[hour][d];
+                    row += `<td class="schedule-cell" onclick="handleCellClick(${hour}, ${d})">
+                        <div class="cell-subject">${cellData.subject}</div>
+                        <div class="cell-details">${cellData.room} | ${cellData.teacher}</div>
+                    </td>`;
                 }
                 row += `</tr>`;
                 tbody.innerHTML += row;
             }
         }
 
-        function startLesson(subject) {
+        function handleCellClick(hour, day) {
+            if (gameState.editMode) {
+                // Öffne Bearbeitungs-Modal
+                gameState.currentEditCoords = { hour, day };
+                let cellData = timetableData[hour][day];
+                document.getElementById("modal-subject").value = cellData.subject;
+                document.getElementById("modal-room").value = cellData.room;
+                document.getElementById("modal-teacher").value = cellData.teacher;
+                document.getElementById("edit-modal").style.display = "flex";
+            } else {
+                // Starte Timer für diese Stunde
+                let cellData = timetableData[hour][day];
+                if(cellData.subject === "Freistunde" || cellData.subject === "-") {
+                    alert("Das ist eine Freistunde! Hierfür gibt es keinen Unterrichts-Timer.");
+                    return;
+                }
+                startTimer(cellData.subject);
+            }
+        }
+
+        function saveLessonEdit() {
+            let { hour, day } = gameState.currentEditCoords;
+            timetableData[hour][day] = {
+                subject: document.getElementById("modal-subject").value || "Freistunde",
+                room: document.getElementById("modal-room").value || "-",
+                teacher: document.getElementById("modal-teacher").value || "-"
+            };
+            closeModal();
+            renderSchedule();
+        }
+
+        function closeModal() {
+            document.getElementById("edit-modal").style.display = "none";
+        }
+
+        function startTimer(name) {
             if (gameState.activeLesson) {
-                alert("Es läuft bereits eine Stunde!");
+                alert("Es läuft bereits ein Timer!");
                 return;
             }
-            gameState.activeLesson = subject;
-            gameState.timerSeconds = 45 * 60;
-            document.getElementById("timer-status").innerText = subject.toUpperCase() + " LÄUFT";
+            gameState.activeLesson = name;
+            gameState.timerSeconds = 0;
+            document.getElementById("timer-status").innerText = name.toUpperCase() + " LÄUFT";
+            document.getElementById("timer-info").innerText = "Timer läuft hoch...";
             
             if(gameState.timerInterval) clearInterval(gameState.timerInterval);
             gameState.timerInterval = setInterval(() => {
-                if (gameState.timerSeconds > 0) {
-                    gameState.timerSeconds--;
-                    updateTimerDisplay();
-                    gameState.pendingEarnings += 0.05;
-                    gameState.totalEarnings += 0.05;
-                } else {
-                    clearInterval(gameState.timerInterval);
-                    gameState.activeLesson = null;
-                    alert("Stunde beendet! Verdienst gutgeschrieben.");
-                }
+                gameState.timerSeconds++;
+                updateTimerDisplay();
+                
+                let earningsPerSec = 0.50 / 60; // 0.50 € pro Minute
+                gameState.pendingEarnings += earningsPerSec;
+                gameState.totalEarnings += earningsPerSec;
+                document.getElementById("session-earned").innerText = gameState.pendingEarnings.toFixed(2) + " €";
             }, 1000);
+        }
+
+        function startCustomActivity() {
+            let activityName = document.getElementById("custom-activity-input").value.trim();
+            if(!activityName) {
+                alert("Bitte gib eine Aktivität ein!");
+                return;
+            }
+            startTimer(activityName);
         }
 
         function updateTimerDisplay() {
@@ -447,6 +545,12 @@
         }
 
         function endDay() {
+            if(gameState.activeLesson) {
+                clearInterval(gameState.timerInterval);
+                gameState.activeLesson = null;
+                document.getElementById("timer-status").innerText = "BEREIT";
+            }
+
             let fixed = getFixedCosts();
             let tax = gameState.pendingEarnings * 0.20;
             let net = gameState.pendingEarnings - tax - fixed;
@@ -490,10 +594,11 @@
             document.getElementById("stat-earnings").innerText = gameState.totalEarnings.toFixed(2) + " €";
             document.getElementById("stat-taxes").innerText = gameState.totalTaxes.toFixed(2) + " €";
             document.getElementById("stat-fixed").innerText = getFixedCosts().toFixed(2) + " €";
+            document.getElementById("session-earned").innerText = gameState.pendingEarnings.toFixed(2) + " €";
         }
 
         window.onload = () => {
-            initSchedule();
+            renderSchedule();
             updateUI();
         };
     </script>
