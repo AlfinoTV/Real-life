@@ -83,6 +83,13 @@
 
         .timer-controls { display: flex; gap: 8px; margin-top: 15px; justify-content: center; flex-wrap: wrap; }
 
+        .active-buffs-box {
+            background: #21262d; border: 1px solid var(--border); border-radius: 8px;
+            padding: 8px 12px; margin-top: 12px; font-size: 0.8rem; text-align: left;
+        }
+        .active-buffs-box strong { color: var(--accent-blue); }
+        .buff-tag { display: inline-block; background: #161b22; border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; margin: 2px; color: var(--accent-green); font-weight: bold; }
+
         .grid-shop { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
         .shop-item {
             display: flex; justify-content: space-between; align-items: center;
@@ -192,6 +199,12 @@
                 <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Min <span id="rate-bonus-text" style="font-size:0.75rem; color:var(--accent-blue);"></span></div>
                 <div class="timer-subtext" style="color: var(--accent-orange);">Noch nicht ausgezahlt: <span id="session-earned">0.00 €</span></div>
                 
+                <!-- Aktive Boni Box -->
+                <div class="active-buffs-box">
+                    <strong>Aktive Boni:</strong>
+                    <div id="active-buffs-list" style="margin-top: 4px;">Keine aktiven Boni</div>
+                </div>
+
                 <!-- Streak & Melden Info -->
                 <div id="streak-info" style="font-size: 0.8rem; color: var(--accent-orange); margin-top: 6px;">
                     Aktuelle Melde-Streak (dieses Fach): <strong>0x</strong> (Bonus: +0.00 €)
@@ -314,15 +327,11 @@
     <div id="tab-supermarket" class="tab-content">
         <div class="card">
             <h2>Getränke- & Energy-Auswahl</h2>
-            <div class="grid-shop" id="supermarket-drinks-container">
-                <!-- Per JS gerendert für automatische Preisanpassung (Durchgestrichen) -->
-            </div>
+            <div class="grid-shop" id="supermarket-drinks-container"></div>
         </div>
         <div class="card">
             <h2>Essen & Snacks Auswahl</h2>
-            <div class="grid-shop" id="supermarket-food-container">
-                <!-- Per JS gerendert für automatische Preisanpassung (Durchgestrichen) -->
-            </div>
+            <div class="grid-shop" id="supermarket-food-container"></div>
         </div>
     </div>
 
@@ -436,22 +445,22 @@
         };
 
         const furnitureCatalog = [
-            { id: "desk", name: "Ergonomischer Schreibtisch", cost: 120, daily: 0.5, bonusText: "+0.10 € / Min Verdienst-Boost", effect: (s) => s.rateBonus = 0.10 },
-            { id: "chair", name: "Gaming-Stuhl", cost: 180, daily: 0.8, bonusText: "Schlaf sinkt 20% langsamer", effect: (s) => s.sleepDecayMod = 0.8 },
-            { id: "pc", name: "High-End Gaming PC", cost: 650, daily: 2.5, bonusText: "Generiert automatisch +0.20 €/Min passives Einkommen", effect: (s) => s.passiveIncome = 0.20 },
-            { id: "coffeemachine", name: "Kaffeemaschine", cost: 95, daily: 0.4, bonusText: "Trinken sinkt 25% langsamer", effect: (s) => s.drinkDecayMod = 0.75 },
-            { id: "bed", name: "Luxus-Boxspringbett", cost: 400, daily: 1.5, bonusText: "Echter Schlaf gibt 50% mehr Energie-Regeneration", effect: (s) => s.sleepBonus = 1.5 },
-            { id: "plants", name: "Zimmerpflanzen", cost: 40, daily: 0.1, bonusText: "Essen sinkt 10% langsamer", effect: (s) => s.foodDecayMod = 0.9 }
+            { id: "desk", name: "Ergonomischer Schreibtisch", cost: 120, daily: 0.5, bonusText: "Verdienst-Boost: +0.10 €/Min", effect: (s) => s.rateBonus = 0.10 },
+            { id: "chair", name: "Gaming-Stuhl", cost: 180, daily: 0.8, bonusText: "Schlaf-Verbrauch: -20%", effect: (s) => s.sleepDecayMod = 0.8 },
+            { id: "pc", name: "High-End Gaming PC", cost: 650, daily: 2.5, bonusText: "Passives Einkommen: +0.20 €/Min", effect: (s) => s.passiveIncome = 0.20 },
+            { id: "coffeemachine", name: "Kaffeemaschine", cost: 95, daily: 0.4, bonusText: "Trink-Verbrauch: -25%", effect: (s) => s.drinkDecayMod = 0.75 },
+            { id: "bed", name: "Luxus-Boxspringbett", cost: 400, daily: 1.5, bonusText: "Schlaf-Regeneration: +50%", effect: (s) => s.sleepBonus = 1.5 },
+            { id: "plants", name: "Zimmerpflanzen", cost: 40, daily: 0.1, bonusText: "Essen-Verbrauch: -10%", effect: (s) => s.foodDecayMod = 0.9 }
         ];
 
         const contractsCatalog = [
-            { id: "phone", name: "Smartphone-Flat", daily: 1.20, bonusText: "Melde-Streak Bonus verdoppelt sich", effect: (s) => s.streakMultiplier = 2 },
-            { id: "wifi", name: "Highspeed Gigabit WLAN", daily: 1.50, bonusText: "+0.05 € / Min Grundverdienst in allen Fächern", effect: (s) => s.baseRateBonus = 0.05 },
-            { id: "netflix", name: "Netflix & Streaming", daily: 0.60, bonusText: "Schlaf-Wert sinkt in Freizeit niemals unter 20%", effect: (s) => s.minSleep = 20 },
-            { id: "spotify", name: "Spotify Music", daily: 0.40, bonusText: "+5% extra Bonus auf Trink-Regenerationen", effect: (s) => s.drinkBonus = 1.05 },
-            { id: "gym", name: "Fitnessstudio-Mitgliedschaft", daily: 2.00, bonusText: "Essen & Trinken verbrauchen sich 15% langsamer", effect: (s) => s.generalDecayMod = 0.85 },
-            { id: "prime", name: "Express-Lieferdienst Abo", daily: 0.90, bonusText: "Supermarkt-Preise um 10% rabattiert", effect: (s) => s.shopDiscount = 0.9 },
-            { id: "taxadvisor", name: "Digitaler Steuerberater", daily: 3.50, bonusText: "Steuersatz sinkt von 15% auf 8%", effect: (s) => s.taxRate = 0.08 }
+            { id: "phone", name: "Smartphone-Flat", daily: 1.20, bonusText: "Melde-Streak Multiplikator: x2", effect: (s) => s.streakMultiplier = 2 },
+            { id: "wifi", name: "Highspeed Gigabit WLAN", daily: 1.50, bonusText: "Grundverdienst: +0.05 €/Min", effect: (s) => s.baseRateBonus = 0.05 },
+            { id: "netflix", name: "Netflix & Streaming", daily: 0.60, bonusText: "Min. Schlaf in Freizeit: 20%", effect: (s) => s.minSleep = 20 },
+            { id: "spotify", name: "Spotify Music", daily: 0.40, bonusText: "Trink-Regeneration: +5%", effect: (s) => s.drinkBonus = 1.05 },
+            { id: "gym", name: "Fitnessstudio-Mitgliedschaft", daily: 2.00, bonusText: "Allg. Verbrauch: -15%", effect: (s) => s.generalDecayMod = 0.85 },
+            { id: "prime", name: "Express-Lieferdienst Abo", daily: 0.90, bonusText: "Supermarkt-Rabatt: -10%", effect: (s) => s.shopDiscount = 0.9 },
+            { id: "taxadvisor", name: "Digitaler Steuerberater", daily: 3.50, bonusText: "Steuersatz: 8% (statt 15%)", effect: (s) => s.taxRate = 0.08 }
         ];
 
         const supermarketDrinks = [
@@ -638,12 +647,10 @@
             }
         }
 
-        // --- SUPERMARKT RENDER MIT DURCHGESTRICHENEN PREISEN ---
         function renderSupermarket() {
             let buffs = calculateBuffs();
             let hasDiscount = buffs.shopDiscount < 1.0;
 
-            // Drinks
             const drinksContainer = document.getElementById("supermarket-drinks-container");
             drinksContainer.innerHTML = "";
             supermarketDrinks.forEach(item => {
@@ -668,7 +675,6 @@
                     </div>`;
             });
 
-            // Food
             const foodContainer = document.getElementById("supermarket-food-container");
             foodContainer.innerHTML = "";
             supermarketFood.forEach(item => {
@@ -828,7 +834,7 @@
                 container.innerHTML += `<div class="shop-item">
                     <div>
                         <strong>${item.name}</strong> (${item.cost} € | ${item.daily} €/Tag)
-                        <div class="shop-info" style="color:var(--accent-blue);">Vorteil: ${item.bonusText}</div>
+                        <div class="shop-info" style="color:var(--accent-blue);">Vorteil: +${item.bonusText}</div>
                     </div>
                     <button class="action-btn" ${owned ? 'disabled style="background:#30363d;color:#6e7681;"' : ''} onclick="buyFurniture('${item.id}', ${item.cost})">${owned ? 'Gekauft' : 'Kaufen'}</button>
                 </div>`;
@@ -843,7 +849,7 @@
                 container.innerHTML += `<div class="shop-item">
                     <div>
                         <strong>${item.name}</strong> (${item.daily} €/Tag)
-                        <div class="shop-info" style="color:var(--accent-blue);">Vorteil: ${item.bonusText}</div>
+                        <div class="shop-info" style="color:var(--accent-blue);">Vorteil: +${item.bonusText}</div>
                     </div>
                     <button class="action-btn ${active ? 'danger-btn' : ''}" onclick="toggleContract('${item.id}')">${active ? 'Kündigen' : 'Abschließen'}</button>
                 </div>`;
@@ -862,7 +868,7 @@
         function toggleContract(id) {
             gameState.contracts[id] = !gameState.contracts[id];
             renderContractsShop();
-            renderSupermarket(); // Preisanzeige im Supermarkt sofort aktualisieren!
+            renderSupermarket();
             updateUI();
             saveGame();
         }
@@ -1171,6 +1177,21 @@
 
             let buffs = calculateBuffs();
             document.getElementById("tax-rate-display").innerText = `(${(buffs.taxRate * 100).toFixed(0)}% aktiv)`;
+
+            // Dynamische aktive Boni anzeigen mit + und den Werten
+            let activeBuffsHTML = "";
+            let hasAnyBuff = false;
+
+            if (buffs.rateBonus > 0) { activeBuffsHTML += `<span class="buff-tag">+${buffs.rateBonus.toFixed(2)} €/Min Verdienst-Boost</span>`; hasAnyBuff = true; }
+            if (buffs.baseRateBonus > 0) { activeBuffsHTML += `<span class="buff-tag">+${buffs.baseRateBonus.toFixed(2)} €/Min Grundverdienst</span>`; hasAnyBuff = true; }
+            if (buffs.passiveIncome > 0) { activeBuffsHTML += `<span class="buff-tag">+${buffs.passiveIncome.toFixed(2)} €/Min Passiv</span>`; hasAnyBuff = true; }
+            if (buffs.drinkBonus > 1.0) { activeBuffsHTML += `<span class="buff-tag">+${Math.round((buffs.drinkBonus - 1) * 100)}% Trink-Regeneration</span>`; hasAnyBuff = true; }
+            if (buffs.sleepBonus > 1.0) { activeBuffsHTML += `<span class="buff-tag">+${Math.round((buffs.sleepBonus - 1) * 100)}% Schlaf-Regeneration</span>`; hasAnyBuff = true; }
+            if (buffs.streakMultiplier > 1) { activeBuffsHTML += `<span class="buff-tag">+${buffs.streakMultiplier}x Melde-Multiplikator</span>`; hasAnyBuff = true; }
+            if (buffs.shopDiscount < 1.0) { activeBuffsHTML += `<span class="buff-tag">-${Math.round((1 - buffs.shopDiscount) * 100)}% Supermarkt-Rabatt</span>`; hasAnyBuff = true; }
+            if (buffs.taxRate < 0.15) { activeBuffsHTML += `<span class="buff-tag">-${Math.round((0.15 - buffs.taxRate) * 100)}% Steuersatz-Rabatt</span>`; hasAnyBuff = true; }
+
+            document.getElementById("active-buffs-list").innerHTML = hasAnyBuff ? activeBuffsHTML : "Keine aktiven Boni";
 
             updateTimerDisplay();
         }
