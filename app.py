@@ -1,21 +1,19 @@
+import time
 import streamlit as st
 
 st.set_page_config(
     page_title="School Life & Economy Simulator", page_icon="🏫", layout="wide"
 )
 
-# --- EXaktes HTML/CSS Design von der Original-Version ---
+# --- EXaktes HTML/CSS Design ---
 st.markdown(
     """
     <style>
-    /* Grundlegendes Layout & Dark Mode */
     .stApp {
         background-color: #0f172a;
         color: #f8fafc;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    
-    /* Sidebar Styling */
     section[data-testid="stSidebar"] {
         background-color: #1e1b4b;
         border-right: 1px solid #312e81;
@@ -23,24 +21,30 @@ st.markdown(
     section[data-testid="stSidebar"] * {
         color: #f8fafc !important;
     }
-
-    /* Cards / Boxen */
     .custom-card {
         background-color: #1e293b;
         border: 1px solid #334155;
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
-
-    /* Überschriften */
+    .clock-display {
+        font-family: monospace;
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #38bdf8;
+        background: #0f172a;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+        text-align: center;
+        margin-bottom: 20px;
+    }
     h1, h2, h3, h4 {
         color: #f8fafc !important;
         font-weight: 600;
     }
-
-    /* Buttons anpassen */
     div.stButton > button {
         background-color: #3b82f6;
         color: white;
@@ -54,25 +58,6 @@ st.markdown(
     div.stButton > button:hover {
         background-color: #2563eb;
         color: white;
-    }
-    
-    /* Tabs Styling */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background-color: #1e293b;
-        padding: 6px;
-        border-radius: 12px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        height: 40px;
-        background-color: transparent;
-        border-radius: 8px;
-        color: #94a3b8;
-        font-weight: 600;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #3b82f6 !important;
-        color: white !important;
     }
     </style>
 """,
@@ -89,12 +74,19 @@ if "money" not in st.session_state:
   st.session_state.sleep = 80.0
   st.session_state.loan = 0.0
   st.session_state.housing = {"name": "Keine", "rent": 0.0}
+
+  # Erweiterte Verträge
   st.session_state.contracts = {
-      "Handy": {"active": False, "cost": 1.2},
-      "WLAN": {"active": False, "cost": 1.5},
+      "Handyvertrag": {"active": False, "cost": 1.2},
+      "WLAN / Glasfaser": {"active": False, "cost": 1.5},
       "Netflix": {"active": False, "cost": 0.6},
       "Spotify": {"active": False, "cost": 0.4},
+      "Amazon Prime": {"active": False, "cost": 0.5},
+      "Disney+": {"active": False, "cost": 0.5},
+      "Gym / Fitnessstudio": {"active": False, "cost": 1.5},
+      "Cloud-Storage (2TB)": {"active": False, "cost": 0.3},
   }
+
   st.session_state.active_lesson = "Freistunde"
   st.session_state.current_rate = 0.0
 
@@ -135,7 +127,14 @@ tab_dash, tab_schedule, tab_shop, tab_housing, tab_bank, tab_contracts = st.tabs
 
 # --- TAB 1: DASHBOARD ---
 with tab_dash:
-  st.markdown("### ⏱️ Live-Timer & Aktionen")
+  st.markdown("### ⏱️ Live-Timer & Dashboard")
+
+  # Cleane Live-Uhr im UI
+  current_time_str = time.strftime("%H:%M:%S")
+  st.markdown(
+      f'<div class="clock-display">🕒 System-Zeit: {current_time_str}</div>',
+      unsafe_allow_html=True,
+  )
 
   col1, col2 = st.columns(2, gap="large")
 
@@ -143,7 +142,7 @@ with tab_dash:
     st.markdown(
         f"""
         <div class="custom-card">
-            <h4>Aktive Aktivität: <span style="color: #60a5fa;">{st.session_state.active_lesson}</span></h4>
+            <h4>Aktive Aktivität: <span style="color: #38bdf8;">{st.session_state.active_lesson}</span></h4>
             <p style="font-size: 1.1rem; margin-top: 10px;">Verdienst-Rate: <b>{st.session_state.current_rate:.2f} € / Min</b></p>
             <hr style="border-color: #334155;">
             <p style="font-size: 1.2rem;">Bereits verdient: <b>{st.session_state.pending_earnings:.2f} €</b></p>
@@ -169,12 +168,7 @@ with tab_dash:
         st.rerun()
 
   with col2:
-    st.markdown(
-        """
-        <div class="custom-card">
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div class="custom-card">', unsafe_allow_html=True)
     st.subheader("💤 Schlaf eintragen")
     sleep_hours = st.number_input(
         "Schlaf in Stunden:", min_value=1.0, max_value=16.0, value=8.0, step=0.5
@@ -221,6 +215,8 @@ with tab_schedule:
       {"name": "Physik (LK)", "rate": 0.60},
       {"name": "Informatik", "rate": 0.55},
       {"name": "Geschichte", "rate": 0.40},
+      {"name": "Chemie", "rate": 0.50},
+      {"name": "Kunst", "rate": 0.35},
       {"name": "Freistunde", "rate": 0.00},
       {"name": "Eigenes Projekt (Zocken/Lernen)", "rate": 0.50},
   ]
@@ -234,64 +230,79 @@ with tab_schedule:
         st.success(f'Gewählt: {f["name"]}')
         st.rerun()
 
-# --- TAB 3: SUPERMARKT ---
+# --- TAB 3: SUPERMARKT (ERWEITERT) ---
 with tab_shop:
-  st.subheader("🛒 Supermarkt")
+  st.subheader("🛒 Supermarkt — Großes Sortiment")
   col_drink, col_food = st.columns(2)
 
   with col_drink:
-    st.markdown("#### 🥤 Getränke")
-    if st.button("Red Bull (2.50 €) — +25% Trinken"):
-      if st.session_state.money >= 2.5:
-        st.session_state.money -= 2.5
-        st.session_state.drink = min(100.0, st.session_state.drink + 25)
-        st.success("Red Bull gekauft!")
-        st.rerun()
-      else:
-        st.error("Nicht genug Geld!")
-
-    if st.button("Club Mate (1.80 €) — +20% Trinken"):
-      if st.session_state.money >= 1.8:
-        st.session_state.money -= 1.8
-        st.session_state.drink = min(100.0, st.session_state.drink + 20)
-        st.success("Club Mate gekauft!")
-        st.rerun()
-      else:
-        st.error("Nicht genug Geld!")
+    st.markdown("#### 🥤 Getränke & Energy")
+    getränke = [
+        {"name": "Red Bull", "price": 2.50, "val": 25},
+        {"name": "Club Mate", "price": 1.80, "val": 20},
+        {"name": "Monster Energy", "price": 2.20, "val": 30},
+        {"name": "Wasser (0.5L)", "price": 0.80, "val": 15},
+        {"name": "Eistee", "price": 1.50, "val": 18},
+        {"name": "Kaffee to Go", "price": 2.80, "val": 22},
+    ]
+    for idx, item in enumerate(getränke):
+      if st.button(
+          f"{item['name']} ({item['price']:.2f} €) — +{item['val']}% Trinken",
+          key=f"dr_{idx}",
+      ):
+        if st.session_state.money >= item["price"]:
+          st.session_state.money -= item["price"]
+          st.session_state.drink = min(
+              100.0, st.session_state.drink + item["val"]
+          )
+          st.success(f"{item['name']} gekauft!")
+          st.rerun()
+        else:
+          st.error("Nicht genug Geld!")
 
   with col_food:
-    st.markdown("#### 🍔 Essen")
-    if st.button("Subway Menü (8.99 €) — +55% Essen"):
-      if st.session_state.money >= 8.99:
-        st.session_state.money -= 8.99
-        st.session_state.food = min(100.0, st.session_state.food + 55)
-        st.success("Subway Menü gekauft!")
-        st.rerun()
-      else:
-        st.error("Nicht genug Geld!")
-
-    if st.button("Schokolade (1.49 €) — +18% Essen"):
-      if st.session_state.money >= 1.49:
-        st.session_state.money -= 1.49
-        st.session_state.food = min(100.0, st.session_state.food + 18)
-        st.success("Schokolade gekauft!")
-        st.rerun()
-      else:
-        st.error("Nicht genug Geld!")
+    st.markdown("#### 🍔 Essen & Snacks")
+    essen = [
+        {"name": "Subway Menü", "price": 8.99, "val": 55},
+        {"name": "Döner Kebab", "price": 7.50, "val": 45},
+        {"name": "Pizza (Ganze)", "price": 6.50, "val": 40},
+        {"name": "Schokolade", "price": 1.49, "val": 15},
+        {"name": "Bananen (Bund)", "price": 2.10, "val": 20},
+        {"name": "Instant Ramen", "price": 1.20, "val": 12},
+    ]
+    for idx, item in enumerate(essen):
+      if st.button(
+          f"{item['name']} ({item['price']:.2f} €) — +{item['val']}% Essen",
+          key=f"fd_{idx}",
+      ):
+        if st.session_state.money >= item["price"]:
+          st.session_state.money -= item["price"]
+          st.session_state.food = min(
+              100.0, st.session_state.food + item["val"]
+          )
+          st.success(f"{item['name']} gekauft!")
+          st.rerun()
+        else:
+          st.error("Nicht genug Geld!")
 
 # --- TAB 4: WOHNUNG ---
 with tab_housing:
   st.subheader("🏠 Immobilien-Markt")
   st.info(f"Aktuelle Unterkunft: **{st.session_state.housing['name']}**")
 
-  c_h1, c_h2 = st.columns(2)
+  c_h1, c_h2, c_h3 = st.columns(3)
   with c_h1:
-    if st.button("WG-Zimmer mieten (10.00 € / Tag)"):
+    if st.button("Eltern-Keller (0.00 €)"):
+      st.session_state.housing = {"name": "Eltern-Keller", "rent": 0.0}
+      st.success("Ins Elternhaus eingezogen!")
+      st.rerun()
+  with c_h2:
+    if st.button("WG-Zimmer (10.00 € / Tag)"):
       st.session_state.housing = {"name": "WG-Zimmer", "rent": 10.0}
       st.success("WG-Zimmer gemietet!")
       st.rerun()
-  with c_h2:
-    if st.button("Moderne Wohnung mieten (25.00 € / Tag)"):
+  with c_h3:
+    if st.button("Moderne Wohnung (25.00 € / Tag)"):
       st.session_state.housing = {"name": "Moderne Wohnung", "rent": 25.0}
       st.success("Moderne Wohnung gemietet!")
       st.rerun()
@@ -318,16 +329,18 @@ with tab_bank:
       else:
         st.error("Nicht genug Geld oder kein Kredit offen!")
 
-# --- TAB 6: VERTRÄGE ---
+# --- TAB 6: VERTRÄGE (ERWEITERT) ---
 with tab_contracts:
   st.subheader("📱 Abos & Verträge verwalten")
+  st.write("Verwalte deine täglichen Fixkosten durch Abos und Verträge:")
+
   for name, data in st.session_state.contracts.items():
-    status_text = "Aktiv" if data["active"] else "Inaktiv"
+    status_text = "🟢 Aktiv" if data["active"] else "🔴 Inaktiv"
     c1, c2 = st.columns([3, 1])
     with c1:
       st.write(
-          f"**{name}** ({data['cost']:.2f} € / Tag) — Status:"
-          f" **{status_text}**"
+          f"**{name}** — Kosten: **{data['cost']:.2f} € / Tag** | Status:"
+          f" {status_text}"
       )
     with c2:
       if data["active"]:
