@@ -96,7 +96,8 @@
             background: #21262d; padding: 12px; border-radius: 8px; border: 1px solid var(--border);
         }
         .shop-info { font-size: 0.8rem; color: #8b949e; margin-top: 2px; }
-        .price-tag span.old-price { text-decoration: line-through; color: var(--danger); font-size: 0.8rem; margin-right: 5px; }
+        .price-tag { display: flex; align-items: center; gap: 6px; }
+        .price-tag span.old-price { text-decoration: line-through; color: var(--danger); font-size: 0.8rem; }
         .price-tag span.new-price { color: var(--accent-green); font-weight: bold; }
         
         button.action-btn {
@@ -108,7 +109,6 @@
         button.danger-btn { background-color: var(--danger); }
         .money { color: var(--accent-green); font-weight: bold; }
 
-        /* Realistischer 3D-Raum */
         .scene-container {
             width: 100%; height: 260px; background: #010409; border-radius: 8px;
             perspective: 900px; display: flex; align-items: center; justify-content: center;
@@ -133,9 +133,9 @@
             position: absolute; background: var(--accent-blue); color: #fff; font-size: 0.6rem; padding: 4px; border-radius: 4px; transform: translateZ(-50px);
         }
 
-        table.schedule-table, table.grades-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
-        table.schedule-table th, table.schedule-table td, table.grades-table th, table.grades-table td { border: 1px solid var(--border); padding: 8px; text-align: center; vertical-align: middle; }
-        table.schedule-table th, table.grades-table th { background-color: #21262d; }
+        table.schedule-table, table.grades-table, table.loan-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        table.schedule-table th, table.schedule-table td, table.grades-table th, table.grades-table td, table.loan-table th, table.loan-table td { border: 1px solid var(--border); padding: 8px; text-align: center; vertical-align: middle; }
+        table.schedule-table th, table.grades-table th, table.loan-table th { background-color: #21262d; }
         .schedule-cell { cursor: pointer; padding: 6px; border-radius: 4px; transition: 0.2s; min-height: 40px; }
         .schedule-cell:hover { background-color: #21262d; }
         .hour-col { cursor: pointer; transition: 0.2s; }
@@ -167,7 +167,7 @@
     <header>
         <h1>School Life Simulator</h1>
         <div class="header-right">
-            <div class="header-stat" title="Verfügbares Bargeld">💰 Guthaben: <span id="header-money" class="money">50.00 €</span></div>
+            <div class="header-stat" title="Verfügbares Bargeld">💰 Guthaben: <span id="header-money" class="money">500.00 €</span></div>
             <div class="header-stat" title="Noch nicht versteuert/ausgezahlt">📥 Zwischenspeicher: <span id="header-pending" style="color: var(--accent-orange);">0.00 €</span></div>
             <div class="header-stat">🍔 <span id="header-food">80%</span></div>
             <div class="header-stat">💧 <span id="header-drink">80%</span></div>
@@ -182,6 +182,7 @@
         <button class="tab-btn" onclick="openTab(event, 'tab-supermarket')">Supermarkt</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-housing')">Wohnung & Möbel</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-bank')">Bank & Kredite</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-bitcoin')">Bitcoin Mining</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-contracts')">Abos & Verträge</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-stats')">Statistik & Steuern</button>
     </div>
@@ -189,7 +190,6 @@
     <!-- TAB 1: DASHBOARD -->
     <div id="tab-dashboard" class="tab-content active">
         <div class="dashboard-flex">
-            <!-- Timer Box -->
             <div class="card dashboard-box" style="text-align: center;">
                 <h2>Live-Timer & Aktuelle Stunde</h2>
                 <p id="auto-detected-info" style="font-size: 0.85rem; color: var(--accent-blue); margin-bottom: 10px;">Erkenne Stunde...</p>
@@ -205,13 +205,11 @@
                 <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Min <span id="rate-bonus-text" style="font-size:0.75rem; color:var(--accent-blue);"></span></div>
                 <div class="timer-subtext" style="color: var(--accent-orange);">Noch nicht ausgezahlt: <span id="session-earned">0.00 €</span></div>
                 
-                <!-- Aktive Boni Box -->
                 <div class="active-buffs-box">
                     <strong>Aktive Boni:</strong>
                     <div id="active-buffs-list" style="margin-top: 4px;">Keine aktiven Boni</div>
                 </div>
 
-                <!-- Streak & Melden Info -->
                 <div id="streak-info" style="font-size: 0.8rem; color: var(--accent-orange); margin-top: 6px;">
                     Aktuelle Melde-Streak (dieses Fach): <strong>0x</strong> (Bonus: +0.00 €)
                 </div>
@@ -223,7 +221,6 @@
                 </div>
             </div>
 
-            <!-- Stats & Sleep Box -->
             <div class="card dashboard-box">
                 <h2>Lebensstatus & Schlaf</h2>
                 
@@ -240,7 +237,6 @@
                     <div class="progress-bar"><div id="fill-sleep" class="progress-fill" style="width: 80%;"></div></div>
                 </div>
 
-                <!-- Echter Schlaf Eintragen -->
                 <div style="background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; font-size: 0.85rem;">
                     <strong>Echten Schlaf eintragen:</strong>
                     <div style="display: flex; gap: 8px; margin-top: 6px;">
@@ -260,10 +256,9 @@
             </div>
         </div>
 
-        <!-- EXTRA BONUS-TIMER FÜR ARBEITEN & LERNEN -->
         <div class="card" style="border: 2px solid var(--accent-orange); margin-top: 20px;">
             <h2 style="color: var(--accent-orange);">⚡ Bonus-Timer: Arbeiten & Lernen</h2>
-            <p style="font-size: 0.85rem; color: #8b949e;">Wähle die passende Aktivität und starte den Bonus-Timer. Läuft absolut verlässlich weiter – selbst wenn der Tab im Hintergrund ist!</p>
+            <p style="font-size: 0.85rem; color: #8b949e;">Wähle die passende Aktivität und starte den Bonus-Timer.</p>
             
             <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-top: 12px;">
                 <div style="flex: 1; min-width: 200px;">
@@ -297,7 +292,6 @@
                     </label>
                 </div>
             </div>
-            <p style="font-size: 0.85rem; color: #8b949e;">Klicke im Bearbeitungsmodus auf eine Stundennummer an der Seite, um die Uhrzeiten anzupassen.</p>
             
             <div style="overflow-x: auto;">
                 <table class="schedule-table">
@@ -385,12 +379,10 @@
                     <div id="room-furniture-visual"></div>
                 </div>
             </div>
-            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Deine gekauften Möbel erscheinen direkt im virtuellen Zimmer!</p>
         </div>
 
         <div class="card">
             <h2>Immobilien-Markt (Mieten oder Kaufen)</h2>
-            <p style="font-size: 0.85rem; color: var(--accent-orange); margin-bottom: 12px;">⚠️ Achtung beim Umzug: Es fallen realistische Umzugskosten / Makler / Kaution an!</p>
             <div class="grid-shop">
                 <div class="shop-item">
                     <div><span>Kinderzimmer bei Eltern (0 € / Tag)</span><div class="shop-info">Kaution: 0 € | Umzug: 0 €</div></div>
@@ -416,15 +408,14 @@
             <p style="margin-top: 15px;">Aktuelle Unterkunft: <strong id="current-housing" style="color:var(--accent-blue);">Elternhaus</strong></p>
         </div>
 
-        <!-- WASSER & STROM VERTRÄGE -->
         <div class="card" style="border: 2px solid var(--accent-blue);">
             <h2>⚡ & 💧 Wasser- und Stromverträge</h2>
-            <p style="font-size: 0.85rem; color: #8b949e;">Sobald du nicht mehr im Elternhaus wohnst, musst du **mindestens einen Strom- und einen Wasservertrag** aktiv haben, sonst gibt es Probleme!</p>
+            <p style="font-size: 0.85rem; color: #8b949e;">Mindestens ein Strom- und ein Wasservertrag nötig, sobald du ausgezogen bist.</p>
             <div class="grid-shop" id="utilities-shop-container"></div>
         </div>
         
         <div class="card">
-            <h2>Möbel & Einrichtung (Gibt aktive Boni!)</h2>
+            <h2>Möbel & Einrichtung</h2>
             <div class="grid-shop" id="furniture-shop-container"></div>
         </div>
     </div>
@@ -432,16 +423,42 @@
     <!-- TAB 6: BANK -->
     <div id="tab-bank" class="tab-content">
         <div class="card">
-            <h2>Bank & Kredite</h2>
-            <p>Aktueller Kredit: <span id="loan-status">0.00 €</span></p>
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button class="action-btn" onclick="takeLoan(500)" style="flex:1;">500 € aufnehmen</button>
-                <button class="action-btn danger-btn" onclick="payLoan(500)" style="flex:1;">500 € tilgen</button>
+            <h2>Bank & Realistisches Kreditwesen</h2>
+            <p style="font-size: 0.85rem; color: #8b949e;">Nimm Kredite auf, wähle den Betrag selbst und behalte Zinsen und Laufzeit im Blick.</p>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap;">
+                <input type="number" id="custom-loan-input" placeholder="Betrag (z.B. 1000)" min="50" step="50" style="flex: 2; min-width: 180px; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
+                <button class="action-btn" onclick="takeCustomLoan()" style="flex: 1; min-width: 140px;">Kredit aufnehmen</button>
+            </div>
+
+            <h3 style="font-size: 1rem; margin-top: 20px; color: #58a6ff;">Aktive Kredite & Konditionen</h3>
+            <div style="overflow-x: auto;">
+                <table class="loan-table">
+                    <thead>
+                        <tr>
+                            <th>Kreditsumme</th>
+                            <th>Tägliche Zinsen</th>
+                            <th>Laufzeit (Tage übrig)</th>
+                            <th>Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loans-tbody">
+                        <tr><td colspan="4" style="text-align: center; color: #8b949e;">Keine aktiven Kredite vorhanden.</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- TAB 7: VERTRÄGE -->
+    <!-- TAB 7: BITCOIN MINING -->
+    <div id="tab-bitcoin" class="tab-content">
+        <div class="card" style="text-align: center; padding: 40px;">
+            <h2 style="border:none; font-size: 1.8rem; color: var(--accent-orange);">₿ Bitcoin Mining</h2>
+            <p style="font-size: 1.1rem; color: #8b949e; margin-top: 15px;">In Arbeit</p>
+        </div>
+    </div>
+
+    <!-- TAB 8: VERTRÄGE -->
     <div id="tab-contracts" class="tab-content">
         <div class="card">
             <h2>Abos, Verträge & Services</h2>
@@ -449,7 +466,7 @@
         </div>
     </div>
 
-    <!-- TAB 8: STATISTIK -->
+    <!-- TAB 9: STATISTIK -->
     <div id="tab-stats" class="tab-content">
         <div class="card">
             <h2>Statistik & Steuerübersicht</h2>
@@ -506,8 +523,8 @@
             food: 80,
             drink: 80,
             sleep: 80,
-            loan: 0,
-            housing: { name: "Elternhaus", rent: 0, utilitiesCost: 0 },
+            loansList: [], // Liste von Krediten: { id, amount, dailyRate, daysLeft }
+            housing: { name: "Elternhaus", rent: 0, deposit: 0 },
             utilities: {},
             furniture: {},
             contracts: {},
@@ -622,6 +639,7 @@
                 if(!gameState.contracts) gameState.contracts = {};
                 if(!gameState.utilities) gameState.utilities = {};
                 if(!gameState.grades) gameState.grades = {};
+                if(!gameState.loansList) gameState.loansList = [];
             }
             let savedTable = localStorage.getItem("schoolSimTable");
             if (savedTable) {
@@ -666,6 +684,7 @@
             renderSupermarket();
             renderGradesTable();
             renderRoomVisual();
+            renderLoansTable();
             
             gameState.lastTickTimestamp = Date.now();
             checkAutoCurrentLesson(true);
@@ -809,6 +828,7 @@
             if(tabId === 'tab-grades') renderGradesTable();
             if(tabId === 'tab-supermarket') renderSupermarket();
             if(tabId === 'tab-housing') renderRoomVisual();
+            if(tabId === 'tab-bank') renderLoansTable();
         }
 
         function renderRoomVisual() {
@@ -843,7 +863,6 @@
         }
 
         function toggleUtility(id, type) {
-            // Sicherstellen, dass jeweils nur ein Wasser- und ein Stromvertrag aktiv ist
             utilitiesCatalog.forEach(item => {
                 if (item.type === type && item.id !== id) {
                     gameState.utilities[item.id] = false;
@@ -864,16 +883,16 @@
                 }
                 gameState.money -= totalCost;
                 gameState.housing = { name, rent: 0, deposit: 0 };
-                alert(`Glückwunsch zum Eigenheim! Du hast ein Haus für ${purchasePrice.toLocaleString()} € gekauft. Ab sofort keine tägliche Miete mehr!`);
+                alert(`Glückwunsch zum Eigenheim! Keine tägliche Miete mehr.`);
             } else {
                 let totalUpfront = deposit + movingCost;
                 if (gameState.money < totalUpfront) {
-                    alert(`Umzug nicht möglich! Du brauchst ${totalUpfront.toLocaleString()} € für Kaution (${deposit} €) und Umzug (${movingCost} €).`);
+                    alert(`Umzug nicht möglich! Du brauchst ${totalUpfront.toLocaleString()} € für Kaution und Umzug.`);
                     return;
                 }
                 gameState.money -= totalUpfront;
                 gameState.housing = { name, rent, deposit };
-                alert(`Erfolgreich umgezogen nach "${name}"!\nKaution: ${deposit} € | Umzugskosten: ${movingCost} € wurden bezahlt.`);
+                alert(`Erfolgreich umgezogen nach "${name}"!`);
             }
             renderRoomVisual();
             updateUI();
@@ -928,6 +947,65 @@
             renderSupermarket();
             updateUI();
             saveGame();
+        }
+
+        function takeCustomLoan() {
+            let amount = parseFloat(document.getElementById("custom-loan-input").value);
+            if (isNaN(amount) || amount <= 0) {
+                alert("Bitte gib einen gültigen Kreditbetrag ein!");
+                return;
+            }
+            let newLoan = {
+                id: Date.now(),
+                amount: amount,
+                dailyRate: 0.05, // 5% tägliche Zinsen
+                daysLeft: 14 // 14 Tage Laufzeit
+            };
+            gameState.loansList.push(newLoan);
+            gameState.money += amount;
+            document.getElementById("custom-loan-input").value = "";
+            renderLoansTable();
+            updateUI();
+            saveGame();
+            alert(`Kredit über ${amount.toFixed(2)} € erfolgreich aufgenommen!`);
+        }
+
+        function repayLoan(id) {
+            let index = gameState.loansList.findIndex(l => l.id === id);
+            if (index !== -1) {
+                let loan = gameState.loansList[index];
+                let totalDue = loan.amount * (1 + loan.dailyRate * Math.min(1, loan.daysLeft));
+                if (gameState.money < totalDue) {
+                    alert(`Nicht genug Guthaben zum Tilgen! Benötigt: ${totalDue.toFixed(2)} €`);
+                    return;
+                }
+                gameState.money -= totalDue;
+                gameState.loansList.splice(index, 1);
+                renderLoansTable();
+                updateUI();
+                saveGame();
+                alert("Kredit vollständig getilgt!");
+            }
+        }
+
+        function renderLoansTable() {
+            const tbody = document.getElementById("loans-tbody");
+            if (!tbody) return;
+            if (!gameState.loansList || gameState.loansList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #8b949e;">Keine aktiven Kredite vorhanden.</td></tr>`;
+                return;
+            }
+            let html = "";
+            gameState.loansList.forEach(loan => {
+                let dailyInterestAmount = loan.amount * loan.dailyRate;
+                html += `<tr>
+                    <td><strong>${loan.amount.toFixed(2)} €</strong></td>
+                    <td style="color: var(--danger);">+${dailyInterestAmount.toFixed(2)} € / Tag (5%)</td>
+                    <td>${loan.daysLeft} Tage</td>
+                    <td><button class="action-btn danger-btn" onclick="repayLoan(${loan.id})" style="padding: 4px 8px;">Tilgen</button></td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
         }
 
         function switchTask(newSubject, newRate) {
@@ -1037,7 +1115,7 @@
             updateUI();
             saveGame();
             
-            alert(`Gut mitgearbeitet! (${gameState.activeLesson}) Streak: ${streakCount}x | Bonus: +${bonusMoney.toFixed(2)} € im Zwischenspeicher!`);
+            alert(`Gut mitgearbeitet! Streak: ${streakCount}x | Bonus: +${bonusMoney.toFixed(2)} €`);
         }
 
         function updateStreakDisplay() {
@@ -1052,12 +1130,11 @@
         }
 
         function endDay() {
-            // Prüfung ob Wasser- und Stromvertrag bei eigener Wohnung aktiv sind
             if (gameState.housing.name !== "Elternhaus") {
                 let hasWater = Object.keys(gameState.utilities).some(id => id.includes("water") && gameState.utilities[id]);
                 let hasPower = Object.keys(gameState.utilities).some(id => id.includes("power") && gameState.utilities[id]);
                 if (!hasWater || !hasPower) {
-                    alert("⚠️ Achtung! Du bist aus dem Elternhaus ausgezogen, hast aber keinen aktiven Wasser- und/oder Stromvertrag angemeldet! Ohne Versorger kannst du den Tag nicht beenden.");
+                    alert("⚠️ Achtung! Du hast keinen aktiven Wasser- und/oder Stromvertrag angemeldet!");
                     return;
                 }
             }
@@ -1066,14 +1143,17 @@
             let buffs = calculateBuffs();
             
             let fixedTotal = gameState.housing.rent;
-            
-            // Versorgerkosten addieren
-            utilitiesCatalog.forEach(item => {
-                if (gameState.utilities[item.id]) fixedTotal += item.daily;
-            });
-
+            utilitiesCatalog.forEach(item => { if (gameState.utilities[item.id]) fixedTotal += item.daily; });
             furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
             contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
+
+            // Kreditzinsen abziehen & Laufzeit verringern
+            let totalLoanInterest = 0;
+            gameState.loansList.forEach(loan => {
+                totalLoanInterest += (loan.amount * loan.dailyRate);
+                loan.daysLeft = Math.max(0, loan.daysLeft - 1);
+            });
+            fixedTotal += totalLoanInterest;
 
             let taxRate = buffs.taxRate;
             let taxes = gross * taxRate;
@@ -1096,10 +1176,11 @@
             gameState.timerSeconds = 0;
             gameState.isTimerRunning = false;
 
+            renderLoansTable();
             updateUI();
             saveGame();
 
-            alert(`Tag beendet & abgerechnet!\n\nErarbeitetes Brutto: ${gross.toFixed(2)} €\nSteuern (${(taxRate*100).toFixed(0)}%): -${taxes.toFixed(2)} €\nNetto-Einnahme: +${netEarnings.toFixed(2)} €\nFixkosten & Versorger abgezogen: -${fixedTotal.toFixed(2)} €`);
+            alert(`Tag beendet & abgerechnet!\n\nBrutto: ${gross.toFixed(2)} €\nSteuern: -${taxes.toFixed(2)} €\nNetto: +${netEarnings.toFixed(2)} €\nFixkosten & Kreditzinsen: -${fixedTotal.toFixed(2)} €`);
         }
 
         function renderPayoutHistory() {
@@ -1126,12 +1207,18 @@
             drinksContainer.innerHTML = "";
             supermarketDrinks.forEach(item => {
                 let finalCost = item.baseCost * buffs.shopDiscount;
-                let priceHtml = item.baseCost === 0 ? `<span class="new-price">Gratis</span>` : `<span class="new-price">${finalCost.toFixed(2)} €</span>`;
+                let priceHtml = "";
+                if (hasDiscount && item.baseCost > 0) {
+                    priceHtml = `<span class="old-price">${item.baseCost.toFixed(2)} €</span><span class="new-price">${finalCost.toFixed(2)} €</span>`;
+                } else {
+                    priceHtml = `<span class="new-price">${item.baseCost === 0 ? 'Gratis' : item.baseCost.toFixed(2) + ' €'}</span>`;
+                }
+
                 drinksContainer.innerHTML += `
                     <div class="shop-item">
                         <div><strong>${item.name}</strong><div class="shop-info">${item.info}</div></div>
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <span class="price-tag">${priceHtml}</span>
+                            <div class="price-tag">${priceHtml}</div>
                             <button class="action-btn" onclick="buyItem('${item.type}', ${item.amount}, ${item.baseCost}, '${item.extraType || ''}', ${item.extraAmount || 0})">${item.baseCost === 0 ? 'Trinken' : 'Kaufen'}</button>
                         </div>
                     </div>`;
@@ -1141,12 +1228,18 @@
             foodContainer.innerHTML = "";
             supermarketFood.forEach(item => {
                 let finalCost = item.baseCost * buffs.shopDiscount;
-                let priceHtml = item.baseCost === 0 ? `<span class="new-price">Gratis</span>` : `<span class="new-price">${finalCost.toFixed(2)} €</span>`;
+                let priceHtml = "";
+                if (hasDiscount && item.baseCost > 0) {
+                    priceHtml = `<span class="old-price">${item.baseCost.toFixed(2)} €</span><span class="new-price">${finalCost.toFixed(2)} €</span>`;
+                } else {
+                    priceHtml = `<span class="new-price">${item.baseCost === 0 ? 'Gratis' : item.baseCost.toFixed(2) + ' €'}</span>`;
+                }
+
                 foodContainer.innerHTML += `
                     <div class="shop-item">
                         <div><strong>${item.name}</strong><div class="shop-info">${item.info}</div></div>
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <span class="price-tag">${priceHtml}</span>
+                            <div class="price-tag">${priceHtml}</div>
                             <button class="action-btn" onclick="buyItem('${item.type}', ${item.amount}, ${item.baseCost})">${item.baseCost === 0 ? 'Essen' : 'Kaufen'}</button>
                         </div>
                     </div>`;
@@ -1165,22 +1258,6 @@
                 gameState.drink = Math.min(100, gameState.drink + actualDrink);
                 if (extraType === 'energy') { gameState.sleep = Math.min(100, gameState.sleep + extraAmount); }
             }
-            updateUI();
-            saveGame();
-        }
-
-        function takeLoan(amount) {
-            gameState.loan += amount;
-            gameState.money += amount;
-            updateUI();
-            saveGame();
-        }
-
-        function payLoan(amount) {
-            let pay = Math.min(amount, gameState.loan);
-            if (gameState.money < pay) { alert("Nicht genug Guthaben zum Tilgen!"); return; }
-            gameState.money -= pay;
-            gameState.loan -= pay;
             updateUI();
             saveGame();
         }
@@ -1233,9 +1310,10 @@
             utilitiesCatalog.forEach(item => { if (gameState.utilities[item.id]) fixedTotal += item.daily; });
             furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
             contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
+            
+            gameState.loansList.forEach(loan => { fixedTotal += (loan.amount * loan.dailyRate); });
 
             document.getElementById("dash-total-fixed").innerText = fixedTotal.toFixed(2) + " €";
-            document.getElementById("loan-status").innerText = gameState.loan.toFixed(2) + " €";
             document.getElementById("stat-earnings").innerText = gameState.totalEarnings.toFixed(2) + " €";
             document.getElementById("stat-taxes").innerText = gameState.totalTaxes.toFixed(2) + " €";
 
@@ -1244,7 +1322,6 @@
 
             let activeBuffsHTML = "";
             let hasAnyBuff = false;
-
             if (buffs.rateBonus > 0) { activeBuffsHTML += `<span class="buff-tag">+${buffs.rateBonus.toFixed(2)} €/Min Verdienst-Boost</span>`; hasAnyBuff = true; }
             if (buffs.baseRateBonus > 0) { activeBuffsHTML += `<span class="buff-tag">+${buffs.baseRateBonus.toFixed(2)} €/Min Grundverdienst</span>`; hasAnyBuff = true; }
             if (buffs.passiveIncome > 0) { activeBuffsHTML += `<span class="buff-tag">+${buffs.passiveIncome.toFixed(2)} €/Min Passiv</span>`; hasAnyBuff = true; }
@@ -1255,7 +1332,6 @@
             if (buffs.taxRate < 0.15) { activeBuffsHTML += `<span class="buff-tag">-${Math.round((0.15 - buffs.taxRate) * 100)}% Steuersatz-Rabatt</span>`; hasAnyBuff = true; }
 
             document.getElementById("active-buffs-list").innerHTML = hasAnyBuff ? activeBuffsHTML : "Keine aktiven Boni";
-
             updateTimerDisplay();
         }
 
