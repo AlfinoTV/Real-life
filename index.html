@@ -89,6 +89,9 @@
             background: #21262d; padding: 12px; border-radius: 8px; border: 1px solid var(--border);
         }
         .shop-info { font-size: 0.8rem; color: #8b949e; margin-top: 2px; }
+        .price-tag span.old-price { text-decoration: line-through; color: var(--danger); font-size: 0.8rem; margin-right: 5px; }
+        .price-tag span.new-price { color: var(--accent-green); font-weight: bold; }
+        
         button.action-btn {
             background-color: var(--accent-green); color: #fff; border: none;
             padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;
@@ -250,7 +253,7 @@
                     </label>
                 </div>
             </div>
-            <p style="font-size: 0.85rem; color: #8b949e;">Beim Wechseln des Fachs startet der Timer automatisch bei 00:00.</p>
+            <p style="font-size: 0.85rem; color: #8b949e;">Beim Wechseln des Fachs startet der Timer automatisch bei 00:00 (wartet auf Start).</p>
             
             <div style="overflow-x: auto;">
                 <table class="schedule-table">
@@ -311,30 +314,14 @@
     <div id="tab-supermarket" class="tab-content">
         <div class="card">
             <h2>Getränke- & Energy-Auswahl</h2>
-            <div class="grid-shop">
-                <div class="shop-item"><div><span>Leitungswasser (Gratis)</span><div class="shop-info">Wasser +5%</div></div><button class="action-btn" onclick="buyItem('drink', 5, 0)">Trinken</button></div>
-                <div class="shop-item"><div><span>Schulmilch (0.80 €)</span><div class="shop-info">Wasser +10%</div></div><button class="action-btn" onclick="buyItem('drink', 10, 0.8)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Apfelschorle (1.20 €)</span><div class="shop-info">Wasser +15%</div></div><button class="action-btn" onclick="buyItem('drink', 15, 1.2)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Mineralwasser 0,5l (1.10 €)</span><div class="shop-info">Wasser +12%</div></div><button class="action-btn" onclick="buyItem('drink', 12, 1.1)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Eistee Pfirsich (1.50 €)</span><div class="shop-info">Wasser +18%</div></div><button class="action-btn" onclick="buyItem('drink', 18, 1.5)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Mezzo Mix / Spezi (1.60 €)</span><div class="shop-info">Wasser +20%</div></div><button class="action-btn" onclick="buyItem('drink', 20, 1.6)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Club Mate (1.90 €)</span><div class="shop-info">Wasser +22%</div></div><button class="action-btn" onclick="buyItem('drink', 22, 1.9)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Red Bull (2.50 €)</span><div class="shop-info">Wasser +30%, Energie +10%</div></div><button class="action-btn" onclick="buyItem('drink', 30, 2.5, 'energy', 10)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Monster Energy (2.70 €)</span><div class="shop-info">Wasser +35%, Energie +15%</div></div><button class="action-btn" onclick="buyItem('drink', 35, 2.7, 'energy', 15)">Kaufen</button></div>
+            <div class="grid-shop" id="supermarket-drinks-container">
+                <!-- Per JS gerendert für automatische Preisanpassung (Durchgestrichen) -->
             </div>
         </div>
         <div class="card">
             <h2>Essen & Snacks Auswahl</h2>
-            <div class="grid-shop">
-                <div class="shop-item"><div><span>Apfel von zuhause (Gratis)</span><div class="shop-info">Essen +8%</div></div><button class="action-btn" onclick="buyItem('food', 8, 0)">Essen</button></div>
-                <div class="shop-item"><div><span>Müsliriegel (0.90 €)</span><div class="shop-info">Essen +12%</div></div><button class="action-btn" onclick="buyItem('food', 12, 0.9)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Brezel vom Bäcker (1.20 €)</span><div class="shop-info">Essen +15%</div></div><button class="action-btn" onclick="buyItem('food', 15, 1.2)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Schokoriegel (1.40 €)</span><div class="shop-info">Essen +18%</div></div><button class="action-btn" onclick="buyItem('food', 18, 1.4)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Käsebrötchen (2.20 €)</span><div class="shop-info">Essen +25%</div></div><button class="action-btn" onclick="buyItem('food', 25, 2.2)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Döner Kebab (7.00 €)</span><div class="shop-info">Essen +50%</div></div><button class="action-btn" onclick="buyItem('food', 50, 7.0)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Subway Menü (8.99 €)</span><div class="shop-info">Essen +65%</div></div><button class="action-btn" onclick="buyItem('food', 65, 8.99)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Pizza Lieferung (11.50 €)</span><div class="shop-info">Essen +80%</div></div><button class="action-btn" onclick="buyItem('food', 80, 11.5)">Kaufen</button></div>
-                <div class="shop-item"><div><span>Ben & Jerry's Eis (6.49 €)</span><div class="shop-info">Essen +40%, Glücksgefühle</div></div><button class="action-btn" onclick="buyItem('food', 40, 6.49)">Kaufen</button></div>
+            <div class="grid-shop" id="supermarket-food-container">
+                <!-- Per JS gerendert für automatische Preisanpassung (Durchgestrichen) -->
             </div>
         </div>
     </div>
@@ -435,12 +422,13 @@
             housing: { name: "Elternhaus", rent: 0, water: 0, electricity: 0 },
             furniture: {},
             contracts: {},
-            grades: {}, // Speichert written und oral Punkte pro Fach
+            grades: {},
             activeLesson: null,
             currentRate: 0.50,
             isTimerRunning: false,
             timerSeconds: 0,
-            startTimeEpoch: null,
+            lastTickTimestamp: null,
+            lastDetectedHourKey: null,
             editMode: false,
             currentEditCoords: { hour: null, day: null },
             streaks: {},
@@ -464,6 +452,30 @@
             { id: "gym", name: "Fitnessstudio-Mitgliedschaft", daily: 2.00, bonusText: "Essen & Trinken verbrauchen sich 15% langsamer", effect: (s) => s.generalDecayMod = 0.85 },
             { id: "prime", name: "Express-Lieferdienst Abo", daily: 0.90, bonusText: "Supermarkt-Preise um 10% rabattiert", effect: (s) => s.shopDiscount = 0.9 },
             { id: "taxadvisor", name: "Digitaler Steuerberater", daily: 3.50, bonusText: "Steuersatz sinkt von 15% auf 8%", effect: (s) => s.taxRate = 0.08 }
+        ];
+
+        const supermarketDrinks = [
+            { name: "Leitungswasser", info: "Wasser +5%", baseCost: 0, type: "drink", amount: 5 },
+            { name: "Schulmilch", info: "Wasser +10%", baseCost: 0.80, type: "drink", amount: 10 },
+            { name: "Apfelschorle", info: "Wasser +15%", baseCost: 1.20, type: "drink", amount: 15 },
+            { name: "Mineralwasser 0,5l", info: "Wasser +12%", baseCost: 1.10, type: "drink", amount: 12 },
+            { name: "Eistee Pfirsich", info: "Wasser +18%", baseCost: 1.50, type: "drink", amount: 18 },
+            { name: "Mezzo Mix / Spezi", info: "Wasser +20%", baseCost: 1.60, type: "drink", amount: 20 },
+            { name: "Club Mate", info: "Wasser +22%", baseCost: 1.90, type: "drink", amount: 22 },
+            { name: "Red Bull", info: "Wasser +30%, Energie +10%", baseCost: 2.50, type: "drink", amount: 30, extraType: "energy", extraAmount: 10 },
+            { name: "Monster Energy", info: "Wasser +35%, Energie +15%", baseCost: 2.70, type: "drink", amount: 35, extraType: "energy", extraAmount: 15 }
+        ];
+
+        const supermarketFood = [
+            { name: "Apfel von zuhause", info: "Essen +8%", baseCost: 0, type: "food", amount: 8 },
+            { name: "Müsliriegel", info: "Essen +12%", baseCost: 0.90, type: "food", amount: 12 },
+            { name: "Brezel vom Bäcker", info: "Essen +15%", baseCost: 1.20, type: "food", amount: 15 },
+            { name: "Schokoriegel", info: "Essen +18%", baseCost: 1.40, type: "food", amount: 18 },
+            { name: "Käsebrötchen", info: "Essen +25%", baseCost: 2.20, type: "food", amount: 25 },
+            { name: "Döner Kebab", info: "Essen +50%", baseCost: 7.00, type: "food", amount: 50 },
+            { name: "Subway Menü", info: "Essen +65%", baseCost: 8.99, type: "food", amount: 65 },
+            { name: "Pizza Lieferung", info: "Essen +80%", baseCost: 11.50, type: "food", amount: 80 },
+            { name: "Ben & Jerry's Eis", info: "Essen +40%, Glücksgefühle", baseCost: 6.49, type: "food", amount: 40 }
         ];
 
         let timetableData = {};
@@ -526,40 +538,37 @@
             renderSchedule();
             renderFurnitureShop();
             renderContractsShop();
+            renderSupermarket();
             renderGradesTable();
-            checkAutoCurrentLesson();
-
-            if (gameState.isTimerRunning && gameState.startTimeEpoch) {
-                let nowEpoch = Date.now();
-                let diffSeconds = Math.floor((nowEpoch - gameState.startTimeEpoch) / 1000);
-                gameState.timerSeconds += diffSeconds;
-                let activeBuffs = calculateBuffs();
-                let earnedExtra = (diffSeconds / 60) * (gameState.currentRate + activeBuffs.rateBonus + activeBuffs.baseRateBonus);
-                earnedExtra += (diffSeconds / 60) * activeBuffs.passiveIncome;
-                gameState.pendingEarnings += earnedExtra;
-                gameState.totalEarnings += earnedExtra;
-                gameState.startTimeEpoch = nowEpoch;
-            }
+            
+            gameState.lastTickTimestamp = Date.now();
+            checkAutoCurrentLesson(true);
 
             updateUI();
 
             setInterval(() => {
-                if (gameState.isTimerRunning) {
-                    gameState.timerSeconds++;
-                    let buffs = calculateBuffs();
-                    let effectiveRate = gameState.currentRate > 0 ? (gameState.currentRate + buffs.rateBonus + buffs.baseRateBonus) : 0;
-                    let earningsPerSec = effectiveRate / 60;
-                    let passivePerSec = buffs.passiveIncome / 60;
+                let now = Date.now();
+                if (!gameState.lastTickTimestamp) gameState.lastTickTimestamp = now;
+                let elapsedSeconds = Math.floor((now - gameState.lastTickTimestamp) / 1000);
+                
+                if (elapsedSeconds > 0) {
+                    gameState.lastTickTimestamp = now - ((now - gameState.lastTickTimestamp) % 1000);
+                    checkAutoCurrentLesson(false);
 
-                    let totalSecEarn = earningsPerSec + passivePerSec;
-                    gameState.pendingEarnings += totalSecEarn;
-                    gameState.totalEarnings += totalSecEarn;
-                    gameState.startTimeEpoch = Date.now();
-                    updateTimerDisplay();
-                    updateUI();
-                    saveGame();
+                    if (gameState.isTimerRunning) {
+                        gameState.timerSeconds += elapsedSeconds;
+                        let buffs = calculateBuffs();
+                        let effectiveRate = gameState.currentRate > 0 ? (gameState.currentRate + buffs.rateBonus + buffs.baseRateBonus) : 0;
+                        let earned = (elapsedSeconds / 60) * effectiveRate + (elapsedSeconds / 60) * buffs.passiveIncome;
+                        
+                        gameState.pendingEarnings += earned;
+                        gameState.totalEarnings += earned;
+                        updateTimerDisplay();
+                        updateUI();
+                        saveGame();
+                    }
                 }
-            }, 1000);
+            }, 500);
 
             setInterval(() => {
                 let buffs = calculateBuffs();
@@ -574,8 +583,6 @@
                 updateUI();
                 saveGame();
             }, 60000);
-
-            setInterval(checkAutoCurrentLesson, 30000);
         };
 
         function calculateBuffs() {
@@ -606,6 +613,7 @@
             evt.currentTarget.classList.add('active');
             if(tabId === 'tab-stats') renderPayoutHistory();
             if(tabId === 'tab-grades') renderGradesTable();
+            if(tabId === 'tab-supermarket') renderSupermarket();
         }
 
         function toggleEditMode() {
@@ -630,6 +638,62 @@
             }
         }
 
+        // --- SUPERMARKT RENDER MIT DURCHGESTRICHENEN PREISEN ---
+        function renderSupermarket() {
+            let buffs = calculateBuffs();
+            let hasDiscount = buffs.shopDiscount < 1.0;
+
+            // Drinks
+            const drinksContainer = document.getElementById("supermarket-drinks-container");
+            drinksContainer.innerHTML = "";
+            supermarketDrinks.forEach(item => {
+                let finalCost = item.baseCost * buffs.shopDiscount;
+                let priceHtml = "";
+                if (hasDiscount && item.baseCost > 0) {
+                    priceHtml = `<span class="price-tag"><span class="old-price">${item.baseCost.toFixed(2)} €</span><span class="new-price">${finalCost.toFixed(2)} €</span></span>`;
+                } else {
+                    priceHtml = `<span class="price-tag"><span class="new-price">${item.baseCost === 0 ? 'Gratis' : item.baseCost.toFixed(2) + ' €'}</span></span>`;
+                }
+
+                drinksContainer.innerHTML += `
+                    <div class="shop-item">
+                        <div>
+                            <strong>${item.name}</strong>
+                            <div class="shop-info">${item.info}</div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            ${priceHtml}
+                            <button class="action-btn" onclick="buyItem('${item.type}', ${item.amount}, ${item.baseCost}, '${item.extraType || ''}', ${item.extraAmount || 0})">${item.baseCost === 0 ? 'Trinken' : 'Kaufen'}</button>
+                        </div>
+                    </div>`;
+            });
+
+            // Food
+            const foodContainer = document.getElementById("supermarket-food-container");
+            foodContainer.innerHTML = "";
+            supermarketFood.forEach(item => {
+                let finalCost = item.baseCost * buffs.shopDiscount;
+                let priceHtml = "";
+                if (hasDiscount && item.baseCost > 0) {
+                    priceHtml = `<span class="price-tag"><span class="old-price">${item.baseCost.toFixed(2)} €</span><span class="new-price">${finalCost.toFixed(2)} €</span></span>`;
+                } else {
+                    priceHtml = `<span class="price-tag"><span class="new-price">${item.baseCost === 0 ? 'Gratis' : item.baseCost.toFixed(2) + ' €'}</span></span>`;
+                }
+
+                foodContainer.innerHTML += `
+                    <div class="shop-item">
+                        <div>
+                            <strong>${item.name}</strong>
+                            <div class="shop-info">${item.info}</div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            ${priceHtml}
+                            <button class="action-btn" onclick="buyItem('${item.type}', ${item.amount}, ${item.baseCost})">${item.baseCost === 0 ? 'Essen' : 'Kaufen'}</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
         function getUniqueSubjectsList() {
             let subjectsMap = new Map();
             for (let h = 1; h <= hoursCount; h++) {
@@ -651,7 +715,6 @@
             return list;
         }
 
-        // Notenpunkte (0-15) parsen
         function parsePointsString(str) {
             if (!str) return [];
             return str.split(',').map(s => {
@@ -660,7 +723,6 @@
             }).filter(n => n !== null);
         }
 
-        // Konvertiere Punkte (0-15) in deutsche Note (1,0 - 6,0)
         function pointsToGrade(points) {
             if (points === null || isNaN(points)) return "-";
             let grade = 1.0 + (15 - points) * (5.0 / 14.0);
@@ -695,10 +757,9 @@
 
             let newPointsAvg = calculateSubjectPointsAverage(gameState.grades[subjectName].written, gameState.grades[subjectName].oral) || 0;
 
-            // Geld-Belohnung / Abzug bei Notenpunkt-Änderung (höherer Schnitt = mehr Geld)
             if (oldPointsAvg > 0 && newPointsAvg > 0 && oldPointsAvg !== newPointsAvg) {
-                let diff = newPointsAvg - oldPointsAvg; // Positiv = Verbesserung (mehr Punkte)
-                let reward = diff * 8.00; // 8 € pro Notenpunkt Differenz
+                let diff = newPointsAvg - oldPointsAvg;
+                let reward = diff * 8.00;
                 gameState.money += reward;
                 if (reward > 0) {
                     alert(`Gratis-Bonus! Leistung in ${subjectName} gesteigert (${oldPointsAvg.toFixed(1)} NP -> ${newPointsAvg.toFixed(1)} NP). +${reward.toFixed(2)} € erhalten!`);
@@ -801,6 +862,7 @@
         function toggleContract(id) {
             gameState.contracts[id] = !gameState.contracts[id];
             renderContractsShop();
+            renderSupermarket(); // Preisanzeige im Supermarkt sofort aktualisieren!
             updateUI();
             saveGame();
         }
@@ -809,8 +871,9 @@
             gameState.activeLesson = newSubject;
             gameState.currentRate = newRate;
             gameState.timerSeconds = 0;
-            gameState.startTimeEpoch = gameState.isTimerRunning ? Date.now() : null;
-            document.getElementById("timer-status").innerText = newSubject.toUpperCase();
+            gameState.isTimerRunning = false;
+            
+            document.getElementById("timer-status").innerText = newSubject.toUpperCase() + " (PAUSE)";
             
             let buffs = calculateBuffs();
             let effectiveRate = newRate > 0 ? (newRate + buffs.rateBonus + buffs.baseRateBonus) : 0;
@@ -856,7 +919,7 @@
 
         function closeModal() { document.getElementById("edit-modal").style.display = "none"; }
 
-        function checkAutoCurrentLesson() {
+        function checkAutoCurrentLesson(isInitial = false) {
             let now = new Date();
             let day = now.getDay();
             let hourNum = now.getHours();
@@ -879,10 +942,18 @@
             if (day >= 1 && day <= 5 && detectedHour) {
                 let dayIndex = day - 1;
                 let lesson = timetableData[detectedHour][dayIndex];
-                if (gameState.activeLesson === null && !gameState.isTimerRunning) {
-                    switchTask(lesson.subject, lesson.rate !== undefined ? lesson.rate : 0.50);
+                let currentHourKey = `${day}-${detectedHour}`;
+
+                if (gameState.lastDetectedHourKey !== currentHourKey) {
+                    gameState.lastDetectedHourKey = currentHourKey;
+                    if (!isInitial) {
+                        switchTask(lesson.subject, lesson.rate !== undefined ? lesson.rate : 0.50);
+                    } else if (!gameState.activeLesson) {
+                        gameState.activeLesson = lesson.subject;
+                        gameState.currentRate = lesson.rate !== undefined ? lesson.rate : 0.50;
+                    }
                 }
-                infoBox.innerText = `Erkannt: ${detectedHour}. Stunde (${lesson.subject})`;
+                infoBox.innerText = `Erkannt: ${detectedHour}. Stunde (${lesson.subject}) - Bereit`;
             } else {
                 infoBox.innerText = `Keine Schulstunde aktiv`;
             }
@@ -891,12 +962,14 @@
         function toggleTimer() {
             if (gameState.isTimerRunning) {
                 gameState.isTimerRunning = false;
-                gameState.startTimeEpoch = null;
-                document.getElementById("timer-status").innerText += " (PAUSE)";
+                document.getElementById("timer-status").innerText = (gameState.activeLesson || "BEREIT").toUpperCase() + " (PAUSE)";
             } else {
-                if (!gameState.activeLesson) { switchTask("Unterricht", 0.50); }
+                if (!gameState.activeLesson) {
+                    gameState.activeLesson = "Unterricht";
+                    gameState.currentRate = 0.50;
+                }
                 gameState.isTimerRunning = true;
-                gameState.startTimeEpoch = Date.now();
+                gameState.lastTickTimestamp = Date.now();
                 document.getElementById("timer-status").innerText = gameState.activeLesson.toUpperCase();
             }
             updateStreakDisplay();
@@ -905,7 +978,6 @@
 
         function startFreistunde() {
             switchTask("Freistunde", 0);
-            gameState.isTimerRunning = false;
             document.getElementById("timer-status").innerText = "FREISTUNDE (0 €)";
             saveGame();
         }
@@ -914,8 +986,6 @@
             let activityName = document.getElementById("custom-activity-input").value.trim();
             if(!activityName) { alert("Bitte gib eine Aktivität ein!"); return; }
             switchTask(activityName, 0.50);
-            gameState.isTimerRunning = true;
-            gameState.startTimeEpoch = Date.now();
             saveGame();
         }
 
