@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Life & Economy Simulator</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --text-color: #c9d1d9;
+            --accent-orange: #f0883e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --danger: #f85149;
+            --border: #30363d;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px; background-color: var(--card-bg); padding: 15px 20px;
+            border-radius: 12px; border: 1px solid var(--border); max-width: 1200px; margin-left: auto; margin-right: auto;
+        }
+        h1 { margin: 0; font-size: 1.4rem; color: #fff; }
+        .header-right {
+            display: flex; gap: 15px; align-items: center; font-size: 0.9rem; font-weight: bold;
+        }
+        .header-stat { display: flex; gap: 5px; align-items: center; }
+
+        .tabs-container {
+            display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
+            margin-bottom: 25px; background-color: var(--card-bg); padding: 12px;
+            border-radius: 12px; border: 1px solid var(--border); max-width: 1200px; margin-left: auto; margin-right: auto;
+        }
+        .tab-btn {
+            background-color: #21262d; color: var(--text-color); border: 1px solid var(--border);
+            padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        .tab-btn.active, .tab-btn:hover { background-color: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+
+        .tab-content { display: none; max-width: 1200px; margin: 0 auto; }
+        .tab-content.active { display: block; }
+
+        .card {
+            background-color: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-bottom: 20px;
+        }
+        h2 { font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0; color: #58a6ff; }
+
+        .dashboard-flex {
+            display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch;
+        }
+        .dashboard-box { flex: 1; min-width: 300px; }
+
+        .stat-bar-container { margin-bottom: 12px; }
+        .stat-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; }
+        .progress-bar { background-color: var(--border); border-radius: 6px; height: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 0.3s ease; }
+        #fill-food { background-color: var(--accent-orange); }
+        #fill-drink { background-color: var(--accent-blue); }
+        #fill-sleep { background-color: var(--accent-green); }
+
+        .timer-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0; }
+        .timer-circle {
+            width: 170px; height: 170px; border-radius: 50%;
+            background: conic-gradient(var(--accent-orange) 0deg, var(--border) 0deg);
+            display: flex; align-items: center; justify-content: center; position: relative;
+        }
+        .timer-inner {
+            width: 135px; height: 135px; background-color: var(--card-bg); border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        }
+        .timer-time { font-size: 1.6rem; font-weight: bold; color: #fff; }
+        .timer-title { font-size: 0.65rem; color: #8b949e; letter-spacing: 1px; margin-top: 2px; }
+        .timer-subtext { font-size: 0.85rem; color: var(--accent-green); margin-top: 4px; font-weight: bold; text-align: center; }
+
+        .timer-controls { display: flex; gap: 8px; margin-top: 15px; justify-content: center; flex-wrap: wrap; }
+
+        .grid-shop { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+        .shop-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #21262d; padding: 12px; border-radius: 8px; border: 1px solid var(--border);
+        }
+        button.action-btn {
+            background-color: var(--accent-green); color: #fff; border: none;
+            padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;
+        }
+        button.action-btn:hover { opacity: 0.9; }
+        button.danger-btn { background-color: var(--danger); }
+        .money { color: var(--accent-green); font-weight: bold; }
+
+        .scene-container {
+            width: 100%; height: 200px; background: #010409; border-radius: 8px;
+            perspective: 800px; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border: 1px solid var(--border); margin-bottom: 15px;
+        }
+        .room-3d {
+            width: 180px; height: 130px; position: relative; transform-style: preserve-3d;
+            transform: rotateX(-15deg) rotateY(25deg); animation: rotateRoom 15s infinite linear;
+        }
+        @keyframes rotateRoom {
+            0% { transform: rotateX(-15deg) rotateY(0deg); }
+            100% { transform: rotateX(-15deg) rotateY(360deg); }
+        }
+        .wall {
+            position: absolute; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(22, 27, 34, 0.9); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #8b949e;
+        }
+        .wall-back { width: 180px; height: 130px; transform: translateZ(-90px); }
+        .wall-left { width: 180px; height: 130px; transform: rotateY(90deg) translateZ(-90px); }
+        .floor { width: 180px; height: 180px; transform: rotateX(90deg) translateZ(65px); background: #1f242c; }
+
+        table.schedule-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        table.schedule-table th, table.schedule-table td { border: 1px solid var(--border); padding: 8px; text-align: center; vertical-align: middle; }
+        table.schedule-table th { background-color: #21262d; }
+        .schedule-cell { cursor: pointer; padding: 6px; border-radius: 4px; transition: 0.2s; min-height: 40px; }
+        .schedule-cell:hover { background-color: #21262d; }
+        .cell-subject { font-weight: bold; color: var(--accent-blue); }
+        .cell-details { font-size: 0.7rem; color: #8b949e; }
+
+        .modal {
+            display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background-color: var(--card-bg); padding: 20px; border-radius: 12px;
+            border: 1px solid var(--border); width: 320px;
+        }
+        .modal-content input { width: 100%; padding: 8px; margin: 6px 0 12px 0; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 4px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>School Life Simulator</h1>
+        <div class="header-right">
+            <div class="header-stat">💰 <span id="header-money" class="money">50.00 €</span></div>
+            <div class="header-stat">🍔 <span id="header-food">80%</span></div>
+            <div class="header-stat">💧 <span id="header-drink">80%</span></div>
+            <div class="header-stat">💤 <span id="header-sleep">80%</span></div>
+        </div>
+    </header>
+
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="openTab(event, 'tab-dashboard')">Dashboard</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-schedule')">Stundenplan</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-supermarket')">Supermarkt</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-housing')">Wohnung (3D)</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-bank')">Bank & Kredite</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-contracts')">Abos & Verträge</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-stats')">Statistik</button>
+    </div>
+
+    <!-- TAB 1: DASHBOARD -->
+    <div id="tab-dashboard" class="tab-content active">
+        <div class="dashboard-flex">
+            <!-- Timer Box -->
+            <div class="card dashboard-box" style="text-align: center;">
+                <h2>Live-Timer & Aktuelle Stunde</h2>
+                <p id="auto-detected-info" style="font-size: 0.85rem; color: var(--accent-blue); margin-bottom: 10px;">Erkenne Stunde...</p>
+                
+                <div class="timer-wrapper">
+                    <div class="timer-circle" id="timer-circle">
+                        <div class="timer-inner">
+                            <div class="timer-time" id="timer-clock">00:00</div>
+                            <div class="timer-title" id="timer-status">BEREIT</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Min</div>
+                <div class="timer-subtext" style="color: #fff;">Bereits verdient: <span id="session-earned" class="money">0.00 €</span></div>
+                
+                <div class="timer-controls">
+                    <button class="action-btn" onclick="toggleTimer()">Start / Stop</button>
+                    <button class="action-btn" style="background-color: var(--accent-orange);" onclick="startFreistunde()">Freistunde</button>
+                    <button class="action-btn" style="background-color: var(--accent-blue);" onclick="claimEarnings()">Auszahlen</button>
+                </div>
+            </div>
+
+            <!-- Stats & Sleep Box -->
+            <div class="card dashboard-box">
+                <h2>Lebensstatus & Schlaf</h2>
+                
+                <div class="stat-bar-container">
+                    <div class="stat-label"><span>Essen</span><span id="val-food">80%</span></div>
+                    <div class="progress-bar"><div id="fill-food" class="progress-fill" style="width: 80%;"></div></div>
+                </div>
+                <div class="stat-bar-container">
+                    <div class="stat-label"><span>Trinken</span><span id="val-drink">80%</span></div>
+                    <div class="progress-bar"><div id="fill-drink" class="progress-fill" style="width: 80%;"></div></div>
+                </div>
+                <div class="stat-bar-container">
+                    <div class="stat-label"><span>Schlaf / Energie</span><span id="val-sleep">80%</span></div>
+                    <div class="progress-bar"><div id="fill-sleep" class="progress-fill" style="width: 80%;"></div></div>
+                </div>
+
+                <!-- Echter Schlaf Eintragen -->
+                <div style="background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; font-size: 0.85rem;">
+                    <strong>Echten Schlaf eintragen:</strong>
+                    <div style="display: flex; gap: 8px; margin-top: 6px;">
+                        <input type="number" id="sleep-hours-input" placeholder="Stunden (z.B. 8)" min="1" max="16" style="flex:1; padding: 6px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px;">
+                        <button class="action-btn" onclick="logRealSleep()" style="padding: 6px 10px;">Schlaf eintragen</button>
+                    </div>
+                </div>
+
+                <div style="background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; font-size: 0.85rem;">
+                    <strong style="color: var(--accent-blue);">Fixkosten pro Tag:</strong>
+                    <div style="display: flex; justify-content: space-between; margin-top: 3px;">
+                        <span>Unterkunft & Abos:</span> <span id="dash-total-fixed" class="money">0.00 €</span>
+                    </div>
+                </div>
+
+                <button class="action-btn danger-btn" onclick="endDay()" style="width:100%; margin-top: 12px;">Tag beenden & Auszahlen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: STUNDENPLAN -->
+    <div id="tab-schedule" class="tab-content">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 style="margin:0; border:none;">Stundenplan & Fächer</h2>
+                <div>
+                    <label style="font-size: 0.85rem; cursor: pointer; background: #21262d; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);">
+                        <input type="checkbox" id="edit-mode-toggle" onchange="toggleEditMode()"> Bearbeitungsmodus
+                    </label>
+                </div>
+            </div>
+            <p style="font-size: 0.85rem; color: #8b949e;">Im Bearbeitungsmodus kannst du Fach, Raum, Lehrer und den **Verdienst pro Minute** festlegen. Freistunden bringen 0 €.</p>
+            
+            <div style="overflow-x: auto;">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Std</th>
+                            <th>Montag</th>
+                            <th>Dienstag</th>
+                            <th>Mittwoch</th>
+                            <th>Donnerstag</th>
+                            <th>Freitag</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Andere Aktivität starten</h2>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="custom-activity-input" placeholder="z.B. Lernen, Zocken..." style="flex: 1; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
+                <button class="action-btn" onclick="startCustomActivity()">Starten (0.50 €/Min)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: SUPERMARKT -->
+    <div id="tab-supermarket" class="tab-content">
+        <div class="card">
+            <h2>Getränke-Abteilung</h2>
+            <div class="grid-shop">
+                <div class="shop-item"><span>Red Bull (2.50 €)</span><button class="action-btn" onclick="buyItem('drink', 25, 2.5)">Kaufen</button></div>
+                <div class="shop-item"><span>Club Mate (1.80 €)</span><button class="action-btn" onclick="buyItem('drink', 20, 1.8)">Kaufen</button></div>
+                <div class="shop-item"><span>Spezi (1.50 €)</span><button class="action-btn" onclick="buyItem('drink', 18, 1.5)">Kaufen</button></div>
+                <div class="shop-item"><span>Wasser (1.10 €)</span><button class="action-btn" onclick="buyItem('drink', 10, 1.1)">Kaufen</button></div>
+            </div>
+        </div>
+        <div class="card">
+            <h2>Essen & Snacks</h2>
+            <div class="grid-shop">
+                <div class="shop-item"><span>Subway Menü (8.99 €)</span><button class="action-btn" onclick="buyItem('food', 55, 8.99)">Kaufen</button></div>
+                <div class="shop-item"><span>Ben & Jerry's (6.49 €)</span><button class="action-btn" onclick="buyItem('food', 40, 6.49)">Kaufen</button></div>
+                <div class="shop-item"><span>Schokolade (1.49 €)</span><button class="action-btn" onclick="buyItem('food', 18, 1.49)">Kaufen</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: WOHNUNG -->
+    <div id="tab-housing" class="tab-content">
+        <div class="card">
+            <h2>Virtuelle 3D-Wohnung</h2>
+            <div class="scene-container">
+                <div class="room-3d">
+                    <div class="wall wall-back">Wohnzimmer</div>
+                    <div class="wall wall-left">Küche</div>
+                    <div class="floor"></div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <h2>Immobilien-Markt</h2>
+            <div class="grid-shop">
+                <div class="shop-item"><span>WG-Zimmer (10 € / Tag)</span><button class="action-btn" onclick="setHousing('WG', 10, 2, 3)">Mieten</button></div>
+                <div class="shop-item"><span>Moderne Wohnung (25 € / Tag)</span><button class="action-btn" onclick="setHousing('Wohnung', 25, 5, 8)">Mieten</button></div>
+            </div>
+            <p style="margin-top: 15px;">Aktuelle Unterkunft: <strong id="current-housing" style="color:var(--accent-blue);">Keine</strong></p>
+        </div>
+    </div>
+
+    <!-- TAB 5: BANK -->
+    <div id="tab-bank" class="tab-content">
+        <div class="card">
+            <h2>Bank & Kredite</h2>
+            <p>Aktueller Kredit: <span id="loan-status">0.00 €</span></p>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="action-btn" onclick="takeLoan(100)" style="flex:1;">100 € aufnehmen</button>
+                <button class="action-btn danger-btn" onclick="payLoan(100)" style="flex:1;">100 € tilgen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 6: VERTRÄGE -->
+    <div id="tab-contracts" class="tab-content">
+        <div class="card">
+            <h2>Abos & Verträge</h2>
+            <div class="grid-shop">
+                <div class="shop-item"><span>Handy (1.20 €/Tag)</span><button class="action-btn" onclick="toggleContract('phone', 1.2)">An/Aus</button></div>
+                <div class="shop-item"><span>WLAN (1.50 €/Tag)</span><button class="action-btn" onclick="toggleContract('wifi', 1.5)">An/Aus</button></div>
+                <div class="shop-item"><span>Netflix (0.60 €/Tag)</span><button class="action-btn" onclick="toggleContract('netflix', 0.6)">An/Aus</button></div>
+                <div class="shop-item"><span>Spotify (0.40 €/Tag)</span><button class="action-btn" onclick="toggleContract('spotify', 0.4)">An/Aus</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 7: STATISTIK -->
+    <div id="tab-stats" class="tab-content">
+        <div class="card">
+            <h2>Statistik</h2>
+            <p>Gesamteinnahmen: <span id="stat-earnings" class="money">0.00 €</span></p>
+            <p>Gezahlte Steuern: <span id="stat-taxes">0.00 €</span></p>
+        </div>
+    </div>
+
+    <!-- MODAL FÜR BEARBEITUNG -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Stunde bearbeiten</h2>
+            <label>Fach (oder "Freistunde"):</label>
+            <input type="text" id="modal-subject" placeholder="z.B. Mathematik">
+            <label>Raum:</label>
+            <input type="text" id="modal-room" placeholder="z.B. 1.01">
+            <label>Lehrer:</label>
+            <input type="text" id="modal-teacher" placeholder="z.B. Müller">
+            <label>Verdienst pro Minute (€):</label>
+            <input type="number" id="modal-rate" step="0.05" min="0" placeholder="z.B. 0.50">
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="action-btn" onclick="saveLessonEdit()" style="flex:1;">Speichern</button>
+                <button class="action-btn danger-btn" onclick="closeModal()" style="flex:1;">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            money: 50.00,
+            pendingEarnings: 0.00,
+            totalEarnings: 0.00,
+            totalTaxes: 0.00,
+            taxToday: 0.00,
+            food: 80,
+            drink: 80,
+            sleep: 80,
+            loan: 0,
+            housing: { name: "Keine", rent: 0, water: 0, electricity: 0 },
+            activeContracts: { phone: false, wifi: false, netflix: false, spotify: false },
+            activeLesson: null,
+            currentRate: 0.50,
+            isTimerRunning: false,
+            timerSeconds: 0,
+            startTimeEpoch: null,
+            editMode: false,
+            currentEditCoords: { hour: null, day: null }
+        };
+
+        let timetableData = {};
+        const daysCount = 5;
+        const hoursCount = 10;
+
+        const sampleInit = {
+            1: [["PH","PH1","Wu", 0.6], ["PH","PH1","Wu", 0.6], ["Freistunde","-","-", 0], ["GEO","GEO","Kl", 0.5], ["D1","1.01","Mü", 0.5]],
+            2: [["m1","1.04","Ga", 0.5], ["PH","PH1","Wu", 0.6], ["Freistunde","-","-", 0], ["GEO","GEO","Kl", 0.5], ["D1","1.01","Mü", 0.5]],
+            3: [["PH","PH1","Wu", 0.6], ["D1","1.01","Mü", 0.5], ["gk3","1.01","Kl", 0.5], ["m1","1.04","Ga", 0.5], ["rel1","1.01","Im", 0.4]],
+            4: [["PH","PH1","Wu", 0.6], ["D1","1.01","Mü", 0.5], ["gk3","1.01","Kl", 0.5], ["m1","1.04","Ga", 0.5], ["rel1","1.01","Im", 0.4]],
+            5: [["Freistunde","-","-", 0], ["bk2","BK 3","Mai", 0.4], ["e1","1.01","Be", 0.5], ["bio2","BIO 2","Mg", 0.5], ["bio2","NWT","-", 0.5]],
+            6: [["Freistunde","-","-", 0], ["bk2","BK 3","Mai", 0.4], ["e1","1.01","Be", 0.5], ["D1","1.01","Mü", 0.5], ["bio2","NWT","-", 0.5]],
+            7: [["Freistunde","-","-", 0], ["GEO","GEO","Kl", 0.5], ["lth","SH","Mü", 0.4], ["PH","PH1","Wu", 0.6], ["GEO","GEO","Kl", 0.5]],
+            8: [["Freistunde","-","-", 0], ["GEO","GEO","Kl", 0.5], ["lth","SH","Mü", 0.4], ["e1","1.01","Be", 0.5], ["GEO","GEO","Kl", 0.5]],
+            9: [["Freistunde","-","-", 0], ["Freistunde","-","-", 0], ["s2","SP 2","Pi", 0.4], ["g3","1.03","Hö", 0.4], ["Freistunde","-","-", 0]],
+            10: [["Freistunde","-","-", 0], ["Freistunde","-","-", 0], ["s2","SP 2","Pi", 0.4], ["g3","1.03","Hö", 0.4], ["Freistunde","-","-", 0]]
+        };
+
+        // Lade Speicherstände wenn vorhanden
+        function loadGame() {
+            let saved = localStorage.getItem("schoolSimState");
+            if (saved) {
+                let parsed = JSON.parse(saved);
+                gameState = { ...gameState, ...parsed };
+            }
+            let savedTable = localStorage.getItem("schoolSimTable");
+            if (savedTable) {
+                timetableData = JSON.parse(savedTable);
+            } else {
+                initDefaultTable();
+            }
+        }
+
+        function saveGame() {
+            localStorage.setItem("schoolSimState", JSON.stringify(gameState));
+            localStorage.setItem("schoolSimTable", JSON.stringify(timetableData));
+        }
+
+        function initDefaultTable() {
+            for(let h=1; h<=hoursCount; h++) {
+                timetableData[h] = {};
+                for(let d=0; d<daysCount; d++) {
+                    if(sampleInit[h] && sampleInit[h][d]) {
+                        let item = sampleInit[h][d];
+                        timetableData[h][d] = { subject: item[0], room: item[1], teacher: item[2], rate: item[3] };
+                    } else {
+                        timetableData[h][d] = { subject: "Freistunde", room: "-", teacher: "-", rate: 0 };
+                    }
+                }
+            }
+        }
+
+        window.onload = () => {
+            loadGame();
+            renderSchedule();
+            checkAutoCurrentLesson();
+            updateUI();
+
+            // Wenn Timer lief vor dem Schließen, berechne verflossene Zeit nach
+            if (gameState.isTimerRunning && gameState.startTimeEpoch) {
+                let nowEpoch = Date.now();
+                let diffSeconds = Math.floor((nowEpoch - gameState.startTimeEpoch) / 1000);
+                gameState.timerSeconds += diffSeconds;
+                let earnedExtra = (diffSeconds / 60) * gameState.currentRate;
+                gameState.pendingEarnings += earnedExtra;
+                gameState.totalEarnings += earnedExtra;
+            }
+
+            // Haupt-Interval für Timer & automatischen Stat-Abfall (alle 1 Sek)
+            setInterval(() => {
+                if (gameState.isTimerRunning) {
+                    gameState.timerSeconds++;
+                    let earningsPerSec = gameState.currentRate / 60;
+                    gameState.pendingEarnings += earningsPerSec;
+                    gameState.totalEarnings += earningsPerSec;
+                    gameState.startTimeEpoch = Date.now();
+                    updateTimerDisplay();
+                    updateUI();
+                    saveGame();
+                }
+            }, 1000);
+
+            // Alle 60 Sekunden Stats (Essen, Trinken, Schlaf) minimal senken
+            setInterval(() => {
+                gameState.food = Math.max(0, gameState.food - 0.2);
+                gameState.drink = Math.max(0, gameState.drink - 0.3);
+                gameState.sleep = Math.max(0, gameState.sleep - 0.1);
+                updateUI();
+                saveGame();
+            }, 60000);
+
+            // Prüfe Auto-Stunde alle 30 Sek
+            setInterval(checkAutoCurrentLesson, 30000);
+        };
+
+        function openTab(evt, tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        function toggleEditMode() {
+            gameState.editMode = document.getElementById("edit-mode-toggle").checked;
+            renderSchedule();
+        }
+
+        function renderSchedule() {
+            const tbody = document.getElementById("schedule-body");
+            tbody.innerHTML = "";
+            for (let hour = 1; hour <= hoursCount; hour++) {
+                let row = `<tr><td><strong>${hour}</strong></td>`;
+                for (let d = 0; d < daysCount; d++) {
+                    let cellData = timetableData[hour][d];
+                    row += `<td class="schedule-cell" onclick="handleCellClick(${hour}, ${d})">
+                        <div class="cell-subject">${cellData.subject}</div>
+                        <div class="cell-details">${cellData.room} | ${cellData.rate}€/m</div>
+                    </td>`;
+                }
+                row += `</tr>`;
+                tbody.innerHTML += row;
+            }
+        }
+
+        function handleCellClick(hour, day) {
+            if (gameState.editMode) {
+                gameState.currentEditCoords = { hour, day };
+                let cellData = timetableData[hour][day];
+                document.getElementById("modal-subject").value = cellData.subject;
+                document.getElementById("modal-room").value = cellData.room;
+                document.getElementById("modal-teacher").value = cellData.teacher;
+                document.getElementById("modal-rate").value = cellData.rate !== undefined ? cellData.rate : 0.50;
+                document.getElementById("edit-modal").style.display = "flex";
+            } else {
+                let cellData = timetableData[hour][day];
+                gameState.activeLesson = cellData.subject;
+                gameState.currentRate = cellData.rate !== undefined ? cellData.rate : 0.50;
+                document.getElementById("timer-status").innerText = cellData.subject.toUpperCase();
+                document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2) + " €";
+            }
+        }
+
+        function saveLessonEdit() {
+            let { hour, day } = gameState.currentEditCoords;
+            let sub = document.getElementById("modal-subject").value || "Freistunde";
+            let rateVal = sub.toLowerCase().includes("freistunde") ? 0 : parseFloat(document.getElementById("modal-rate").value) || 0.50;
+            
+            timetableData[hour][day] = {
+                subject: sub,
+                room: document.getElementById("modal-room").value || "-",
+                teacher: document.getElementById("modal-teacher").value || "-",
+                rate: rateVal
+            };
+            closeModal();
+            renderSchedule();
+            saveGame();
+        }
+
+        function closeModal() {
+            document.getElementById("edit-modal").style.display = "none";
+        }
+
+        function checkAutoCurrentLesson() {
+            let now = new Date();
+            let day = now.getDay();
+            let hourNum = now.getHours();
+            let minuteNum = now.getMinutes();
+            let totalMins = hourNum * 60 + minuteNum;
+
+            let detectedHour = null;
+            if (totalMins >= 465 && totalMins < 515) detectedHour = 1;
+            else if (totalMins >= 515 && totalMins < 570) detectedHour = 2;
+            else if (totalMins >= 580 && totalMins < 630) detectedHour = 3;
+            else if (totalMins >= 630 && totalMins < 680) detectedHour = 4;
+            else if (totalMins >= 690 && totalMins < 740) detectedHour = 5;
+            else if (totalMins >= 740 && totalMins < 790) detectedHour = 6;
+            else if (totalMins >= 800 && totalMins < 850) detectedHour = 7;
+            else if (totalMins >= 850 && totalMins < 900) detectedHour = 8;
+            else if (totalMins >= 905 && totalMins < 955) detectedHour = 9;
+            else if (totalMins >= 955 && totalMins < 1005) detectedHour = 10;
+
+            let infoBox = document.getElementById("auto-detected-info");
+            if (day >= 1 && day <= 5 && detectedHour) {
+                let dayIndex = day - 1;
+                let lesson = timetableData[detectedHour][dayIndex];
+                if (gameState.activeLesson === null && !gameState.isTimerRunning) {
+                    gameState.activeLesson = lesson.subject;
+                    gameState.currentRate = lesson.rate !== undefined ? lesson.rate : 0.50;
+                    document.getElementById("timer-status").innerText = lesson.subject.toUpperCase();
+                    document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2) + " €";
+                }
+                infoBox.innerText = `Erkannt: ${detectedHour}. Stunde (${lesson.subject} - ${gameState.currentRate} €/Min)`;
+            } else {
+                infoBox.innerText = `Keine Schulstunde aktiv`;
+            }
+        }
+
+        function toggleTimer() {
+            if (gameState.isTimerRunning) {
+                gameState.isTimerRunning = false;
+                gameState.startTimeEpoch = null;
+                document.getElementById("timer-status").innerText += " (PAUSE)";
+            } else {
+                if (!gameState.activeLesson) {
+                    gameState.activeLesson = "Unterricht";
+                    gameState.currentRate = 0.50;
+                }
+                gameState.isTimerRunning = true;
+                gameState.startTimeEpoch = Date.now();
+                document.getElementById("timer-status").innerText = gameState.activeLesson.toUpperCase();
+            }
+            saveGame();
+        }
+
+        function startFreistunde() {
+            gameState.isTimerRunning = false;
+            gameState.activeLesson = "Freistunde";
+            gameState.currentRate = 0; // Freistunde bringt kein Geld
+            gameState.timerSeconds = 0;
+            document.getElementById("timer-status").innerText = "FREISTUNDE (0 €)";
+            document.getElementById("current-rate").innerText = "0.00 €";
+            updateTimerDisplay();
+            saveGame();
+        }
+
+        function startCustomActivity() {
+            let activityName = document.getElementById("custom-activity-input").value.trim();
+            if(!activityName) {
+                alert("Bitte gib eine Aktivität ein!");
+                return;
+            }
+            gameState.activeLesson = activityName;
+            gameState.currentRate = 0.50;
+            gameState.timerSeconds = 0;
+            gameState.isTimerRunning = true;
+            gameState.startTimeEpoch = Date.now();
+            document.getElementById("timer-status").innerText = activityName.toUpperCase();
+            document.getElementById("current-rate").innerText = "0.50 €";
+            saveGame();
+        }
+
+        function claimEarnings() {
+            if (gameState.pendingEarnings <= 0) {
+                alert("Kein Guthaben zum Auszahlen vorhanden!");
+                return;
+            }
+            gameState.money += gameState.pendingEarnings;
+            alert(`Erfolgreich ${gameState.pendingEarnings.toFixed(2)} € ausgezahlt!`);
+            gameState.pendingEarnings = 0;
+            updateUI();
+            saveGame();
+        }
+
+        function logRealSleep() {
+            let hours = parseFloat(document.getElementById("sleep-hours-input").value);
+            if (isNaN(hours) || hours <= 0) {
+                alert("Bitte gültige Stunden eingeben!");
+                return;
+            }
+            let recovered = Math.min(100, hours * 12.5); // 8h = 100%
+            gameState.sleep = Math.min(100, gameState.sleep + recovered);
+            alert(`${hours} Stunden Schlaf eingetragen! Energie aufgeladen.`);
+            document.getElementById("sleep-hours-input").value = "";
+            updateUI();
+            saveGame();
+        }
+
+        function updateTimerDisplay() {
+            let m = Math.floor(gameState.timerSeconds / 60);
+            let s = gameState.timerSeconds % 60;
+            document.getElementById("timer-clock").innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function buyItem(type, amount, price) {
+            if (gameState.money < price) {
+                alert("Nicht genug Geld!");
+                return;
+            }
+            gameState.money -= price;
+            if (type === 'food') gameState.food = Math.min(100, gameState.food + amount);
+            if (type === 'drink') gameState.drink = Math.min(100, gameState.drink + amount);
+            updateUI();
+            saveGame();
+        }
+
+        function setHousing(name, rent, water, electricity) {
+            gameState.housing = { name, rent, water, electricity };
+            alert(name + " gemietet!");
+            updateUI();
+            saveGame();
+        }
+
+        function toggleContract(name, cost) {
+            gameState.activeContracts[name] = !gameState.activeContracts[name];
+            alert("Vertragsstatus geändert.");
+            updateUI();
+            saveGame();
+        }
+
+        function takeLoan(amount) {
+            gameState.loan += amount;
+            gameState.money += amount;
+            updateUI();
+            saveGame();
+        }
+
+        function payLoan(amount) {
+            if (gameState.money < amount || gameState.loan < amount) {
+                alert("Nicht genug Geld!");
+                return;
+            }
+            gameState.loan -= amount;
+            gameState.money -= amount;
+            updateUI();
+            saveGame();
+        }
+
+        function getContractsCost() {
+            let c = 0;
+            if (gameState.activeContracts.phone) c += 1.2;
+            if (gameState.activeContracts.wifi) c += 1.5;
+            if (gameState.activeContracts.netflix) c += 0.6;
+            if (gameState.activeContracts.spotify) c += 0.4;
+            return c;
+        }
+
+        function getHousingCost() {
+            return gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
+        }
+
+        function getFixedCosts() {
+            return getHousingCost() + getContractsCost();
+        }
+
+        function endDay() {
+            if(gameState.isTimerRunning) {
+                gameState.isTimerRunning = false;
+                document.getElementById("timer-status").innerText = "BEREIT";
+            }
+
+            let fixed = getFixedCosts();
+            let tax = gameState.pendingEarnings * 0.20;
+            let net = gameState.pendingEarnings - tax - fixed;
+
+            gameState.money += net;
+            gameState.taxToday = tax;
+            gameState.totalTaxes += tax;
+            gameState.pendingEarnings = 0;
+            gameState.timerSeconds = 0;
+
+            updateUI();
+            saveGame();
+            alert(`Tagesabschluss!\nNetto nach Steuern & Fixkosten: ${net.toFixed(2)} €`);
+        }
+
+        function updateUI() {
+            document.getElementById("header-money").innerText = gameState.money.toFixed(2) + " €";
+            document.getElementById("header-food").innerText = Math.round(gameState.food) + "%";
+            document.getElementById("header-drink").innerText = Math.round(gameState.drink) + "%";
+            document.getElementById("header-sleep").innerText = Math.round(gameState.sleep) + "%";
+
+            document.getElementById("fill-food").style.width = gameState.food + "%";
+            document.getElementById("val-food").innerText = Math.round(gameState.food) + "%";
+            document.getElementById("fill-drink").style.width = gameState.drink + "%";
+            document.getElementById("val-drink").innerText = Math.round(gameState.drink) + "%";
+            document.getElementById("fill-sleep").style.width = gameState.sleep + "%";
+            document.getElementById("val-sleep").innerText = Math.round(gameState.sleep) + "%";
+
+            document.getElementById("dash-total-fixed").innerText = getFixedCosts().toFixed(2) + " €";
+            document.getElementById("current-housing").innerText = gameState.housing.name;
+            document.getElementById("loan-status").innerText = gameState.loan.toFixed(2) + " €";
+            document.getElementById("stat-earnings").innerText = gameState.totalEarnings.toFixed(2) + " €";
+            document.getElementById("stat-taxes").innerText = gameState.totalTaxes.toFixed(2) + " €";
+            document.getElementById("session-earned").innerText = gameState.pendingEarnings.toFixed(2) + " €";
+            document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2) + " €";
+            updateTimerDisplay();
+        }
+    </script>
+</body>
+</html>
