@@ -134,6 +134,8 @@
         table.schedule-table th, table.grades-table th { background-color: #21262d; }
         .schedule-cell { cursor: pointer; padding: 6px; border-radius: 4px; transition: 0.2s; min-height: 40px; }
         .schedule-cell:hover { background-color: #21262d; }
+        .hour-col { cursor: pointer; transition: 0.2s; }
+        .hour-col:hover { background-color: #21262d; color: var(--accent-blue); }
         .cell-subject { font-weight: bold; color: var(--accent-blue); }
         .cell-details { font-size: 0.7rem; color: #8b949e; }
 
@@ -266,7 +268,7 @@
                     </label>
                 </div>
             </div>
-            <p style="font-size: 0.85rem; color: #8b949e;">Beim Wechseln des Fachs startet der Timer automatisch bei 00:00 (wartet auf Start).</p>
+            <p style="font-size: 0.85rem; color: #8b949e;">Klicke im Bearbeitungsmodus auf eine Stundennummer an der Seite, um die Uhrzeiten anzupassen.</p>
             
             <div style="overflow-x: auto;">
                 <table class="schedule-table">
@@ -285,14 +287,24 @@
             </div>
         </div>
 
-        <!-- Eigene Sache & Zeit nachtragen (mit Uhr-Auswahl) -->
+        <!-- Feld 1: Laufende eigene Sache eintragen (Live) -->
         <div class="card">
-            <h2>Eigene Sache & Zeit nachtragen</h2>
-            <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 10px;">Trage hier eine vergangene Aktivität und die Dauer über das Uhr-Feld ein. Das Geld landet direkt im Zwischenspeicher!</p>
+            <h2>Laufende eigene Sache eintragen (Live starten)</h2>
+            <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 10px;">Trage hier ein Fach oder eine Aktivität ein, die gerade stattfindet, und starte sie direkt für den Live-Timer.</p>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="custom-activity-input" placeholder="z.B. Lernen, Zocken, Projekt..." style="flex: 1; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
+                <button class="action-btn" onclick="startCustomActivity()">Als aktive Sache starten</button>
+            </div>
+        </div>
+
+        <!-- Feld 2: Vergangene eigene Sache nachtragen (mit Uhr) -->
+        <div class="card">
+            <h2>Vergangene eigene Sache nachtragen</h2>
+            <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 10px;">Trage hier eine bereits erledigte Aktivität und die Dauer über das Uhr-Feld ein. Das Geld landet direkt im Zwischenspeicher!</p>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <input type="text" id="custom-activity-input" placeholder="z.B. Lernen, Projektarbeit..." style="flex: 2; min-width: 180px; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
-                <input type="time" id="custom-time-input" value="00:30" style="flex: 1; min-width: 110px; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;" title="Dauer auswählen">
-                <button class="action-btn" onclick="startCustomActivityWithTime()" style="flex: 1; min-width: 140px; background-color: var(--accent-blue);">Nachtragen & Verdienen</button>
+                <input type="text" id="past-activity-input" placeholder="z.B. Hausaufgaben machen..." style="flex: 2; min-width: 180px; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
+                <input type="time" id="past-time-input" value="00:30" style="flex: 1; min-width: 110px; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;" title="Dauer auswählen">
+                <button class="action-btn" onclick="logPastActivityWithTime()" style="flex: 1; min-width: 140px; background-color: var(--accent-blue);">Nachtragen & Verdienen</button>
             </div>
         </div>
     </div>
@@ -402,7 +414,7 @@
         </div>
     </div>
 
-    <!-- MODAL FÜR BEARBEITUNG -->
+    <!-- MODAL FÜR FACH-BEARBEITUNG -->
     <div id="edit-modal" class="modal">
         <div class="modal-content">
             <h2 id="modal-title">Stunde bearbeiten</h2>
@@ -417,6 +429,21 @@
             <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <button class="action-btn" onclick="saveLessonEdit()" style="flex:1;">Speichern</button>
                 <button class="action-btn danger-btn" onclick="closeModal()" style="flex:1;">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FÜR UHRZEIT-BEARBEITUNG -->
+    <div id="time-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="time-modal-title">Uhrzeit für Stunde anpassen</h2>
+            <label>Startzeit:</label>
+            <input type="time" id="modal-start-time">
+            <label>Endzeit:</label>
+            <input type="time" id="modal-end-time">
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="action-btn" onclick="saveTimeEdit()" style="flex:1;">Speichern</button>
+                <button class="action-btn danger-btn" onclick="closeTimeModal()" style="flex:1;">Abbrechen</button>
             </div>
         </div>
     </div>
@@ -443,6 +470,7 @@
             lastDetectedHourKey: null,
             editMode: false,
             currentEditCoords: { hour: null, day: null },
+            currentTimeEditHour: null,
             streaks: {},
             payoutHistory: []
         };
@@ -491,8 +519,22 @@
         ];
 
         let timetableData = {};
+        let lessonTimes = {};
         const daysCount = 5;
         const hoursCount = 10;
+
+        const defaultTimes = {
+            1: { start: "07:45", end: "08:30" },
+            2: { start: "08:35", end: "09:20" },
+            3: { start: "09:40", end: "10:25" },
+            4: { start: "10:30", end: "11:15" },
+            5: { start: "11:30", end: "12:15" },
+            6: { start: "12:20", end: "13:05" },
+            7: { start: "13:20", end: "14:05" },
+            8: { start: "14:10", end: "14:55" },
+            9: { start: "15:05", end: "15:50" },
+            10: { start: "15:55", end: "16:40" }
+        };
 
         const sampleInit = {
             1: [["PH","PH1","Wu", 0.6], ["PH","PH1","Wu", 0.6], ["Freistunde","-","-", 0], ["GEO","GEO","Kl", 0.5], ["D1","1.01","Mü", 0.5]],
@@ -524,11 +566,18 @@
             } else {
                 initDefaultTable();
             }
+            let savedTimes = localStorage.getItem("schoolSimTimes");
+            if (savedTimes) {
+                lessonTimes = JSON.parse(savedTimes);
+            } else {
+                lessonTimes = JSON.parse(JSON.stringify(defaultTimes));
+            }
         }
 
         function saveGame() {
             localStorage.setItem("schoolSimState", JSON.stringify(gameState));
             localStorage.setItem("schoolSimTable", JSON.stringify(timetableData));
+            localStorage.setItem("schoolSimTimes", JSON.stringify(lessonTimes));
         }
 
         function initDefaultTable() {
@@ -604,10 +653,18 @@
             }, 60000);
         };
 
-        // Funktion zum Nachtragen von eigener Sache über das Uhr-Feld
-        function startCustomActivityWithTime() {
+        function startCustomActivity() {
             let activityName = document.getElementById("custom-activity-input").value.trim();
-            let timeVal = document.getElementById("custom-time-input").value; // Format "HH:MM"
+            if(!activityName) { alert("Bitte gib eine Aktivität ein!"); return; }
+            switchTask(activityName, 0.50);
+            document.getElementById("custom-activity-input").value = "";
+            saveGame();
+            alert(`"${activityName}" als aktive Sache geladen! Du kannst den Timer jetzt im Dashboard starten.`);
+        }
+
+        function logPastActivityWithTime() {
+            let activityName = document.getElementById("past-activity-input").value.trim();
+            let timeVal = document.getElementById("past-time-input").value;
 
             if (!activityName) {
                 alert("Bitte gib einen Namen für die Aktivität ein!");
@@ -618,7 +675,6 @@
                 return;
             }
 
-            // Zeit in Minuten umrechnen
             let parts = timeVal.split(':');
             let hours = parseInt(parts[0]) || 0;
             let minutes = parseInt(parts[1]) || 0;
@@ -637,7 +693,6 @@
             gameState.pendingEarnings += earned;
             gameState.totalEarnings += earned;
 
-            // Verbrauch für die nachgetragene Zeit anrechnen (3x schneller, da gearbeitet)
             let workMultiplier = 3.0;
             let decayMod = buffs.generalDecayMod;
 
@@ -648,14 +703,7 @@
             if (buffs.minSleep > 0 && sleepVal < buffs.minSleep) sleepVal = buffs.minSleep;
             gameState.sleep = Math.max(0, sleepVal);
 
-            // Aktive Aktivität im Timer setzen (aber pausiert lassen)
-            gameState.activeLesson = activityName;
-            gameState.currentRate = defaultRate;
-            document.getElementById("timer-status").innerText = activityName.toUpperCase() + " (PAUSE)";
-            document.getElementById("current-rate").innerText = effectiveRate.toFixed(2) + " €";
-
-            document.getElementById("custom-activity-input").value = "";
-            updateStreakDisplay();
+            document.getElementById("past-activity-input").value = "";
             updateUI();
             saveGame();
 
@@ -702,7 +750,11 @@
             const tbody = document.getElementById("schedule-body");
             tbody.innerHTML = "";
             for (let hour = 1; hour <= hoursCount; hour++) {
-                let row = `<tr><td><strong>${hour}</strong></td>`;
+                let times = lessonTimes[hour] || { start: "00:00", end: "00:00" };
+                let row = `<tr>
+                    <td class="hour-col" onclick="handleHourClick(${hour})" title="Uhrzeit bearbeiten">
+                        <strong>${hour}</strong><br><span style="font-size:0.65rem; color:#8b949e;">${times.start}-${times.end}</span>
+                    </td>`;
                 for (let d = 0; d < daysCount; d++) {
                     let cellData = timetableData[hour][d];
                     row += `<td class="schedule-cell" onclick="handleCellClick(${hour}, ${d})">
@@ -713,6 +765,33 @@
                 row += `</tr>`;
                 tbody.innerHTML += row;
             }
+        }
+
+        function handleHourClick(hour) {
+            if (gameState.editMode) {
+                gameState.currentTimeEditHour = hour;
+                let t = lessonTimes[hour] || { start: "07:45", end: "08:30" };
+                document.getElementById("modal-start-time").value = t.start;
+                document.getElementById("modal-end-time").value = t.end;
+                document.getElementById("time-modal-title").innerText = `${hour}. Stunde - Uhrzeit anpassen`;
+                document.getElementById("time-modal").style.display = "flex";
+            }
+        }
+
+        function saveTimeEdit() {
+            let hour = gameState.currentTimeEditHour;
+            let start = document.getElementById("modal-start-time").value;
+            let end = document.getElementById("modal-end-time").value;
+            if (hour && start && end) {
+                lessonTimes[hour] = { start, end };
+                closeTimeModal();
+                renderSchedule();
+                saveGame();
+            }
+        }
+
+        function closeTimeModal() {
+            document.getElementById("time-modal").style.display = "none";
         }
 
         function renderSupermarket() {
@@ -1001,16 +1080,19 @@
             let totalMins = hourNum * 60 + minuteNum;
 
             let detectedHour = null;
-            if (totalMins >= 465 && totalMins < 515) detectedHour = 1;
-            else if (totalMins >= 515 && totalMins < 570) detectedHour = 2;
-            else if (totalMins >= 580 && totalMins < 630) detectedHour = 3;
-            else if (totalMins >= 630 && totalMins < 680) detectedHour = 4;
-            else if (totalMins >= 690 && totalMins < 740) detectedHour = 5;
-            else if (totalMins >= 740 && totalMins < 790) detectedHour = 6;
-            else if (totalMins >= 800 && totalMins < 850) detectedHour = 7;
-            else if (totalMins >= 850 && totalMins < 900) detectedHour = 8;
-            else if (totalMins >= 905 && totalMins < 955) detectedHour = 9;
-            else if (totalMins >= 955 && totalMins < 1005) detectedHour = 10;
+            for (let h = 1; h <= hoursCount; h++) {
+                let t = lessonTimes[h];
+                if (t && t.start && t.end) {
+                    let [startH, startM] = t.start.split(':').map(Number);
+                    let [endH, endM] = t.end.split(':').map(Number);
+                    let startTotal = startH * 60 + startM;
+                    let endTotal = endH * 60 + endM;
+                    if (totalMins >= startTotal && totalMins < endTotal) {
+                        detectedHour = h;
+                        break;
+                    }
+                }
+            }
 
             let infoBox = document.getElementById("auto-detected-info");
             if (day >= 1 && day <= 5 && detectedHour) {
