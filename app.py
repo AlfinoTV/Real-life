@@ -15,7 +15,7 @@ if "money" not in st.session_state:
   st.session_state.drink = 80.0
   st.session_state.sleep = 80.0
   st.session_state.loan = 0.0
-  st.session_state.housing = {"name": "Keine", "rent": 0, "fixed": 0}
+  st.session_state.housing = {"name": "Keine", "rent": 0}
   st.session_state.contracts = {
       "Handy": {"active": False, "cost": 1.2},
       "WLAN": {"active": False, "cost": 1.5},
@@ -24,17 +24,15 @@ if "money" not in st.session_state:
   }
   st.session_state.active_lesson = "Freistunde"
   st.session_state.current_rate = 0.0
-  st.session_state.is_working = False
 
 
-# Automatischer Stat-Verfall bei Interaktion
 def decay_stats():
   st.session_state.food = max(0.0, st.session_state.food - 0.2)
   st.session_state.drink = max(0.0, st.session_state.drink - 0.3)
   st.session_state.sleep = max(0.0, st.session_state.sleep - 0.1)
 
 
-# --- 2. SIDEBAR / HEADER STATUS ---
+# --- 2. SIDEBAR / STATUS ---
 st.sidebar.title("🏫 Lebensstatus")
 st.sidebar.metric("Geld", f"{st.session_state.money:.2f} €")
 
@@ -94,8 +92,13 @@ with tab_dash:
 
   with col2:
     st.subheader("💤 Schlaf eintragen")
+    # Korrigiert: min_value und max_value statt min_val/max_val
     sleep_hours = st.number_input(
-        "Schlaf in Stunden:", min_val=1.0, max_val=16.0, value=8.0, step=0.5
+        "Schlaf in Stunden:",
+        min_value=1.0,
+        max_value=16.0,
+        value=8.0,
+        step=0.5,
     )
     if st.button("Schlaf eintragen", use_container_width=True):
       recovered = min(100.0, sleep_hours * 12.5)
@@ -103,7 +106,6 @@ with tab_dash:
       st.success(f"{sleep_hours} Stunden Schlaf eingetragen! Energie aufgeladen.")
       st.rerun()
 
-    # Fixkosten berechnen
     contract_cost = sum(
         v["cost"] for v in st.session_state.contracts.values() if v["active"]
     )
@@ -130,7 +132,6 @@ with tab_schedule:
       " zu übernehmen:"
   )
 
-  # Schnellauswahl Fächer-Beispiele
   fächer = [
       {"name": "Mathematik", "rate": 0.50},
       {"name": "Physik (LK)", "rate": 0.60},
