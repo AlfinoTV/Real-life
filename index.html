@@ -53,6 +53,7 @@
             border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-bottom: 20px;
         }
         h2 { font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0; color: #58a6ff; }
+        h3 { font-size: 1rem; color: #fff; margin-top: 15px; margin-bottom: 8px; border-bottom: 1px dashed var(--border); padding-bottom: 4px; }
 
         .dashboard-flex {
             display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch;
@@ -128,6 +129,10 @@
         .floor { width: 220px; height: 220px; transform: rotateX(90deg) translateZ(75px); background: repeating-linear-gradient(45deg, #21262d, #21262d 10px, #1a1f26 10px, #1a1f26 20px); border: 2px solid #30363d; }
         .mini-furniture {
             position: absolute; background: var(--accent-blue); color: #fff; font-size: 0.6rem; padding: 4px; border-radius: 4px; transform: translateZ(-50px);
+        }
+
+        .garage-container {
+            background: #21262d; border: 2px dashed var(--accent-orange); border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: center;
         }
 
         table.schedule-table, table.grades-table, table.loan-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
@@ -244,7 +249,7 @@
                 <div style="background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; font-size: 0.85rem;">
                     <strong style="color: var(--accent-blue);">Fixkosten pro Tag:</strong>
                     <div style="display: flex; justify-content: space-between; margin-top: 3px;">
-                        <span>Unterkunft, Verträge, Fahrzeuge & Möbel:</span> <span id="dash-total-fixed" class="money">0.00 €</span>
+                        <span>Unterkunft, Verträge, Fahrzeuge & Versicherungen:</span> <span id="dash-total-fixed" class="money">0.00 €</span>
                     </div>
                 </div>
 
@@ -407,17 +412,32 @@
     <!-- TAB 5: ESSEN & TRINKEN -->
     <div id="tab-food" class="tab-content">
         <div class="card">
-            <h2>Supermarkt & Verpflegung</h2>
-            <p style="font-size: 0.85rem; color: #8b949e;">Kaufe Lebensmittel und Getränke ein, um Hunger und Durst zu stillen.</p>
-            <div class="grid-shop" id="food-shop-container"></div>
+            <h2>Essen & Trinken - Supermarkt</h2>
+            <p style="font-size: 0.85rem; color: #8b949e;">Kaufe Lebensmittel und Getränke ein, um Hunger und Durst zu stillen. Mit Prime-Abo profitierst du von Rabatten!</p>
+            
+            <h3 style="color: var(--accent-orange);">🍔 Essen</h3>
+            <div class="grid-shop" id="food-shop-eating"></div>
+
+            <h3 style="color: var(--accent-blue); margin-top: 20px;">🥤 Trinken</h3>
+            <div class="grid-shop" id="food-shop-drinking"></div>
         </div>
     </div>
 
     <!-- TAB 6: FAHRZEUGE -->
     <div id="tab-vehicles" class="tab-content">
         <div class="card">
-            <h2>Fahrzeug-Shop</h2>
-            <p style="font-size: 0.85rem; color: #8b949e;">Kaufe Fahrräder oder Autos, um flexibel zu sein und Boni freizuschalten.</p>
+            <h2>🚗 Meine Garage</h2>
+            <div class="garage-container" id="garage-display">
+                <p style="color: #8b949e; margin: 0;">Deine Garage ist leer. Kaufe unten ein Fahrzeug!</p>
+            </div>
+
+            <h2>Fahrzeug-Shop & Mobilität</h2>
+            <p style="font-size: 0.85rem; color: #8b949e;">Kaufe Fahrzeuge oder nutze ÖPNV / Laufen.</p>
+            
+            <div id="public-transport-banner" style="background: #21262d; border: 1px solid var(--accent-blue); padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none;">
+                <strong style="color: var(--accent-blue);">💡 ÖPNV-Empfehlung:</strong> Du hast kein eigenes Fahrzeug zur Verfügung. Es wird empfohlen, die Öffis zu nutzen (kostenlos mit Deutschlandticket im Abo-Bereich, sonst Einzelticket). Alternativ kannst du laufen (kostet viel Energie, macht hungrig & durstig!).
+            </div>
+
             <div class="grid-shop" id="vehicle-shop-container"></div>
         </div>
     </div>
@@ -430,6 +450,7 @@
                 <div>
                     <div style="font-size: 0.85rem; color: #8b949e;">Geminte Bitcoins:</div>
                     <div id="btc-balance" style="font-size: 1.5rem; font-weight: bold; color: var(--accent-orange);">0.00000000 BTC</div>
+                    <div id="btc-euro-value" style="font-size: 0.85rem; color: var(--accent-green); margin-top: 2px;">Entspricht: 0.00 €</div>
                 </div>
                 <div>
                     <div style="font-size: 0.85rem; color: #8b949e;">Gesamte Hashrate:</div>
@@ -439,8 +460,12 @@
                     <div style="font-size: 0.85rem; color: #8b949e;">Stromkosten (Mining):</div>
                     <div id="btc-power-cost" style="font-size: 1.2rem; font-weight: bold; color: var(--danger);">0.00 € / Tag</div>
                 </div>
-                <div>
-                    <button class="action-btn" style="background-color: var(--accent-orange);" onclick="sellAllBtc()">BTC zu Euro verkaufen</button>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <button class="action-btn" style="background-color: var(--accent-orange);" onclick="sellAllBtc()">Komplett auszahlen (€)</button>
+                    <div style="display: flex; gap: 4px;">
+                        <input type="number" id="btc-withdraw-input" placeholder="Menge BTC" step="0.0001" style="width: 100px; padding: 4px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.75rem;">
+                        <button class="action-btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="withdrawPartialBtc()">Teilverkauf</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -486,6 +511,10 @@
         <div class="card">
             <h2>Abos, Verträge & Services</h2>
             <div class="grid-shop" id="contracts-shop-container"></div>
+
+            <h2 style="margin-top: 25px;">🛡️ Versicherungen</h2>
+            <p style="font-size: 0.85rem; color: #8b949e;">Schütze dich vor unvorhergesehenen Kosten. Je teurer, desto mehr Vorteile und Schutz!</p>
+            <div class="grid-shop" id="insurance-shop-container"></div>
         </div>
     </div>
 
@@ -522,6 +551,21 @@
         </div>
     </div>
 
+    <!-- MODAL FÜR TANKEN / LADEN -->
+    <div id="refuel-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="refuel-modal-title">Fahrzeug auftanken / laden</h2>
+            <p id="refuel-info" style="font-size: 0.85rem; color: #8b949e;"></p>
+            <label id="refuel-input-label">Menge (Liter / %):</label>
+            <input type="number" id="refuel-amount-input" value="10" min="1" step="1">
+            <div style="font-size: 0.85rem; margin-bottom: 10px;">Kosten: <strong id="refuel-cost-display" class="money">0.00 €</strong></div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="action-btn" onclick="confirmRefuel()" style="flex:1;">Durchführen</button>
+                <button class="action-btn danger-btn" onclick="closeRefuelModal()" style="flex:1;">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL FÜR UHRZEIT-BEARBEITUNG -->
     <div id="time-modal" class="modal">
         <div class="modal-content">
@@ -552,8 +596,10 @@
             utilities: {},
             furniture: {},
             contracts: {},
+            insurances: {},
             foodItems: {},
             vehicles: {},
+            vehicleStates: {}, // Speichert Tank/Akku & Verschleiß pro Fahrzeug
             miningRigs: {},
             grades: {},
             activeLesson: null,
@@ -571,10 +617,12 @@
             currentEditCoords: { hour: null, day: null },
             currentTimeEditHour: null,
             streaks: {},
-            payoutHistory: []
+            payoutHistory: [],
+            dailyFoodSpent: 0,
+            activeVehicleId: null
         };
 
-        const btcPriceEur = 60000.00; // Fester Kurs für Simulation
+        const btcPriceEur = 60000.00;
 
         const utilitiesCatalog = [
             { id: "water_basic", type: "water", name: "Stadtwerke Wasser (Standard)", daily: 1.50, desc: "Grundversorgung Wasser" },
@@ -596,23 +644,36 @@
             { id: "netflix", name: "Netflix & Streaming", daily: 0.60, bonusText: "Min. Schlaf in Freizeit: 20%", effect: (s) => s.minSleep = 20 },
             { id: "spotify", name: "Spotify Music", daily: 0.40, bonusText: "Trink-Regeneration: +5%", effect: (s) => s.drinkBonus = 1.05 },
             { id: "gym", name: "Fitnessstudio-Mitgliedschaft", daily: 2.00, bonusText: "Allg. Verbrauch: -15%", effect: (s) => s.generalDecayMod = 0.85 },
-            { id: "prime", name: "Express-Lieferdienst Abo", daily: 0.90, bonusText: "Supermarkt-Rabatt: -10%", effect: (s) => s.shopDiscount = 0.9 },
+            { id: "prime", name: "Express-Lieferdienst Abo (Prime)", daily: 0.90, bonusText: "Supermarkt-Rabatt: -10% auf Essen & Trinken", effect: (s) => s.shopDiscount = 0.9 },
+            { id: "deutschlandticket", name: "Deutschlandticket (ÖPNV)", daily: 1.65, bonusText: "Kostenlose ÖPNV-Nutzung (49€ Ticket)", effect: (s) => s.freeTransit = true },
             { id: "taxadvisor", name: "Digitaler Steuerberater", daily: 3.50, bonusText: "Steuersatz: 8% (statt 15%)", effect: (s) => s.taxRate = 0.08 }
         ];
 
+        const insuranceCatalog = [
+            { id: "ins_liability", name: "Haftpflichtversicherung", daily: 0.35, tier: "Basis", desc: "Deckt kleinere Schäden ab und schützt vor Bußgeldern." },
+            { id: "ins_auto_med", name: "Kfz-Teilkaskoversicherung", daily: 1.80, tier: "Mittel", desc: "Reduziert Reparaturkosten bei Fahrzeugen um 30%." },
+            { id: "ins_house_full", name: "Hausrat- & Gebäude-Komplettschutz", daily: 3.20, tier: "Premium", desc: "Voller Schutz bei Hausschäden & Mietminderung." }
+        ];
+
         const foodCatalog = [
-            { id: "apple", name: "Frischer Apfel", cost: 1.50, hunger: 15, thirst: 5, type: "food" },
-            { id: "sandwich", name: "Belegtes Sandwich", cost: 3.50, hunger: 40, thirst: 10, type: "food" },
-            { id: "pizza", name: "Ganze Pizza", cost: 8.00, hunger: 90, thirst: 20, type: "food" },
-            { id: "water_bottle", name: "Mineralwasser (0,5l)", cost: 1.00, hunger: 0, thirst: 40, type: "drink" },
-            { id: "energy", name: "Energy Drink", cost: 2.20, hunger: 5, thirst: 50, type: "drink" }
+            // Essen
+            { id: "apple", name: "Frischer Apfel", cost: 1.50, hunger: 15, thirst: 5, category: "food" },
+            { id: "sandwich", name: "Belegtes Sandwich", cost: 3.50, hunger: 40, thirst: 10, category: "food" },
+            { id: "salad", name: "Gesunder Caesar Salad", cost: 5.50, hunger: 50, thirst: 15, category: "food" },
+            { id: "pizza", name: "Ganze Pizza Salami", cost: 8.00, hunger: 90, thirst: 20, category: "food" },
+            { id: "döner", name: "Großer Döner Kebap", cost: 7.00, hunger: 85, thirst: 15, category: "food" },
+            // Trinken
+            { id: "water_bottle", name: "Mineralwasser (0,5l)", cost: 1.00, hunger: 0, thirst: 40, category: "drink" },
+            { id: "club_mate", name: "Club-Mate (0,5l)", cost: 1.80, hunger: 2, thirst: 55, category: "drink" },
+            { id: "energy", name: "Energy Drink", cost: 2.20, hunger: 5, thirst: 50, category: "drink" },
+            { id: "smoothie", name: "Vitamin Frucht-Smoothie", cost: 3.20, hunger: 10, thirst: 65, category: "drink" }
         ];
 
         const vehicleCatalog = [
-            { id: "bike", name: "Fahrrad", cost: 350, daily: 0.20, desc: "Zuverlässig & günstig im Unterhalt" },
-            { id: "scooter", name: "E-Scooter", cost: 600, daily: 0.80, desc: "Schneller zur Schule" },
-            { id: "used_car", name: "Gebrauchtwagen", cost: 3500, daily: 4.50, desc: "Volle Mobilität & Unabhängigkeit" },
-            { id: "sportscar", name: "Sportwagen", cost: 45000, daily: 15.00, desc: "Luxus pur & hohes Ansehen" }
+            { id: "ebike", name: "E-Bike", cost: 1200, daily: 0.30, type: "electric", maxFuelOrBattery: 100, unit: "%", desc: "Elektrisches Fahrrad mit Akku-Anzeige" },
+            { id: "escooter", name: "E-Scooter", cost: 600, daily: 0.80, type: "electric", maxFuelOrBattery: 100, unit: "%", desc: "Schneller E-Roller mit Akku-Anzeige" },
+            { id: "used_car", name: "Gebrauchtwagen", cost: 3500, daily: 2.50, type: "fuel", maxFuelOrBattery: 50, unit: "l", fuelCostPerLiter: 1.75, desc: "Benziner (Super E10) mit Tankanzeige" },
+            { id: "sportscar", name: "Sportwagen", cost: 45000, daily: 8.00, type: "fuel", maxFuelOrBattery: 75, unit: "l", fuelCostPerLiter: 1.95, desc: "Luxus-Sportwagen mit hohem Verbrauch" }
         ];
 
         const miningCatalog = [
@@ -664,11 +725,14 @@
                 if(!gameState.payoutHistory) gameState.payoutHistory = [];
                 if(!gameState.furniture) gameState.furniture = {};
                 if(!gameState.contracts) gameState.contracts = {};
+                if(!gameState.insurances) gameState.insurances = {};
                 if(!gameState.utilities) gameState.utilities = {};
                 if(!gameState.vehicles) gameState.vehicles = {};
+                if(!gameState.vehicleStates) gameState.vehicleStates = {};
                 if(!gameState.miningRigs) gameState.miningRigs = {};
                 if(!gameState.grades) gameState.grades = {};
                 if(!gameState.loansList) gameState.loansList = [];
+                if(gameState.dailyFoodSpent === undefined) gameState.dailyFoodSpent = 0;
             }
             let savedTable = localStorage.getItem("schoolSimTable");
             if (savedTable) {
@@ -710,8 +774,10 @@
             renderFurnitureShop();
             renderUtilitiesShop();
             renderContractsShop();
+            renderInsuranceShop();
             renderFoodShop();
             renderVehicleShop();
+            renderGarage();
             renderCryptoShop();
             renderGradesTable();
             renderRoomVisual();
@@ -759,7 +825,6 @@
                         if (gameState.miningRigs[rig.id]) totalHashrate += rig.hashrate;
                     });
                     if (totalHashrate > 0) {
-                        // Formel: 1 TH/s mindelt ca. 0.00000001 BTC pro Sekunde als Beispiel
                         let minedBtc = totalHashrate * 0.000000005 * (elapsedSeconds / 60);
                         gameState.btcBalance += minedBtc;
                     }
@@ -771,20 +836,26 @@
                 }
             }, 200);
 
+            // Bedürfnissenkung (realistischer, schneller und auch wenn Timer nicht läuft)
             setInterval(() => {
                 let buffs = calculateBuffs();
                 let decayMod = buffs.generalDecayMod;
                 
                 let workMultiplier = 1.0;
                 let isWorking = (gameState.isTimerRunning && gameState.activeLesson && !gameState.activeLesson.toLowerCase().includes("freistunde")) || gameState.isBonusTimerRunning;
-                if (isWorking) workMultiplier = 3.0;
+                if (isWorking) workMultiplier = 3.5; // Erhöht während der Arbeit
                 
-                let sleepVal = gameState.sleep - (0.1 * decayMod * buffs.sleepDecayMod * workMultiplier);
+                // Schlaf sinkt kontinuierlich, beschleunigt beim Arbeiten
+                let sleepVal = gameState.sleep - (0.15 * decayMod * buffs.sleepDecayMod * workMultiplier);
                 if (buffs.minSleep > 0 && sleepVal < buffs.minSleep) sleepVal = buffs.minSleep;
                 gameState.sleep = Math.max(0, sleepVal);
 
-                gameState.hunger = Math.max(0, gameState.hunger - 0.08 * decayMod);
-                gameState.thirst = Math.max(0, gameState.thirst - 0.12 * decayMod);
+                // Hunger und Durst sinken jetzt deutlich schneller und IMMER (auch ohne aktiven Timer)
+                let hungerDecay = isWorking ? 0.25 : 0.12;
+                let thirstDecay = isWorking ? 0.35 : 0.18;
+
+                gameState.hunger = Math.max(0, gameState.hunger - hungerDecay * decayMod);
+                gameState.thirst = Math.max(0, gameState.thirst - thirstDecay * decayMod);
 
                 updateUI();
                 saveGame();
@@ -852,7 +923,8 @@
                 streakMultiplier: 1,
                 shopDiscount: 1.0,
                 taxRate: 0.15,
-                minSleep: 0
+                minSleep: 0,
+                freeTransit: false
             };
             furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) item.effect(buffs); });
             contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) item.effect(buffs); });
@@ -869,6 +941,7 @@
             if(tabId === 'tab-housing') renderRoomVisual();
             if(tabId === 'tab-bank') renderLoansTable();
             if(tabId === 'tab-crypto') updateCryptoDisplay();
+            if(tabId === 'tab-vehicles') renderGarage();
         }
 
         function renderRoomVisual() {
@@ -971,26 +1044,66 @@
             });
         }
 
-        function renderFoodShop() {
-            const container = document.getElementById("food-shop-container");
+        function renderInsuranceShop() {
+            const container = document.getElementById("insurance-shop-container");
             if (!container) return;
             container.innerHTML = "";
-            let buffs = calculateBuffs();
-            foodCatalog.forEach(item => {
-                let effectiveCost = item.cost * buffs.shopDiscount;
+            insuranceCatalog.forEach(item => {
+                let active = gameState.insurances[item.id];
                 container.innerHTML += `<div class="shop-item">
                     <div>
-                        <strong>${item.name}</strong> (${effectiveCost.toFixed(2)} €)
+                        <strong>${item.name}</strong> (${item.daily.toFixed(2)} €/Tag)
+                        <div class="shop-info" style="color:var(--accent-blue);">${item.desc}</div>
+                    </div>
+                    <button class="action-btn ${active ? 'danger-btn' : ''}" onclick="toggleInsurance('${item.id}')">${active ? 'Kündigen' : 'Abschließen'}</button>
+                </div>`;
+            });
+        }
+
+        function toggleInsurance(id) {
+            gameState.insurances[id] = !gameState.insurances[id];
+            renderInsuranceShop();
+            updateUI();
+            saveGame();
+        }
+
+        function renderFoodShop() {
+            const containerEating = document.getElementById("food-shop-eating");
+            const containerDrinking = document.getElementById("food-shop-drinking");
+            if (!containerEating || !containerDrinking) return;
+
+            containerEating.innerHTML = "";
+            containerDrinking.innerHTML = "";
+
+            let buffs = calculateBuffs();
+            let hasDiscount = buffs.shopDiscount < 1.0;
+
+            foodCatalog.forEach(item => {
+                let effectiveCost = item.cost * buffs.shopDiscount;
+                let priceHTML = hasDiscount 
+                    ? `<span style="text-decoration: line-through; color: #8b949e; font-size: 0.8rem;">${item.cost.toFixed(2)} €</span> <strong class="money">${effectiveCost.toFixed(2)} €</strong>`
+                    : `<strong class="money">${effectiveCost.toFixed(2)} €</strong>`;
+
+                let itemHTML = `<div class="shop-item">
+                    <div>
+                        <strong>${item.name}</strong> (${priceHTML})
                         <div class="shop-info">Stillt: Hunger +${item.hunger}%, Durst +${item.thirst}%</div>
                     </div>
                     <button class="action-btn" onclick="buyAndConsumeFood('${item.id}', ${effectiveCost}, ${item.hunger}, ${item.thirst})">Kaufen & Essen</button>
                 </div>`;
+
+                if (item.category === 'food') {
+                    containerEating.innerHTML += itemHTML;
+                } else {
+                    containerDrinking.innerHTML += itemHTML;
+                }
             });
         }
 
         function buyAndConsumeFood(id, cost, hungerVal, thirstVal) {
             if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
             gameState.money -= cost;
+            gameState.dailyFoodSpent += cost;
             gameState.hunger = Math.min(100, gameState.hunger + hungerVal);
             gameState.thirst = Math.min(100, gameState.thirst + thirstVal);
             updateUI();
@@ -1002,11 +1115,18 @@
             const container = document.getElementById("vehicle-shop-container");
             if (!container) return;
             container.innerHTML = "";
+
+            let hasAnyVehicle = Object.keys(gameState.vehicles).some(id => gameState.vehicles[id]);
+            let banner = document.getElementById("public-transport-banner");
+            if (banner) {
+                banner.style.display = hasAnyVehicle ? "none" : "block";
+            }
+
             vehicleCatalog.forEach(item => {
                 let owned = gameState.vehicles[item.id];
                 container.innerHTML += `<div class="shop-item">
                     <div>
-                        <strong>${item.name}</strong> (${item.cost} € | ${item.daily} €/Tag Unterhalt)
+                        <strong>${item.name}</strong> (${item.cost.toLocaleString()} € | ${item.daily} €/Tag Unterhalt)
                         <div class="shop-info">${item.desc}</div>
                     </div>
                     <button class="action-btn" ${owned ? 'disabled style="background:#30363d;color:#6e7681;"' : ''} onclick="buyVehicle('${item.id}', ${item.cost})">${owned ? 'Im Besitz' : 'Kaufen'}</button>
@@ -1018,10 +1138,220 @@
             if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
             gameState.money -= cost;
             gameState.vehicles[id] = true;
+            
+            let vehicleDef = vehicleCatalog.find(v => v.id === id);
+            if (vehicleDef) {
+                gameState.vehicleStates[id] = {
+                    fuelOrBattery: vehicleDef.maxFuelOrBattery,
+                    wear: 0 // in % Verschleiß
+                };
+            }
+
             renderVehicleShop();
+            renderGarage();
             updateUI();
             saveGame();
-            alert("Fahrzeug erfolgreich gekauft!");
+            alert("Fahrzeug erfolgreich gekauft und in der Garage abgestellt!");
+        }
+
+        function renderGarage() {
+            const garageContainer = document.getElementById("garage-display");
+            if (!garageContainer) return;
+
+            let ownedVehicles = vehicleCatalog.filter(v => gameState.vehicles[v.id]);
+            if (ownedVehicles.length === 0) {
+                garageContainer.innerHTML = `<p style="color: #8b949e; margin: 0;">Deine Garage ist leer. Kaufe unten ein Fahrzeug oder nutze den ÖPNV / Laufen!</p>`;
+                return;
+            }
+
+            let html = `<h3 style="margin-top:0; color:var(--accent-orange);">🏠 Meine Garage</h3><div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-top: 10px;">`;
+            
+            ownedVehicles.forEach(v => {
+                if (!gameState.vehicleStates[v.id]) {
+                    gameState.vehicleStates[v.id] = { fuelOrBattery: v.maxFuelOrBattery, wear: 0 };
+                }
+                let state = gameState.vehicleStates[v.id];
+                let isElectric = v.type === 'electric';
+                let indicatorLabel = isElectric ? 'Akku' : 'Tank';
+                let indicatorUnit = v.unit;
+
+                html += `<div style="background: #161b22; border: 1px solid var(--border); border-radius: 8px; padding: 12px; min-width: 220px; text-align: left;">
+                    <strong>🚗 ${v.name}</strong>
+                    <div style="font-size: 0.8rem; margin: 6px 0; color: #8b949e;">
+                        ${indicatorLabel}: <span style="color:#fff; font-weight:bold;">${Math.round(state.fuelOrBattery)} / ${v.maxFuelOrBattery} ${indicatorUnit}</span><br>
+                        Verschleiß: <span style="color: ${state.wear > 50 ? 'var(--danger)' : 'var(--accent-green)'}; font-weight:bold;">${state.wear.toFixed(1)}%</span>
+                    </div>
+                    <div style="display: flex; gap: 6px; margin-top: 8px;">
+                        <button class="action-btn" style="flex:1; font-size:0.75rem; padding:4px;" onclick="openRefuelModal('${v.id}')">${isElectric ? 'Laden' : 'Tanken'}</button>
+                        <button class="action-btn danger-btn" style="flex:1; font-size:0.75rem; padding:4px;" onclick="repairVehicle('${v.id}')">Reparieren</button>
+                    </div>
+                    <div style="margin-top: 8px; display: flex; gap: 4px; align-items: center;">
+                        <input type="number" id="trip-km-${v.id}" placeholder="Km" min="1" max="200" style="width: 50px; padding: 2px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.75rem;">
+                        <button class="action-btn" style="flex:1; font-size:0.75rem; padding:4px; background-color: var(--accent-blue);" onclick="makeTrip('${v.id}')">Fahrt machen</button>
+                    </div>
+                </div>`;
+            });
+
+            // ÖPNV oder Laufen Option für Fahrten
+            html += `<div style="background: #161b22; border: 1px solid var(--border); border-radius: 8px; padding: 12px; min-width: 220px; text-align: left;">
+                <strong>🚶‍♂️ Zu Fuß / ÖPNV</strong>
+                <div style="font-size: 0.8rem; margin: 6px 0; color: #8b949e;">
+                    Kostenlos laufen oder Öffis nutzen<br>
+                    (Laufen kostet Energie & macht hungrig!)
+                </div>
+                <div style="margin-top: 18px; display: flex; gap: 4px; align-items: center;">
+                    <input type="number" id="trip-km-walk" placeholder="Km" min="1" max="50" style="width: 50px; padding: 2px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.75rem;">
+                    <button class="action-btn" style="flex:1; font-size:0.75rem; padding:4px; background-color: var(--accent-orange);" onclick="makeWalkOrTransitTrip()">Strecke machen</button>
+                </div>
+            </div>`;
+
+            html += `</div>`;
+            garageContainer.innerHTML = html;
+        }
+
+        let selectedRefuelVehicleId = null;
+
+        function openRefuelModal(vehicleId) {
+            selectedRefuelVehicleId = vehicleId;
+            let v = vehicleCatalog.find(item => item.id === vehicleId);
+            let state = gameState.vehicleStates[vehicleId];
+            let isElectric = v.type === 'electric';
+
+            document.getElementById("refuel-modal-title").innerText = isElectric ? "Fahrzeug aufladen" : "Fahrzeug betanken";
+            document.getElementById("refuel-info").innerText = `${v.name} - Aktuell: ${Math.round(state.fuelOrBattery)} / ${v.maxFuelOrBattery} ${v.unit}`;
+            document.getElementById("refuel-amount-input").value = Math.round(v.maxFuelOrBattery - state.fuelOrBattery);
+            document.getElementById("refuel-amount-input").max = v.maxFuelOrBattery;
+            
+            updateRefuelCostPreview();
+            document.getElementById("refuel-amount-input").oninput = updateRefuelCostPreview;
+            document.getElementById("refuel-modal").style.display = "flex";
+        }
+
+        function updateRefuelCostPreview() {
+            let v = vehicleCatalog.find(item => item.id === selectedRefuelVehicleId);
+            let amount = parseFloat(document.getElementById("refuel-amount-input").value) || 0;
+            let costPerUnit = v.type === 'electric' ? 0.35 : v.fuelCostPerLiter;
+            let totalCost = amount * costPerUnit;
+            document.getElementById("refuel-cost-display").innerText = totalCost.toFixed(2) + " €";
+        }
+
+        function closeRefuelModal() {
+            document.getElementById("refuel-modal").style.display = "none";
+        }
+
+        function confirmRefuel() {
+            let v = vehicleCatalog.find(item => item.id === selectedRefuelVehicleId);
+            let amount = parseFloat(document.getElementById("refuel-amount-input").value) || 0;
+            let costPerUnit = v.type === 'electric' ? 0.35 : v.fuelCostPerLiter;
+            let totalCost = amount * costPerUnit;
+
+            if (gameState.money < totalCost) {
+                alert("Nicht genug Guthaben!");
+                return;
+            }
+
+            let state = gameState.vehicleStates[selectedRefuelVehicleId];
+            state.fuelOrBattery = Math.min(v.maxFuelOrBattery, state.fuelOrBattery + amount);
+            gameState.money -= totalCost;
+
+            closeRefuelModal();
+            renderGarage();
+            updateUI();
+            saveGame();
+            alert("Erfolgreich nachgefüllt!");
+        }
+
+        function repairVehicle(vehicleId) {
+            let state = gameState.vehicleStates[vehicleId];
+            if (state.wear <= 0) {
+                alert("Das Fahrzeug ist bereits in einwandfreiem Zustand!");
+                return;
+            }
+            let repairCost = state.wear * 4.50; // Realistischer Reparaturpreis pro % Verschleiß
+            if (gameState.insurances['ins_auto_med']) repairCost *= 0.7; // 30% Rabatt durch Versicherung
+
+            if (gameState.money < repairCost) {
+                alert(`Nicht genug Guthaben für die Reparatur! Benötigt: ${repairCost.toFixed(2)} €`);
+                return;
+            }
+
+            gameState.money -= repairCost;
+            state.wear = 0;
+            renderGarage();
+            updateUI();
+            saveGame();
+            alert(`Fahrzeug erfolgreich für ${repairCost.toFixed(2)} € repariert! Alle Verschleißteile behoben.`);
+        }
+
+        function makeTrip(vehicleId) {
+            let kmInput = document.getElementById(`trip-km-${vehicleId}`);
+            let km = parseFloat(kmInput.value) || 0;
+            if (km <= 0) { alert("Bitte gib eine gültige Kilometerstrecke ein!"); return; }
+
+            let v = vehicleCatalog.find(item => item.id === vehicleId);
+            let state = gameState.vehicleStates[vehicleId];
+
+            // Verbrauch pro km berechnen
+            let consumptionRate = v.type === 'electric' ? 0.8 : 0.07; // 0.8% Akku pro km oder 0.07l pro km
+            let totalNeeded = km * consumptionRate;
+
+            if (state.fuelOrBattery < totalNeeded) {
+                alert(`Nicht genügend ${v.type === 'electric' ? 'Akku' : 'Kraftstoff'} für ${km} km! Bitte vorher aufladen/tanken.`);
+                return;
+            }
+
+            state.fuelOrBattery -= totalNeeded;
+            state.wear += km * 0.35; // Verschleiß steigt pro km
+
+            kmInput.value = "";
+            renderGarage();
+            updateUI();
+            saveGame();
+            alert(`Fahrt über ${km} km mit ${v.name} erfolgreich absolviert!\nVerbrauch: ${totalNeeded.toFixed(1)} ${v.unit}, Neuer Verschleiß: ${state.wear.toFixed(1)}%`);
+        }
+
+        function makeWalkOrTransitTrip() {
+            let kmInput = document.getElementById("trip-km-walk");
+            let km = parseFloat(kmInput.value) || 0;
+            if (km <= 0) { alert("Bitte gib eine gültige Kilometerstrecke ein!"); return; }
+
+            let buffs = calculateBuffs();
+            let useTransit = buffs.freeTransit;
+
+            if (!useTransit) {
+                let ticketCost = 2.80; // Busticket
+                if (gameState.money < ticketCost) {
+                    alert(`Kein Deutschlandticket vorhanden und nicht genug Geld für ein Busticket (${ticketCost.toFixed(2)} €)! Du musst zu Fuß gehen.`);
+                } else {
+                    let choice = confirm(`Kein Deutschlandticket aktiv. Ein Einzelticket kostet ${ticketCost.toFixed(2)} €. Möchtest du zahlen oder zu Fuß gehen (OK = Ticket kaufen, Abbrechen = Laufen)?`);
+                    if (choice) {
+                        gameState.money -= ticketCost;
+                        kmInput.value = "";
+                        updateUI();
+                        saveGame();
+                        alert(`ÖPNV-Fahrt über ${km} km für ${ticketCost.toFixed(2)} € absolviert.`);
+                        return;
+                    }
+                }
+            } else {
+                alert(`Dank des Deutschlandtickets kostenlose ÖPNV-Fahrt über ${km} km durchgeführt!`);
+                kmInput.value = "";
+                return;
+            }
+
+            // Wenn zu Fuß gegangen wird:
+            let energyCost = km * 4.0;
+            let hungerCost = km * 3.0;
+            let thirstCost = km * 3.5;
+
+            gameState.sleep = Math.max(0, gameState.sleep - energyCost);
+            gameState.hunger = Math.max(0, gameState.hunger - hungerCost);
+            gameState.thirst = Math.max(0, gameState.thirst - thirstCost);
+
+            kmInput.value = "";
+            updateUI();
+            saveGame();
+            alert(`Du bist ${km} km zu Fuß gegangen!\nEnergie, Hunger und Durst sind stark gesunken.`);
         }
 
         function renderCryptoShop() {
@@ -1029,7 +1359,6 @@
             if (!container) return;
             container.innerHTML = "";
             miningCatalog.forEach(item => {
-                let owned = gameState.miningRigs[item.id];
                 container.innerHTML += `<div class="shop-item">
                     <div>
                         <strong>${item.name}</strong> (${item.cost.toLocaleString()} €)
@@ -1059,7 +1388,9 @@
                 totalHashrate += rig.hashrate * count;
                 totalPower += rig.powerCost * count;
             });
+            let eurVal = gameState.btcBalance * btcPriceEur;
             document.getElementById("btc-balance").innerText = gameState.btcBalance.toFixed(8) + " BTC";
+            document.getElementById("btc-euro-value").innerText = `Entspricht: ${eurVal.toFixed(2)} €`;
             document.getElementById("btc-hashrate").innerText = totalHashrate + " TH/s";
             document.getElementById("btc-power-cost").innerText = totalPower.toFixed(2) + " € / Tag";
         }
@@ -1076,6 +1407,42 @@
             alert(`${soldBtc.toFixed(8)} BTC für ${eurValue.toFixed(2)} € verkauft!`);
         }
 
+        function withdrawPartialBtc() {
+            let amountInput = parseFloat(document.getElementById("btc-withdraw-input").value);
+            if (isNaN(amountInput) || amountInput <= 0) {
+                alert("Bitte gib eine gültige Bitcoin-Menge zum Abheben ein!");
+                return;
+            }
+            if (amountInput > gameState.btcBalance) {
+                alert("Du hast nicht so viele Bitcoins!");
+                return;
+            }
+            let eurValue = amountInput * btcPriceEur;
+            gameState.btcBalance -= amountInput;
+            gameState.money += eurValue;
+            document.getElementById("btc-withdraw-input").value = "";
+            updateCryptoDisplay();
+            updateUI();
+            saveGame();
+            alert(`${amountInput.toFixed(8)} BTC erfolgreich abgehoben und ${eurValue.toFixed(2)} € in Euro ausgezahlt!`);
+        }
+
+        function renderFurnitureShop() {
+            const container = document.getElementById("furniture-shop-container");
+            if (!container) return;
+            container.innerHTML = "";
+            furnitureCatalog.forEach(item => {
+                let owned = gameState.furniture[item.id];
+                container.innerHTML += `<div class="shop-item">
+                    <div>
+                        <strong>${item.name}</strong> (${item.cost} € | ${item.daily} €/Tag)
+                        <div class="shop-info" style="color:var(--accent-blue);">Vorteil: +${item.bonusText}</div>
+                    </div>
+                    <button class="action-btn" ${owned ? 'disabled style="background:#30363d;color:#6e7681;"' : ''} onclick="buyFurniture('${item.id}', ${item.cost})">${owned ? 'Gekauft' : 'Kaufen'}</button>
+                </div>`;
+            });
+        }
+
         function buyFurniture(id, cost) {
             if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
             gameState.money -= cost;
@@ -1089,6 +1456,7 @@
         function toggleContract(id) {
             gameState.contracts[id] = !gameState.contracts[id];
             renderContractsShop();
+            renderFoodShop(); // Aktualisiert Rabatte im Shop sofort
             updateUI();
             saveGame();
         }
@@ -1290,6 +1658,7 @@
             utilitiesCatalog.forEach(item => { if (gameState.utilities[item.id]) fixedTotal += item.daily; });
             furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
             contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
+            insuranceCatalog.forEach(item => { if (gameState.insurances[item.id]) fixedTotal += item.daily; });
             vehicleCatalog.forEach(item => { if (gameState.vehicles[item.id]) fixedTotal += item.daily; });
             
             miningCatalog.forEach(rig => {
@@ -1312,15 +1681,20 @@
             gameState.money -= fixedTotal;
             gameState.totalTaxes += taxes;
 
+            let foodSpentToday = gameState.dailyFoodSpent;
+
             let payoutEntry = {
                 date: new Date().toLocaleTimeString() + " (" + new Date().toLocaleDateString() + ")",
                 gross: gross,
                 taxes: taxes,
                 net: netEarnings,
-                fixed: fixedTotal
+                fixed: fixedTotal,
+                foodSpent: foodSpentToday
             };
             gameState.payoutHistory.unshift(payoutEntry);
 
+            // Zurücksetzen für den nächsten Tag
+            gameState.dailyFoodSpent = 0;
             gameState.pendingEarnings = 0;
             gameState.timerSeconds = 0;
             gameState.isTimerRunning = false;
@@ -1329,7 +1703,7 @@
             updateUI();
             saveGame();
 
-            alert(`Tag beendet & abgerechnet!\n\nBrutto: ${gross.toFixed(2)} €\nSteuern: -${taxes.toFixed(2)} €\nNetto: +${netEarnings.toFixed(2)} €\nFixkosten, Fahrzeuge & Strom: -${fixedTotal.toFixed(2)} €`);
+            alert(`Tag beendet & abgerechnet!\n\nBrutto: ${gross.toFixed(2)} €\nSteuern: -${taxes.toFixed(2)} €\nNetto: +${netEarnings.toFixed(2)} €\nFixkosten, Verträge & Versicherungen: -${fixedTotal.toFixed(2)} €\n🍔 Ausgaben für Essen & Trinken heute: ${foodSpentToday.toFixed(2)} €`);
         }
 
         function renderPayoutHistory() {
@@ -1340,9 +1714,10 @@
             }
             let html = "";
             gameState.payoutHistory.forEach(entry => {
+                let foodInfo = entry.foodSpent !== undefined ? ` | Essen/Trinken: <strong style="color:var(--accent-orange);">${entry.foodSpent.toFixed(2)}€</strong>` : "";
                 html += `<div class="log-entry">
                     <span>🕒 ${entry.date}</span>
-                    <span>Brutto: <strong>${entry.gross.toFixed(2)}€</strong> | Steuer: <strong style="color:var(--danger)">-${entry.taxes.toFixed(2)}€</strong> | Netto: <strong style="color:var(--accent-green)">+${entry.net.toFixed(2)}€</strong> | Fix: <strong style="color:var(--danger)">-${entry.fixed.toFixed(2)}€</strong></span>
+                    <span>Brutto: <strong>${entry.gross.toFixed(2)}€</strong> | Steuer: <strong style="color:var(--danger)">-${entry.taxes.toFixed(2)}€</strong> | Netto: <strong style="color:var(--accent-green)">+${entry.net.toFixed(2)}€</strong> | Fix: <strong style="color:var(--danger)">-${entry.fixed.toFixed(2)}€</strong>${foodInfo}</span>
                 </div>`;
             });
             container.innerHTML = html;
@@ -1392,6 +1767,7 @@
             utilitiesCatalog.forEach(item => { if (gameState.utilities[item.id]) fixedTotal += item.daily; });
             furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
             contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
+            insuranceCatalog.forEach(item => { if (gameState.insurances[item.id]) fixedTotal += item.daily; });
             vehicleCatalog.forEach(item => { if (gameState.vehicles[item.id]) fixedTotal += item.daily; });
             
             miningCatalog.forEach(rig => {
@@ -1416,6 +1792,7 @@
             if (buffs.sleepBonus > 1.0) { activeBuffsHTML += `<span class="buff-tag">+${Math.round((buffs.sleepBonus - 1) * 100)}% Schlaf-Regeneration</span>`; hasAnyBuff = true; }
             if (buffs.streakMultiplier > 1) { activeBuffsHTML += `<span class="buff-tag">+${buffs.streakMultiplier}x Melde-Multiplikator</span>`; hasAnyBuff = true; }
             if (buffs.shopDiscount < 1.0) { activeBuffsHTML += `<span class="buff-tag">-${Math.round((1 - buffs.shopDiscount) * 100)}% Shop-Rabatt</span>`; hasAnyBuff = true; }
+            if (buffs.freeTransit) { activeBuffsHTML += `<span class="buff-tag">Deutschlandticket (ÖPNV frei)</span>`; hasAnyBuff = true; }
             if (buffs.taxRate < 0.15) { activeBuffsHTML += `<span class="buff-tag">-${Math.round((0.15 - buffs.taxRate) * 100)}% Steuersatz-Rabatt</span>`; hasAnyBuff = true; }
 
             document.getElementById("active-buffs-list").innerHTML = hasAnyBuff ? activeBuffsHTML : "Keine aktiven Boni";
