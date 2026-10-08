@@ -108,26 +108,30 @@
         button.danger-btn { background-color: var(--danger); }
         .money { color: var(--accent-green); font-weight: bold; }
 
+        /* Realistischer 3D-Raum */
         .scene-container {
-            width: 100%; height: 200px; background: #010409; border-radius: 8px;
-            perspective: 800px; display: flex; align-items: center; justify-content: center;
-            overflow: hidden; border: 1px solid var(--border); margin-bottom: 15px;
+            width: 100%; height: 260px; background: #010409; border-radius: 8px;
+            perspective: 900px; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border: 1px solid var(--border); margin-bottom: 15px; position: relative;
         }
         .room-3d {
-            width: 180px; height: 130px; position: relative; transform-style: preserve-3d;
-            transform: rotateX(-15deg) rotateY(25deg); animation: rotateRoom 15s infinite linear;
+            width: 220px; height: 150px; position: relative; transform-style: preserve-3d;
+            transform: rotateX(-20deg) rotateY(30deg); animation: rotateRoom 20s infinite linear;
         }
         @keyframes rotateRoom {
-            0% { transform: rotateX(-15deg) rotateY(0deg); }
-            100% { transform: rotateX(-15deg) rotateY(360deg); }
+            0% { transform: rotateX(-20deg) rotateY(0deg); }
+            100% { transform: rotateX(-20deg) rotateY(360deg); }
         }
         .wall {
-            position: absolute; border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(22, 27, 34, 0.9); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #8b949e;
+            position: absolute; border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(22, 27, 34, 0.95); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #8b949e; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
         }
-        .wall-back { width: 180px; height: 130px; transform: translateZ(-90px); }
-        .wall-left { width: 180px; height: 130px; transform: rotateY(90deg) translateZ(-90px); }
-        .floor { width: 180px; height: 180px; transform: rotateX(90deg) translateZ(65px); background: #1f242c; }
+        .wall-back { width: 220px; height: 150px; transform: translateZ(-110px); }
+        .wall-left { width: 220px; height: 150px; transform: rotateY(90deg) translateZ(-110px); }
+        .floor { width: 220px; height: 220px; transform: rotateX(90deg) translateZ(75px); background: repeating-linear-gradient(45deg, #21262d, #21262d 10px, #1a1f26 10px, #1a1f26 20px); border: 2px solid #30363d; }
+        .mini-furniture {
+            position: absolute; background: var(--accent-blue); color: #fff; font-size: 0.6rem; padding: 4px; border-radius: 4px; transform: translateZ(-50px);
+        }
 
         table.schedule-table, table.grades-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
         table.schedule-table th, table.schedule-table td, table.grades-table th, table.grades-table td { border: 1px solid var(--border); padding: 8px; text-align: center; vertical-align: middle; }
@@ -248,7 +252,7 @@
                 <div style="background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; font-size: 0.85rem;">
                     <strong style="color: var(--accent-blue);">Fixkosten pro Tag:</strong>
                     <div style="display: flex; justify-content: space-between; margin-top: 3px;">
-                        <span>Unterkunft, Möbel & Abos:</span> <span id="dash-total-fixed" class="money">0.00 €</span>
+                        <span>Unterkunft, Verträge & Möbel:</span> <span id="dash-total-fixed" class="money">0.00 €</span>
                     </div>
                 </div>
 
@@ -312,23 +316,19 @@
             </div>
         </div>
 
-        <!-- Feld 1: Laufende eigene Sache eintragen (Live) -->
         <div class="card">
             <h2>Laufende eigene Sache eintragen (Live starten)</h2>
-            <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 10px;">Trage hier ein Fach oder eine Aktivität ein, die gerade stattfindet, und starte sie direkt für den Live-Timer.</p>
             <div style="display: flex; gap: 10px;">
                 <input type="text" id="custom-activity-input" placeholder="z.B. Lernen, Zocken, Projekt..." style="flex: 1; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
                 <button class="action-btn" onclick="startCustomActivity()">Als aktive Sache starten</button>
             </div>
         </div>
 
-        <!-- Feld 2: Vergangene eigene Sache nachtragen (mit Uhr) -->
         <div class="card">
             <h2>Vergangene eigene Sache nachtragen</h2>
-            <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 10px;">Trage hier eine bereits erledigte Aktivität und die Dauer über das Uhr-Feld ein. Das Geld landet direkt im Zwischenspeicher!</p>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <input type="text" id="past-activity-input" placeholder="z.B. Hausaufgaben machen..." style="flex: 2; min-width: 180px; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
-                <input type="time" id="past-time-input" value="00:30" style="flex: 1; min-width: 110px; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;" title="Dauer auswählen">
+                <input type="time" id="past-time-input" value="00:30" style="flex: 1; min-width: 110px; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
                 <button class="action-btn" onclick="logPastActivityWithTime()" style="flex: 1; min-width: 140px; background-color: var(--accent-blue);">Nachtragen & Verdienen</button>
             </div>
         </div>
@@ -342,10 +342,8 @@
                 <span id="overall-grade-display" style="font-size: 1.5rem; font-weight: bold; color: var(--accent-green);">-</span>
             </div>
         </div>
-
         <div class="card">
             <h2>Notenpunkte-Verwaltung (0 – 15 Punkte)</h2>
-            <p style="font-size: 0.85rem; color: #8b949e;">Trage Notenpunkte kommagetrennt ein (z.B. <code>13, 11, 14</code>). LKs stehen ganz oben, gefolgt von Grundkursen.</p>
             <div style="overflow-x: auto;">
                 <table class="grades-table">
                     <thead>
@@ -378,24 +376,51 @@
     <!-- TAB 5: WOHNUNG & MÖBEL -->
     <div id="tab-housing" class="tab-content">
         <div class="card">
-            <h2>Virtuelle 3D-Wohnung</h2>
+            <h2>Virtuelle 3D-Wohnung (<span id="room-title-name" style="color:var(--accent-blue);">Elternhaus</span>)</h2>
             <div class="scene-container">
                 <div class="room-3d">
-                    <div class="wall wall-back">Wohnzimmer</div>
-                    <div class="wall wall-left">Küche</div>
+                    <div class="wall wall-back">Wohnbereich</div>
+                    <div class="wall wall-left">Fensterfront</div>
                     <div class="floor"></div>
+                    <div id="room-furniture-visual"></div>
                 </div>
             </div>
+            <p style="font-size: 0.85rem; color: #8b949e; text-align: center;">Deine gekauften Möbel erscheinen direkt im virtuellen Zimmer!</p>
         </div>
+
         <div class="card">
-            <h2>Immobilien-Markt</h2>
+            <h2>Immobilien-Markt (Mieten oder Kaufen)</h2>
+            <p style="font-size: 0.85rem; color: var(--accent-orange); margin-bottom: 12px;">⚠️ Achtung beim Umzug: Es fallen realistische Umzugskosten / Makler / Kaution an!</p>
             <div class="grid-shop">
-                <div class="shop-item"><div><span>Kinderzimmer bei Eltern (0 € / Tag)</span><div class="shop-info">Keine Fixkosten</div></div><button class="action-btn" onclick="setHousing('Elternhaus', 0, 0, 0)">Einziehen</button></div>
-                <div class="shop-item"><div><span>WG-Zimmer (10 € / Tag)</span><div class="shop-info">Solide Basis</div></div><button class="action-btn" onclick="setHousing('WG', 10, 2, 3)">Mieten</button></div>
-                <div class="shop-item"><div><span>Moderne Wohnung (25 € / Tag)</span><div class="shop-info">Bessere Erholung</div></div><button class="action-btn" onclick="setHousing('Wohnung', 25, 5, 8)">Mieten</button></div>
-                <div class="shop-item"><div><span>Penthouse Loft (60 € / Tag)</span><div class="shop-info">Luxus pur</div></div><button class="action-btn" onclick="setHousing('Penthouse', 60, 10, 15)">Mieten</button></div>
+                <div class="shop-item">
+                    <div><span>Kinderzimmer bei Eltern (0 € / Tag)</span><div class="shop-info">Kaution: 0 € | Umzug: 0 €</div></div>
+                    <button class="action-btn" onclick="setHousing('Elternhaus', 0, 0, 0, 0)">Einziehen</button>
+                </div>
+                <div class="shop-item">
+                    <div><span>WG-Zimmer (10 € / Tag)</span><div class="shop-info">Kaution: 300 € | Umzug: 150 €</div></div>
+                    <button class="action-btn" onclick="setHousing('WG', 10, 300, 150, 0)">Anmieten</button>
+                </div>
+                <div class="shop-item">
+                    <div><span>Moderne Wohnung (25 € / Tag)</span><div class="shop-info">Kaution: 1.000 € | Umzug: 400 €</div></div>
+                    <button class="action-btn" onclick="setHousing('Wohnung', 25, 1000, 400, 0)">Anmieten</button>
+                </div>
+                <div class="shop-item">
+                    <div><span>Penthouse Loft (60 € / Tag)</span><div class="shop-info">Kaution: 3.000 € | Umzug: 1.200 €</div></div>
+                    <button class="action-btn" onclick="setHousing('Penthouse', 60, 3000, 1200, 0)">Anmieten</button>
+                </div>
+                <div class="shop-item" style="border: 1px solid var(--accent-green);">
+                    <div><span style="color: var(--accent-green);">Einfamilienhaus (Eigentum - 0 €/Tag)</span><div class="shop-info">Kaufpreis: 180.000 € | Keine Miete mehr!</div></div>
+                    <button class="action-btn" style="background-color: var(--accent-green);" onclick="setHousing('Haus', 0, 0, 2500, 180000)">Haus Kaufen</button>
+                </div>
             </div>
             <p style="margin-top: 15px;">Aktuelle Unterkunft: <strong id="current-housing" style="color:var(--accent-blue);">Elternhaus</strong></p>
+        </div>
+
+        <!-- WASSER & STROM VERTRÄGE -->
+        <div class="card" style="border: 2px solid var(--accent-blue);">
+            <h2>⚡ & 💧 Wasser- und Stromverträge</h2>
+            <p style="font-size: 0.85rem; color: #8b949e;">Sobald du nicht mehr im Elternhaus wohnst, musst du **mindestens einen Strom- und einen Wasservertrag** aktiv haben, sonst gibt es Probleme!</p>
+            <div class="grid-shop" id="utilities-shop-container"></div>
         </div>
         
         <div class="card">
@@ -410,8 +435,8 @@
             <h2>Bank & Kredite</h2>
             <p>Aktueller Kredit: <span id="loan-status">0.00 €</span></p>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button class="action-btn" onclick="takeLoan(100)" style="flex:1;">100 € aufnehmen</button>
-                <button class="action-btn danger-btn" onclick="payLoan(100)" style="flex:1;">100 € tilgen</button>
+                <button class="action-btn" onclick="takeLoan(500)" style="flex:1;">500 € aufnehmen</button>
+                <button class="action-btn danger-btn" onclick="payLoan(500)" style="flex:1;">500 € tilgen</button>
             </div>
         </div>
     </div>
@@ -420,7 +445,6 @@
     <div id="tab-contracts" class="tab-content">
         <div class="card">
             <h2>Abos, Verträge & Services</h2>
-            <p style="font-size:0.85rem; color:#8b949e; margin-bottom:15px;">Jeder Vertrag schaltet nützliche Vorteile im Simulator frei!</p>
             <div class="grid-shop" id="contracts-shop-container"></div>
         </div>
     </div>
@@ -475,7 +499,7 @@
 
     <script>
         let gameState = {
-            money: 50.00,
+            money: 500.00,
             pendingEarnings: 0.00,
             totalEarnings: 0.00,
             totalTaxes: 0.00,
@@ -483,7 +507,8 @@
             drink: 80,
             sleep: 80,
             loan: 0,
-            housing: { name: "Elternhaus", rent: 0, water: 0, electricity: 0 },
+            housing: { name: "Elternhaus", rent: 0, utilitiesCost: 0 },
+            utilities: {},
             furniture: {},
             contracts: {},
             grades: {},
@@ -492,7 +517,6 @@
             isTimerRunning: false,
             timerSeconds: 0,
             
-            // Bonus-Timer State
             isBonusTimerRunning: false,
             bonusTimerSeconds: 0,
             bonusTimerType: 'einzelarbeit',
@@ -505,6 +529,13 @@
             streaks: {},
             payoutHistory: []
         };
+
+        const utilitiesCatalog = [
+            { id: "water_basic", type: "water", name: "Stadtwerke Wasser (Standard)", daily: 1.50, desc: "Grundversorgung Wasser" },
+            { id: "water_eco", type: "water", name: "Eco-Wasser Filter Tarif", daily: 2.20, desc: "Wasser + Bessere Erholung" },
+            { id: "power_standard", type: "power", name: "Stadtwerke Strom (Standard)", daily: 2.50, desc: "Grundversorgung Strom" },
+            { id: "power_green", type: "power", name: "Ökostrom Tarif 100%", daily: 3.80, desc: "Strom + Glücksgefühle / Bonus" }
+        ];
 
         const furnitureCatalog = [
             { id: "desk", name: "Ergonomischer Schreibtisch", cost: 120, daily: 0.5, bonusText: "Verdienst-Boost: +0.10 €/Min", effect: (s) => s.rateBonus = 0.10 },
@@ -589,6 +620,7 @@
                 if(!gameState.payoutHistory) gameState.payoutHistory = [];
                 if(!gameState.furniture) gameState.furniture = {};
                 if(!gameState.contracts) gameState.contracts = {};
+                if(!gameState.utilities) gameState.utilities = {};
                 if(!gameState.grades) gameState.grades = {};
             }
             let savedTable = localStorage.getItem("schoolSimTable");
@@ -629,16 +661,16 @@
             loadGame();
             renderSchedule();
             renderFurnitureShop();
+            renderUtilitiesShop();
             renderContractsShop();
             renderSupermarket();
             renderGradesTable();
+            renderRoomVisual();
             
             gameState.lastTickTimestamp = Date.now();
             checkAutoCurrentLesson(true);
-
             updateUI();
 
-            // Präziser Loop mit absolutem Zeitstempel-Vergleich (verhindert Hänger im Hintergrund)
             setInterval(() => {
                 let now = Date.now();
                 if (!gameState.lastTickTimestamp) gameState.lastTickTimestamp = now;
@@ -658,7 +690,6 @@
                         gameState.totalEarnings += earned;
                     }
 
-                    // Bonus-Timer Ticker
                     if (gameState.isBonusTimerRunning) {
                         gameState.bonusTimerSeconds += elapsedSeconds;
                         let rate = 1.20;
@@ -678,16 +709,13 @@
                 }
             }, 200);
 
-            // Verbrauchs-Loop minütlich
             setInterval(() => {
                 let buffs = calculateBuffs();
                 let decayMod = buffs.generalDecayMod;
                 
                 let workMultiplier = 1.0;
                 let isWorking = (gameState.isTimerRunning && gameState.activeLesson && !gameState.activeLesson.toLowerCase().includes("freistunde")) || gameState.isBonusTimerRunning;
-                if (isWorking) {
-                    workMultiplier = 3.0;
-                }
+                if (isWorking) workMultiplier = 3.0;
 
                 gameState.food = Math.max(0, gameState.food - (0.2 * decayMod * buffs.foodDecayMod * workMultiplier));
                 gameState.drink = Math.max(0, gameState.drink - (0.3 * decayMod * buffs.drinkDecayMod * workMultiplier));
@@ -701,10 +729,8 @@
             }, 60000);
         };
 
-        // Bonus-Timer Steuerung
         function toggleBonusTimer() {
             if (gameState.isBonusTimerRunning) {
-                // Stoppen & Bonus auszahlen
                 gameState.isBonusTimerRunning = false;
                 let workType = gameState.bonusTimerType;
                 
@@ -728,7 +754,6 @@
                 gameState.bonusTimerSeconds = 0;
                 updateBonusTimerDisplay();
             } else {
-                // Starten
                 gameState.bonusTimerType = document.getElementById("bonus-work-type").value;
                 gameState.isBonusTimerRunning = true;
                 gameState.bonusTimerSeconds = 0;
@@ -752,63 +777,6 @@
             let secs = gameState.bonusTimerSeconds % 60;
             document.getElementById("bonus-timer-clock").innerText = 
                 (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
-        }
-
-        function startCustomActivity() {
-            let activityName = document.getElementById("custom-activity-input").value.trim();
-            if(!activityName) { alert("Bitte gib eine Aktivität ein!"); return; }
-            switchTask(activityName, 0.50);
-            document.getElementById("custom-activity-input").value = "";
-            saveGame();
-            alert(`"${activityName}" als aktive Sache geladen! Du kannst den Timer jetzt im Dashboard starten.`);
-        }
-
-        function logPastActivityWithTime() {
-            let activityName = document.getElementById("past-activity-input").value.trim();
-            let timeVal = document.getElementById("past-time-input").value;
-
-            if (!activityName) {
-                alert("Bitte gib einen Namen für die Aktivität ein!");
-                return;
-            }
-            if (!timeVal) {
-                alert("Bitte wähle eine Zeit aus!");
-                return;
-            }
-
-            let parts = timeVal.split(':');
-            let hours = parseInt(parts[0]) || 0;
-            let minutes = parseInt(parts[1]) || 0;
-            let totalMinutes = (hours * 60) + minutes;
-
-            if (totalMinutes <= 0) {
-                alert("Bitte gib eine Zeit größer als 0 Minuten an!");
-                return;
-            }
-
-            let defaultRate = 0.50;
-            let buffs = calculateBuffs();
-            let effectiveRate = defaultRate + buffs.rateBonus + buffs.baseRateBonus;
-            let earned = totalMinutes * effectiveRate + totalMinutes * buffs.passiveIncome;
-
-            gameState.pendingEarnings += earned;
-            gameState.totalEarnings += earned;
-
-            let workMultiplier = 3.0;
-            let decayMod = buffs.generalDecayMod;
-
-            gameState.food = Math.max(0, gameState.food - (0.2 * decayMod * buffs.foodDecayMod * workMultiplier * totalMinutes));
-            gameState.drink = Math.max(0, gameState.drink - (0.3 * decayMod * buffs.drinkDecayMod * workMultiplier * totalMinutes));
-            
-            let sleepVal = gameState.sleep - (0.1 * decayMod * buffs.sleepDecayMod * workMultiplier * totalMinutes);
-            if (buffs.minSleep > 0 && sleepVal < buffs.minSleep) sleepVal = buffs.minSleep;
-            gameState.sleep = Math.max(0, sleepVal);
-
-            document.getElementById("past-activity-input").value = "";
-            updateUI();
-            saveGame();
-
-            alert(`"${activityName}" (${hours} Std. ${minutes} Min.) erfolgreich nachgetragen!\n+${earned.toFixed(2)} € wurden deinem Zwischenspeicher gutgeschrieben.`);
         }
 
         function calculateBuffs() {
@@ -840,242 +808,81 @@
             if(tabId === 'tab-stats') renderPayoutHistory();
             if(tabId === 'tab-grades') renderGradesTable();
             if(tabId === 'tab-supermarket') renderSupermarket();
+            if(tabId === 'tab-housing') renderRoomVisual();
         }
 
-        function toggleEditMode() {
-            gameState.editMode = document.getElementById("edit-mode-toggle").checked;
-            renderSchedule();
-        }
-
-        function renderSchedule() {
-            const tbody = document.getElementById("schedule-body");
-            tbody.innerHTML = "";
-            for (let hour = 1; hour <= hoursCount; hour++) {
-                let times = lessonTimes[hour] || { start: "00:00", end: "00:00" };
-                let row = `<tr>
-                    <td class="hour-col" onclick="handleHourClick(${hour})" title="Uhrzeit bearbeiten">
-                        <strong>${hour}</strong><br><span style="font-size:0.65rem; color:#8b949e;">${times.start}-${times.end}</span>
-                    </td>`;
-                for (let d = 0; d < daysCount; d++) {
-                    let cellData = timetableData[hour][d];
-                    row += `<td class="schedule-cell" onclick="handleCellClick(${hour}, ${d})">
-                        <div class="cell-subject">${cellData.subject}</div>
-                        <div class="cell-details">${cellData.room} | ${cellData.rate}€/m</div>
-                    </td>`;
+        function renderRoomVisual() {
+            const container = document.getElementById("room-furniture-visual");
+            if (!container) return;
+            container.innerHTML = "";
+            let offset = 10;
+            furnitureCatalog.forEach(item => {
+                if (gameState.furniture[item.id]) {
+                    container.innerHTML += `<div class="mini-furniture" style="bottom: ${offset}px; left: 15px;">📦 ${item.name}</div>`;
+                    offset += 25;
                 }
-                row += `</tr>`;
-                tbody.innerHTML += row;
-            }
-        }
-
-        function handleHourClick(hour) {
-            if (gameState.editMode) {
-                gameState.currentTimeEditHour = hour;
-                let t = lessonTimes[hour] || { start: "07:45", end: "08:30" };
-                document.getElementById("modal-start-time").value = t.start;
-                document.getElementById("modal-end-time").value = t.end;
-                document.getElementById("time-modal-title").innerText = `${hour}. Stunde - Uhrzeit anpassen`;
-                document.getElementById("time-modal").style.display = "flex";
-            }
-        }
-
-        function saveTimeEdit() {
-            let hour = gameState.currentTimeEditHour;
-            let start = document.getElementById("modal-start-time").value;
-            let end = document.getElementById("modal-end-time").value;
-            if (hour && start && end) {
-                lessonTimes[hour] = { start, end };
-                closeTimeModal();
-                renderSchedule();
-                saveGame();
-            }
-        }
-
-        function closeTimeModal() {
-            document.getElementById("time-modal").style.display = "none";
-        }
-
-        function renderSupermarket() {
-            let buffs = calculateBuffs();
-            let hasDiscount = buffs.shopDiscount < 1.0;
-
-            const drinksContainer = document.getElementById("supermarket-drinks-container");
-            drinksContainer.innerHTML = "";
-            supermarketDrinks.forEach(item => {
-                let finalCost = item.baseCost * buffs.shopDiscount;
-                let priceHtml = "";
-                if (hasDiscount && item.baseCost > 0) {
-                    priceHtml = `<span class="price-tag"><span class="old-price">${item.baseCost.toFixed(2)} €</span><span class="new-price">${finalCost.toFixed(2)} €</span></span>`;
-                } else {
-                    priceHtml = `<span class="price-tag"><span class="new-price">${item.baseCost === 0 ? 'Gratis' : item.baseCost.toFixed(2) + ' €'}</span></span>`;
-                }
-
-                drinksContainer.innerHTML += `
-                    <div class="shop-item">
-                        <div>
-                            <strong>${item.name}</strong>
-                            <div class="shop-info">${item.info}</div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            ${priceHtml}
-                            <button class="action-btn" onclick="buyItem('${item.type}', ${item.amount}, ${item.baseCost}, '${item.extraType || ''}', ${item.extraAmount || 0})">${item.baseCost === 0 ? 'Trinken' : 'Kaufen'}</button>
-                        </div>
-                    </div>`;
             });
+            document.getElementById("room-title-name").innerText = gameState.housing.name;
+            document.getElementById("current-housing").innerText = gameState.housing.name;
+        }
 
-            const foodContainer = document.getElementById("supermarket-food-container");
-            foodContainer.innerHTML = "";
-            supermarketFood.forEach(item => {
-                let finalCost = item.baseCost * buffs.shopDiscount;
-                let priceHtml = "";
-                if (hasDiscount && item.baseCost > 0) {
-                    priceHtml = `<span class="price-tag"><span class="old-price">${item.baseCost.toFixed(2)} €</span><span class="new-price">${finalCost.toFixed(2)} €</span></span>`;
-                } else {
-                    priceHtml = `<span class="price-tag"><span class="new-price">${item.baseCost === 0 ? 'Gratis' : item.baseCost.toFixed(2) + ' €'}</span></span>`;
-                }
-
-                foodContainer.innerHTML += `
-                    <div class="shop-item">
-                        <div>
-                            <strong>${item.name}</strong>
-                            <div class="shop-info">${item.info}</div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            ${priceHtml}
-                            <button class="action-btn" onclick="buyItem('${item.type}', ${item.amount}, ${item.baseCost})">${item.baseCost === 0 ? 'Essen' : 'Kaufen'}</button>
-                        </div>
-                    </div>`;
+        function renderUtilitiesShop() {
+            const container = document.getElementById("utilities-shop-container");
+            if (!container) return;
+            container.innerHTML = "";
+            utilitiesCatalog.forEach(item => {
+                let active = gameState.utilities[item.id];
+                container.innerHTML += `<div class="shop-item">
+                    <div>
+                        <strong>${item.name}</strong> (${item.daily.toFixed(2)} €/Tag)
+                        <div class="shop-info">${item.desc}</div>
+                    </div>
+                    <button class="action-btn ${active ? 'danger-btn' : ''}" onclick="toggleUtility('${item.id}', '${item.type}')">${active ? 'Kündigen' : 'Anmelden'}</button>
+                </div>`;
             });
         }
 
-        function getUniqueSubjectsList() {
-            let subjectsMap = new Map();
-            for (let h = 1; h <= hoursCount; h++) {
-                for (let d = 0; d < daysCount; d++) {
-                    let item = timetableData[h][d];
-                    if (item && item.subject && item.subject.toLowerCase() !== "freistunde" && item.subject !== "-") {
-                        let name = item.subject.trim();
-                        let isLk = name === name.toUpperCase() || item.rate >= 0.55; 
-                        subjectsMap.set(name, { name, isLk });
-                    }
+        function toggleUtility(id, type) {
+            // Sicherstellen, dass jeweils nur ein Wasser- und ein Stromvertrag aktiv ist
+            utilitiesCatalog.forEach(item => {
+                if (item.type === type && item.id !== id) {
+                    gameState.utilities[item.id] = false;
                 }
-            }
-            let list = Array.from(subjectsMap.values());
-            list.sort((a, b) => {
-                if (a.isLk && !b.isLk) return -1;
-                if (!a.isLk && b.isLk) return 1;
-                return a.name.localeCompare(b.name);
             });
-            return list;
-        }
-
-        function parsePointsString(str) {
-            if (!str) return [];
-            return str.split(',').map(s => {
-                let num = parseFloat(s.trim().replace(',', '.'));
-                return (!isNaN(num) && num >= 0 && num <= 15) ? num : null;
-            }).filter(n => n !== null);
-        }
-
-        function pointsToGrade(points) {
-            if (points === null || isNaN(points)) return "-";
-            let grade = 1.0 + (15 - points) * (5.0 / 14.0);
-            if (grade < 1.0) grade = 1.0;
-            if (grade > 6.0) grade = 6.0;
-            return grade.toFixed(2);
-        }
-
-        function calculateSubjectPointsAverage(writtenStr, oralStr) {
-            let written = parsePointsString(writtenStr);
-            let oral = parsePointsString(oralStr);
-            let all = [...written, ...oral];
-            if (all.length === 0) return null;
-
-            let avgW = written.length > 0 ? written.reduce((a, b) => a + b, 0) / written.length : null;
-            let avgO = oral.length > 0 ? oral.reduce((a, b) => a + b, 0) / oral.length : null;
-
-            if (avgW !== null && avgO !== null) {
-                return (avgW + avgO) / 2;
-            } else {
-                return all.reduce((a, b) => a + b, 0) / all.length;
-            }
-        }
-
-        function updateSubjectGrade(subjectName, type, value) {
-            if (!gameState.grades[subjectName]) {
-                gameState.grades[subjectName] = { written: '', oral: '' };
-            }
-            let oldPointsAvg = calculateSubjectPointsAverage(gameState.grades[subjectName].written, gameState.grades[subjectName].oral) || 0;
-
-            gameState.grades[subjectName][type] = value;
-
-            let newPointsAvg = calculateSubjectPointsAverage(gameState.grades[subjectName].written, gameState.grades[subjectName].oral) || 0;
-
-            if (oldPointsAvg > 0 && newPointsAvg > 0 && oldPointsAvg !== newPointsAvg) {
-                let diff = newPointsAvg - oldPointsAvg;
-                let reward = diff * 8.00;
-                gameState.money += reward;
-                if (reward > 0) {
-                    alert(`Gratis-Bonus! Leistung in ${subjectName} gesteigert (${oldPointsAvg.toFixed(1)} NP -> ${newPointsAvg.toFixed(1)} NP). +${reward.toFixed(2)} € erhalten!`);
-                } else {
-                    alert(`Leistung in ${subjectName} verschlechtert (${oldPointsAvg.toFixed(1)} NP -> ${newPointsAvg.toFixed(1)} NP). ${Math.abs(reward).toFixed(2)} € abgezogen!`);
-                }
-            }
-
-            renderGradesTable();
+            gameState.utilities[id] = !gameState.utilities[id];
+            renderUtilitiesShop();
             updateUI();
             saveGame();
         }
 
-        function renderGradesTable() {
-            const tbody = document.getElementById("grades-tbody");
-            if (!tbody) return;
-            tbody.innerHTML = "";
-
-            let subjects = getUniqueSubjectsList();
-            let allPoints = [];
-
-            if (subjects.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#8b949e;">Keine Fächer im Stundenplan gefunden!</td></tr>`;
-                document.getElementById("overall-grade-display").innerText = "-";
-                return;
-            }
-
-            subjects.forEach(subj => {
-                if (!gameState.grades[subj.name]) {
-                    gameState.grades[subj.name] = { written: '', oral: '' };
+        function setHousing(name, rent, deposit, movingCost, purchasePrice) {
+            if (purchasePrice > 0) {
+                let totalCost = purchasePrice;
+                if (gameState.money < totalCost) {
+                    alert(`Nicht genug Bargeld! Ein Haus kostet ${purchasePrice.toLocaleString()} €.`);
+                    return;
                 }
-                let gData = gameState.grades[subj.name];
-                let ptsAvg = calculateSubjectPointsAverage(gData.written, gData.oral);
-
-                if (ptsAvg !== null) allPoints.push(ptsAvg);
-
-                let gradeStr = ptsAvg !== null ? pointsToGrade(ptsAvg) : "-";
-                let ptsStr = ptsAvg !== null ? `${ptsAvg.toFixed(1)} NP` : "-";
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${subj.name}</strong></td>
-                        <td>${subj.isLk ? '<span class="badge badge-lk">LK</span>' : '<span class="badge">GK</span>'}</td>
-                        <td><input type="text" value="${gData.written}" placeholder="z.B. 13, 11" oninput="updateSubjectGrade('${subj.name}', 'written', this.value)"></td>
-                        <td><input type="text" value="${gData.oral}" placeholder="z.B. 14, 12" oninput="updateSubjectGrade('${subj.name}', 'oral', this.value)"></td>
-                        <td><strong>${ptsStr} (${gradeStr})</strong></td>
-                    </tr>
-                `;
-            });
-
-            let overallDisplay = document.getElementById("overall-grade-display");
-            if (allPoints.length > 0) {
-                let overallPts = allPoints.reduce((a, b) => a + b, 0) / allPoints.length;
-                let overallGrade = pointsToGrade(overallPts);
-                overallDisplay.innerText = `${overallPts.toFixed(1)} NP (${overallGrade})`;
+                gameState.money -= totalCost;
+                gameState.housing = { name, rent: 0, deposit: 0 };
+                alert(`Glückwunsch zum Eigenheim! Du hast ein Haus für ${purchasePrice.toLocaleString()} € gekauft. Ab sofort keine tägliche Miete mehr!`);
             } else {
-                overallDisplay.innerText = "-";
+                let totalUpfront = deposit + movingCost;
+                if (gameState.money < totalUpfront) {
+                    alert(`Umzug nicht möglich! Du brauchst ${totalUpfront.toLocaleString()} € für Kaution (${deposit} €) und Umzug (${movingCost} €).`);
+                    return;
+                }
+                gameState.money -= totalUpfront;
+                gameState.housing = { name, rent, deposit };
+                alert(`Erfolgreich umgezogen nach "${name}"!\nKaution: ${deposit} € | Umzugskosten: ${movingCost} € wurden bezahlt.`);
             }
+            renderRoomVisual();
+            updateUI();
+            saveGame();
         }
 
         function renderFurnitureShop() {
             const container = document.getElementById("furniture-shop-container");
+            if (!container) return;
             container.innerHTML = "";
             furnitureCatalog.forEach(item => {
                 let owned = gameState.furniture[item.id];
@@ -1091,6 +898,7 @@
 
         function renderContractsShop() {
             const container = document.getElementById("contracts-shop-container");
+            if (!container) return;
             container.innerHTML = "";
             contractsCatalog.forEach(item => {
                 let active = gameState.contracts[item.id];
@@ -1109,6 +917,7 @@
             gameState.money -= cost;
             gameState.furniture[id] = true;
             renderFurnitureShop();
+            renderRoomVisual();
             updateUI();
             saveGame();
         }
@@ -1138,40 +947,6 @@
             updateTimerDisplay();
             saveGame();
         }
-
-        function handleCellClick(hour, day) {
-            if (gameState.editMode) {
-                gameState.currentEditCoords = { hour, day };
-                let cellData = timetableData[hour][day];
-                document.getElementById("modal-subject").value = cellData.subject;
-                document.getElementById("modal-room").value = cellData.room;
-                document.getElementById("modal-teacher").value = cellData.teacher;
-                document.getElementById("modal-rate").value = cellData.rate !== undefined ? cellData.rate : 0.50;
-                document.getElementById("edit-modal").style.display = "flex";
-            } else {
-                let cellData = timetableData[hour][day];
-                switchTask(cellData.subject, cellData.rate !== undefined ? cellData.rate : 0.50);
-            }
-        }
-
-        function saveLessonEdit() {
-            let { hour, day } = gameState.currentEditCoords;
-            let sub = document.getElementById("modal-subject").value || "Freistunde";
-            let rateVal = sub.toLowerCase().includes("freistunde") ? 0 : parseFloat(document.getElementById("modal-rate").value) || 0.50;
-            
-            timetableData[hour][day] = {
-                subject: sub,
-                room: document.getElementById("modal-room").value || "-",
-                teacher: document.getElementById("modal-teacher").value || "-",
-                rate: rateVal
-            };
-            closeModal();
-            renderSchedule();
-            renderGradesTable();
-            saveGame();
-        }
-
-        function closeModal() { document.getElementById("edit-modal").style.display = "none"; }
 
         function checkAutoCurrentLesson(isInitial = false) {
             let now = new Date();
@@ -1277,10 +1052,26 @@
         }
 
         function endDay() {
+            // Prüfung ob Wasser- und Stromvertrag bei eigener Wohnung aktiv sind
+            if (gameState.housing.name !== "Elternhaus") {
+                let hasWater = Object.keys(gameState.utilities).some(id => id.includes("water") && gameState.utilities[id]);
+                let hasPower = Object.keys(gameState.utilities).some(id => id.includes("power") && gameState.utilities[id]);
+                if (!hasWater || !hasPower) {
+                    alert("⚠️ Achtung! Du bist aus dem Elternhaus ausgezogen, hast aber keinen aktiven Wasser- und/oder Stromvertrag angemeldet! Ohne Versorger kannst du den Tag nicht beenden.");
+                    return;
+                }
+            }
+
             let gross = gameState.pendingEarnings;
             let buffs = calculateBuffs();
             
-            let fixedTotal = gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
+            let fixedTotal = gameState.housing.rent;
+            
+            // Versorgerkosten addieren
+            utilitiesCatalog.forEach(item => {
+                if (gameState.utilities[item.id]) fixedTotal += item.daily;
+            });
+
             furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
             contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
 
@@ -1308,7 +1099,7 @@
             updateUI();
             saveGame();
 
-            alert(`Tag beendet & abgerechnet!\n\nErarbeitetes Brutto: ${gross.toFixed(2)} €\nSteuern (${(taxRate*100).toFixed(0)}%): -${taxes.toFixed(2)} €\nNetto-Einnahme: +${netEarnings.toFixed(2)} €\nFixkosten abgezogen: -${fixedTotal.toFixed(2)} €`);
+            alert(`Tag beendet & abgerechnet!\n\nErarbeitetes Brutto: ${gross.toFixed(2)} €\nSteuern (${(taxRate*100).toFixed(0)}%): -${taxes.toFixed(2)} €\nNetto-Einnahme: +${netEarnings.toFixed(2)} €\nFixkosten & Versorger abgezogen: -${fixedTotal.toFixed(2)} €`);
         }
 
         function renderPayoutHistory() {
@@ -1327,6 +1118,41 @@
             container.innerHTML = html;
         }
 
+        function renderSupermarket() {
+            let buffs = calculateBuffs();
+            let hasDiscount = buffs.shopDiscount < 1.0;
+
+            const drinksContainer = document.getElementById("supermarket-drinks-container");
+            drinksContainer.innerHTML = "";
+            supermarketDrinks.forEach(item => {
+                let finalCost = item.baseCost * buffs.shopDiscount;
+                let priceHtml = item.baseCost === 0 ? `<span class="new-price">Gratis</span>` : `<span class="new-price">${finalCost.toFixed(2)} €</span>`;
+                drinksContainer.innerHTML += `
+                    <div class="shop-item">
+                        <div><strong>${item.name}</strong><div class="shop-info">${item.info}</div></div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="price-tag">${priceHtml}</span>
+                            <button class="action-btn" onclick="buyItem('${item.type}', ${item.amount}, ${item.baseCost}, '${item.extraType || ''}', ${item.extraAmount || 0})">${item.baseCost === 0 ? 'Trinken' : 'Kaufen'}</button>
+                        </div>
+                    </div>`;
+            });
+
+            const foodContainer = document.getElementById("supermarket-food-container");
+            foodContainer.innerHTML = "";
+            supermarketFood.forEach(item => {
+                let finalCost = item.baseCost * buffs.shopDiscount;
+                let priceHtml = item.baseCost === 0 ? `<span class="new-price">Gratis</span>` : `<span class="new-price">${finalCost.toFixed(2)} €</span>`;
+                foodContainer.innerHTML += `
+                    <div class="shop-item">
+                        <div><strong>${item.name}</strong><div class="shop-info">${item.info}</div></div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="price-tag">${priceHtml}</span>
+                            <button class="action-btn" onclick="buyItem('${item.type}', ${item.amount}, ${item.baseCost})">${item.baseCost === 0 ? 'Essen' : 'Kaufen'}</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
         function buyItem(type, amount, baseCost, extraType = null, extraAmount = 0) {
             let buffs = calculateBuffs();
             let cost = baseCost * buffs.shopDiscount;
@@ -1339,13 +1165,6 @@
                 gameState.drink = Math.min(100, gameState.drink + actualDrink);
                 if (extraType === 'energy') { gameState.sleep = Math.min(100, gameState.sleep + extraAmount); }
             }
-            updateUI();
-            saveGame();
-        }
-
-        function setHousing(name, rent, water, electricity) {
-            gameState.housing = { name, rent, water, electricity };
-            document.getElementById("current-housing").innerText = name;
             updateUI();
             saveGame();
         }
@@ -1410,7 +1229,8 @@
             document.getElementById("val-sleep").innerText = Math.round(gameState.sleep) + "%";
             document.getElementById("fill-sleep").style.width = gameState.sleep + "%";
 
-            let fixedTotal = gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
+            let fixedTotal = gameState.housing.rent;
+            utilitiesCatalog.forEach(item => { if (gameState.utilities[item.id]) fixedTotal += item.daily; });
             furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
             contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
 
@@ -1437,6 +1257,209 @@
             document.getElementById("active-buffs-list").innerHTML = hasAnyBuff ? activeBuffsHTML : "Keine aktiven Boni";
 
             updateTimerDisplay();
+        }
+
+        function renderSchedule() {
+            const tbody = document.getElementById("schedule-body");
+            if(!tbody) return;
+            tbody.innerHTML = "";
+            for (let hour = 1; hour <= hoursCount; hour++) {
+                let times = lessonTimes[hour] || { start: "00:00", end: "00:00" };
+                let row = `<tr>
+                    <td class="hour-col" onclick="handleHourClick(${hour})">
+                        <strong>${hour}</strong><br><span style="font-size:0.65rem; color:#8b949e;">${times.start}-${times.end}</span>
+                    </td>`;
+                for (let d = 0; d < daysCount; d++) {
+                    let cellData = timetableData[hour][d];
+                    row += `<td class="schedule-cell" onclick="handleCellClick(${hour}, ${d})">
+                        <div class="cell-subject">${cellData.subject}</div>
+                        <div class="cell-details">${cellData.room} | ${cellData.rate}€/m</div>
+                    </td>`;
+                }
+                row += `</tr>`;
+                tbody.innerHTML += row;
+            }
+        }
+
+        function toggleEditMode() {
+            gameState.editMode = document.getElementById("edit-mode-toggle").checked;
+            renderSchedule();
+        }
+
+        function handleHourClick(hour) {
+            if (gameState.editMode) {
+                gameState.currentTimeEditHour = hour;
+                let t = lessonTimes[hour] || { start: "07:45", end: "08:30" };
+                document.getElementById("modal-start-time").value = t.start;
+                document.getElementById("modal-end-time").value = t.end;
+                document.getElementById("time-modal-title").innerText = `${hour}. Stunde - Uhrzeit anpassen`;
+                document.getElementById("time-modal").style.display = "flex";
+            }
+        }
+
+        function saveTimeEdit() {
+            let hour = gameState.currentTimeEditHour;
+            let start = document.getElementById("modal-start-time").value;
+            let end = document.getElementById("modal-end-time").value;
+            if (hour && start && end) {
+                lessonTimes[hour] = { start, end };
+                closeTimeModal();
+                renderSchedule();
+                saveGame();
+            }
+        }
+
+        function closeTimeModal() { document.getElementById("time-modal").style.display = "none"; }
+        function closeModal() { document.getElementById("edit-modal").style.display = "none"; }
+
+        function handleCellClick(hour, day) {
+            if (gameState.editMode) {
+                gameState.currentEditCoords = { hour, day };
+                let cellData = timetableData[hour][day];
+                document.getElementById("modal-subject").value = cellData.subject;
+                document.getElementById("modal-room").value = cellData.room;
+                document.getElementById("modal-teacher").value = cellData.teacher;
+                document.getElementById("modal-rate").value = cellData.rate !== undefined ? cellData.rate : 0.50;
+                document.getElementById("edit-modal").style.display = "flex";
+            } else {
+                let cellData = timetableData[hour][day];
+                switchTask(cellData.subject, cellData.rate !== undefined ? cellData.rate : 0.50);
+            }
+        }
+
+        function saveLessonEdit() {
+            let { hour, day } = gameState.currentEditCoords;
+            let sub = document.getElementById("modal-subject").value || "Freistunde";
+            let rateVal = sub.toLowerCase().includes("freistunde") ? 0 : parseFloat(document.getElementById("modal-rate").value) || 0.50;
+            
+            timetableData[hour][day] = {
+                subject: sub,
+                room: document.getElementById("modal-room").value || "-",
+                teacher: document.getElementById("modal-teacher").value || "-",
+                rate: rateVal
+            };
+            closeModal();
+            renderSchedule();
+            renderGradesTable();
+            saveGame();
+        }
+
+        function getUniqueSubjectsList() {
+            let subjectsMap = new Map();
+            for (let h = 1; h <= hoursCount; h++) {
+                for (let d = 0; d < daysCount; d++) {
+                    let item = timetableData[h][d];
+                    if (item && item.subject && item.subject.toLowerCase() !== "freistunde" && item.subject !== "-") {
+                        let name = item.subject.trim();
+                        let isLk = name === name.toUpperCase() || item.rate >= 0.55; 
+                        subjectsMap.set(name, { name, isLk });
+                    }
+                }
+            }
+            return Array.from(subjectsMap.values());
+        }
+
+        function parsePointsString(str) {
+            if (!str) return [];
+            return str.split(',').map(s => {
+                let num = parseFloat(s.trim().replace(',', '.'));
+                return (!isNaN(num) && num >= 0 && num <= 15) ? num : null;
+            }).filter(n => n !== null);
+        }
+
+        function pointsToGrade(points) {
+            if (points === null || isNaN(points)) return "-";
+            let grade = 1.0 + (15 - points) * (5.0 / 14.0);
+            if (grade < 1.0) grade = 1.0;
+            if (grade > 6.0) grade = 6.0;
+            return grade.toFixed(2);
+        }
+
+        function calculateSubjectPointsAverage(writtenStr, oralStr) {
+            let written = parsePointsString(writtenStr);
+            let oral = parsePointsString(oralStr);
+            let all = [...written, ...oral];
+            if (all.length === 0) return null;
+            let avgW = written.length > 0 ? written.reduce((a, b) => a + b, 0) / written.length : null;
+            let avgO = oral.length > 0 ? oral.reduce((a, b) => a + b, 0) / oral.length : null;
+            if (avgW !== null && avgO !== null) return (avgW + avgO) / 2;
+            return all.reduce((a, b) => a + b, 0) / all.length;
+        }
+
+        function updateSubjectGrade(subjectName, type, value) {
+            if (!gameState.grades[subjectName]) gameState.grades[subjectName] = { written: '', oral: '' };
+            gameState.grades[subjectName][type] = value;
+            renderGradesTable();
+            saveGame();
+        }
+
+        function renderGradesTable() {
+            const tbody = document.getElementById("grades-tbody");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+            let subjects = getUniqueSubjectsList();
+            let allPoints = [];
+
+            if (subjects.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#8b949e;">Keine Fächer gefunden!</td></tr>`;
+                document.getElementById("overall-grade-display").innerText = "-";
+                return;
+            }
+
+            subjects.forEach(subj => {
+                if (!gameState.grades[subj.name]) gameState.grades[subj.name] = { written: '', oral: '' };
+                let gData = gameState.grades[subj.name];
+                let ptsAvg = calculateSubjectPointsAverage(gData.written, gData.oral);
+                if (ptsAvg !== null) allPoints.push(ptsAvg);
+                let gradeStr = ptsAvg !== null ? pointsToGrade(ptsAvg) : "-";
+                let ptsStr = ptsAvg !== null ? `${ptsAvg.toFixed(1)} NP` : "-";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${subj.name}</strong></td>
+                        <td>${subj.isLk ? '<span class="badge badge-lk">LK</span>' : '<span class="badge">GK</span>'}</td>
+                        <td><input type="text" value="${gData.written}" placeholder="z.B. 13, 11" oninput="updateSubjectGrade('${subj.name}', 'written', this.value)"></td>
+                        <td><input type="text" value="${gData.oral}" placeholder="z.B. 14, 12" oninput="updateSubjectGrade('${subj.name}', 'oral', this.value)"></td>
+                        <td><strong>${ptsStr} (${gradeStr})</strong></td>
+                    </tr>
+                `;
+            });
+
+            let overallDisplay = document.getElementById("overall-grade-display");
+            if (allPoints.length > 0) {
+                let overallPts = allPoints.reduce((a, b) => a + b, 0) / allPoints.length;
+                overallDisplay.innerText = `${overallPts.toFixed(1)} NP (${pointsToGrade(overallPts)})`;
+            } else {
+                overallDisplay.innerText = "-";
+            }
+        }
+
+        function startCustomActivity() {
+            let activityName = document.getElementById("custom-activity-input").value.trim();
+            if(!activityName) { alert("Bitte gib eine Aktivität ein!"); return; }
+            switchTask(activityName, 0.50);
+            document.getElementById("custom-activity-input").value = "";
+            saveGame();
+            alert(`"${activityName}" als aktive Sache geladen!`);
+        }
+
+        function logPastActivityWithTime() {
+            let activityName = document.getElementById("past-activity-input").value.trim();
+            let timeVal = document.getElementById("past-time-input").value;
+            if (!activityName || !timeVal) { alert("Bitte Name und Zeit eingeben!"); return; }
+            let parts = timeVal.split(':');
+            let hours = parseInt(parts[0]) || 0;
+            let minutes = parseInt(parts[1]) || 0;
+            let totalMinutes = (hours * 60) + minutes;
+            if (totalMinutes <= 0) return;
+
+            let buffs = calculateBuffs();
+            let earned = totalMinutes * (0.50 + buffs.rateBonus + buffs.baseRateBonus) + totalMinutes * buffs.passiveIncome;
+            gameState.pendingEarnings += earned;
+            gameState.totalEarnings += earned;
+            updateUI();
+            saveGame();
+            alert(`"${activityName}" nachgetragen! +${earned.toFixed(2)} € im Zwischenspeicher.`);
         }
     </script>
 </body>
