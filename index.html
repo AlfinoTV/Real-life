@@ -256,16 +256,18 @@
             </div>
         </div>
 
-        <!-- EXTRA BONUS-TIMER FÜR KLASSEN- & EINZELARBEITEN -->
+        <!-- EXTRA BONUS-TIMER FÜR ARBEITEN & LERNEN -->
         <div class="card" style="border: 2px solid var(--accent-orange); margin-top: 20px;">
-            <h2 style="color: var(--accent-orange);">⚡ Bonus-Timer: Klassenarbeit & Einzelarbeit</h2>
-            <p style="font-size: 0.85rem; color: #8b949e;">Starte diesen Timer, während du intensiv an einer Klassenarbeit oder Einzelarbeit sitzt. Er bringt dir einen massiven Stundensatz-Boost und am Ende einen fetten Cash-Bonus!</p>
+            <h2 style="color: var(--accent-orange);">⚡ Bonus-Timer: Arbeiten & Lernen</h2>
+            <p style="font-size: 0.85rem; color: #8b949e;">Wähle die passende Aktivität und starte den Bonus-Timer. Läuft absolut verlässlich weiter – selbst wenn der Tab im Hintergrund ist!</p>
             
             <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-top: 12px;">
                 <div style="flex: 1; min-width: 200px;">
-                    <label style="font-size: 0.85rem;">Typ wählen:</label>
+                    <label style="font-size: 0.85rem;">Aktivität wählen:</label>
                     <select id="bonus-work-type" style="width: 100%; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px; margin-top: 4px;">
                         <option value="einzelarbeit">Einzelarbeit (1.20 €/Min + 5 € Bonus)</option>
+                        <option value="gruppenarbeit">Gruppenarbeit (1.40 €/Min + 7 € Bonus)</option>
+                        <option value="lernen">Lernen / Prüfung (1.80 €/Min + 10 € Bonus)</option>
                         <option value="klassenarbeit">Klassenarbeit (2.50 €/Min + 15 € Bonus)</option>
                     </select>
                 </div>
@@ -636,6 +638,7 @@
 
             updateUI();
 
+            // Präziser Loop mit absolutem Zeitstempel-Vergleich (verhindert Hänger im Hintergrund)
             setInterval(() => {
                 let now = Date.now();
                 if (!gameState.lastTickTimestamp) gameState.lastTickTimestamp = now;
@@ -658,7 +661,11 @@
                     // Bonus-Timer Ticker
                     if (gameState.isBonusTimerRunning) {
                         gameState.bonusTimerSeconds += elapsedSeconds;
-                        let rate = gameState.bonusTimerType === 'klassenarbeit' ? 2.50 : 1.20;
+                        let rate = 1.20;
+                        if(gameState.bonusTimerType === 'gruppenarbeit') rate = 1.40;
+                        if(gameState.bonusTimerType === 'lernen') rate = 1.80;
+                        if(gameState.bonusTimerType === 'klassenarbeit') rate = 2.50;
+
                         let bonusEarned = (elapsedSeconds / 60) * rate;
                         gameState.pendingEarnings += bonusEarned;
                         gameState.totalEarnings += bonusEarned;
@@ -669,8 +676,9 @@
                     updateUI();
                     saveGame();
                 }
-            }, 500);
+            }, 200);
 
+            // Verbrauchs-Loop minütlich
             setInterval(() => {
                 let buffs = calculateBuffs();
                 let decayMod = buffs.generalDecayMod;
@@ -699,7 +707,12 @@
                 // Stoppen & Bonus auszahlen
                 gameState.isBonusTimerRunning = false;
                 let workType = gameState.bonusTimerType;
-                let extraCashBonus = workType === 'klassenarbeit' ? 15.00 : 5.00;
+                
+                let extraCashBonus = 5.00;
+                if (workType === 'gruppenarbeit') extraCashBonus = 7.00;
+                if (workType === 'lernen') extraCashBonus = 10.00;
+                if (workType === 'klassenarbeit') extraCashBonus = 15.00;
+
                 let minutesWorked = Math.floor(gameState.bonusTimerSeconds / 60);
 
                 gameState.pendingEarnings += extraCashBonus;
@@ -710,7 +723,8 @@
                 document.getElementById("bonus-timer-btn").style.backgroundColor = "var(--accent-orange)";
                 document.getElementById("bonus-work-type").disabled = false;
 
-                alert(`Klasse gemacht! ${workType === 'klassenarbeit' ? 'Klassenarbeit' : 'Einzelarbeit'} nach ${minutesWorked} Min. beendet.\n+${extraCashBonus.toFixed(2)} € Erfolgs-Bonus wurden deinem Zwischenspeicher gutgeschrieben!`);
+                let titleName = workType.charAt(0).toUpperCase() + workType.slice(1);
+                alert(`${titleName} nach ${minutesWorked} Min. beendet.\n+${extraCashBonus.toFixed(2)} € Erfolgs-Bonus wurden deinem Zwischenspeicher gutgeschrieben!`);
                 gameState.bonusTimerSeconds = 0;
                 updateBonusTimerDisplay();
             } else {
@@ -719,7 +733,14 @@
                 gameState.isBonusTimerRunning = true;
                 gameState.bonusTimerSeconds = 0;
                 document.getElementById("bonus-work-type").disabled = true;
-                document.getElementById("bonus-timer-status").innerText = gameState.bonusTimerType === 'klassenarbeit' ? "KLASSENARBEIT LÄUFT..." : "EINZELARBEIT LÄUFT...";
+                
+                let labels = {
+                    'einzelarbeit': 'EINZELARBEIT LÄUFT...',
+                    'gruppenarbeit': 'GRUPPENARBEIT LÄUFT...',
+                    'lernen': 'LERNEN LÄUFT...',
+                    'klassenarbeit': 'KLASSENARBEIT LÄUFT...'
+                };
+                document.getElementById("bonus-timer-status").innerText = labels[gameState.bonusTimerType];
                 document.getElementById("bonus-timer-btn").innerText = "Beenden & Bonus sichern";
                 document.getElementById("bonus-timer-btn").style.backgroundColor = "var(--danger)";
             }
