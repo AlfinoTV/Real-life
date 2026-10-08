@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Life Simulator & Stundenplan</title>
+    <title>Ultimate School Life & Economy Simulator</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -27,196 +27,175 @@
             margin-bottom: 20px;
         }
         h1 { margin: 0; color: #fff; }
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            max-width: 1400px;
+
+        /* Tabs Navigation */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .tab-btn.active, .tab-btn:hover {
+            background-color: var(--accent-blue);
+            color: #fff;
+            border-color: var(--accent-blue);
+        }
+
+        .tab-content {
+            display: none;
+            max-width: 1200px;
             margin: 0 auto;
         }
+        .tab-content.active {
+            display: block;
+        }
+
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
         }
         h2 { font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0; color: #58a6ff; }
-        
-        /* Stats Bars */
-        .stat-bar-container { margin-bottom: 10px; }
+
+        /* Stats & Progress */
+        .stat-bar-container { margin-bottom: 15px; }
         .stat-label { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 4px; }
-        .progress-bar {
-            background-color: var(--border);
-            border-radius: 6px;
-            height: 12px;
-            overflow: hidden;
-        }
+        .progress-bar { background-color: var(--border); border-radius: 6px; height: 12px; overflow: hidden; }
         .progress-fill { height: 100%; transition: width 0.3s ease; }
         #fill-food { background-color: var(--accent-orange); }
         #fill-drink { background-color: var(--accent-blue); }
         #fill-sleep { background-color: var(--accent-green); }
 
-        /* Timer Styling (Clean Design angelehnt an Vorlage) */
-        .timer-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            margin: 20px 0;
-        }
+        /* Timer (Clean Design angelehnt an Vorlage) */
+        .timer-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 20px 0; }
         .timer-circle {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
+            width: 200px; height: 200px; border-radius: 50%;
             background: conic-gradient(var(--accent-orange) 0deg, var(--border) 0deg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            display: flex; align-items: center; justify-content: center; position: relative;
         }
         .timer-inner {
-            width: 150px;
-            height: 150px;
-            background-color: var(--card-bg);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+            width: 165px; height: 165px; background-color: var(--card-bg); border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
         }
-        .timer-time { font-size: 1.6rem; font-weight: bold; color: #fff; }
+        .timer-time { font-size: 1.8rem; font-weight: bold; color: #fff; }
         .timer-title { font-size: 0.75rem; color: #8b949e; letter-spacing: 1px; margin-top: 4px; }
 
-        /* Stundenplan Tabelle (Schulmanager Look) */
-        table.schedule-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-            margin-top: 10px;
-        }
-        table.schedule-table th, table.schedule-table td {
-            border: 1px solid var(--border);
-            padding: 6px;
-            text-align: center;
-        }
-        table.schedule-table th { background-color: #21262d; }
-        .lesson-btn {
-            background: #21262d;
-            border: 1px solid var(--border);
-            color: white;
-            padding: 3px 6px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.75rem;
-        }
-        .lesson-btn:hover { background: var(--accent-blue); }
-
-        /* Shops & Buttons */
-        .shop-item, .contract-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #21262d;
-            padding: 8px 12px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
+        /* Shop & Grid Items */
+        .grid-shop { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+        .shop-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #21262d; padding: 12px; border-radius: 8px; border: 1px solid var(--border);
         }
         button.action-btn {
-            background-color: var(--accent-green);
-            color: #fff;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
+            background-color: var(--accent-green); color: #fff; border: none;
+            padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;
         }
         button.action-btn:hover { opacity: 0.9; }
         .money { color: var(--accent-green); font-weight: bold; }
-        .flex-row { display: flex; gap: 10px; }
+
+        /* 3D Room CSS Simulation */
+        .scene-container {
+            width: 100%; height: 300px; background: #010409; border-radius: 8px;
+            perspective: 800px; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border: 1px solid var(--border); margin-bottom: 15px;
+        }
+        .room-3d {
+            width: 200px; height: 150px; position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(-15deg) rotateY(25deg);
+            animation: rotateRoom 15s infinite linear;
+        }
+        @keyframes rotateRoom {
+            0% { transform: rotateX(-15deg) rotateY(0deg); }
+            100% { transform: rotateX(-15deg) rotateY(360deg); }
+        }
+        .wall {
+            position: absolute; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(22, 27, 34, 0.8); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #8b949e;
+        }
+        .wall-back { width: 200px; height: 150px; transform: translateZ(-100px); }
+        .wall-left { width: 200px; height: 150px; transform: rotateY(90deg) translateZ(-100px); }
+        .floor { width: 200px; height: 200px; transform: rotateX(90deg) translateZ(75px); background: #1f242c; }
+
+        /* Stundenplan */
+        table.schedule-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        table.schedule-table th, table.schedule-table td { border: 1px solid var(--border); padding: 8px; text-align: center; }
+        table.schedule-table th { background-color: #21262d; }
+        .lesson-btn { background: #21262d; border: 1px solid var(--border); color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        .lesson-btn:hover { background: var(--accent-blue); }
     </style>
 </head>
 <body>
 
     <header>
         <h1>School Life & Economy Simulator</h1>
-        <p>Geld verdienen durch Anwesenheit, Haushalt managen & überleben!</p>
+        <p>Dein interaktiver Schul- und Lebens-Simulator mit echtem Budget & 3D-Wohnung</p>
     </header>
 
-    <div class="dashboard-grid">
-        
-        <!-- STATUS & KONTO -->
+    <!-- TABS MENÜ -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'tab-dashboard')">Dashboard & Timer</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-schedule')">Stundenplan</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-supermarket')">Supermarkt</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-housing')">Wohnung & 3D</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-bank')">Bank & Kredite</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-contracts')">Abos & Verträge</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-stats')">Statistik</button>
+    </div>
+
+    <!-- TAB 1: DASHBOARD & TIMER -->
+    <div id="tab-dashboard" class="tab-content active">
         <div class="card">
-            <h2>Finanzen & Status</h2>
-            <p>Guthaben (Netto): <span id="money-display" class="money">0.00 €</span></p>
-            <p>Steuern heute: <span id="tax-display">0.00 €</span></p>
-            <button class="action-btn" onclick="endDay()" style="width:100%; margin-bottom: 15px;">Tag beenden & Auszahlen</button>
+            <h2>Finanz- & Lebensübersicht</h2>
+            <p>Guthaben (Netto): <span id="money-display" class="money">50.00 €</span></p>
+            <p>Heutige Steuern: <span id="tax-display">0.00 €</span></p>
+            <button class="action-btn" onclick="endDay()" style="width:100%; margin-bottom: 20px;">Tag beenden & Auszahlen</button>
             
             <div class="stat-bar-container">
-                <div class="stat-label"><span>Essen (Burger, RedBull etc.)</span><span id="val-food">100%</span></div>
-                <div class="progress-bar"><div id="fill-food" class="progress-fill" style="width: 100%;"></div></div>
+                <div class="stat-label"><span>Essen</span><span id="val-food">80%</span></div>
+                <div class="progress-bar"><div id="fill-food" class="progress-fill" style="width: 80%;"></div></div>
             </div>
             <div class="stat-bar-container">
-                <div class="stat-label"><span>Trinken (Club Mate, Spezi)</span><span id="val-drink">100%</span></div>
-                <div class="progress-bar"><div id="fill-drink" class="progress-fill" style="width: 100%;"></div></div>
+                <div class="stat-label"><span>Trinken</span><span id="val-drink">80%</span></div>
+                <div class="progress-bar"><div id="fill-drink" class="progress-fill" style="width: 80%;"></div></div>
             </div>
             <div class="stat-bar-container">
-                <div class="stat-label"><span>Schlaf / Energie</span><span id="val-sleep">100%</span></div>
-                <div class="progress-bar"><div id="fill-sleep" class="progress-fill" style="width: 100%;"></div></div>
+                <div class="stat-label"><span>Schlaf / Energie</span><span id="val-sleep">80%</span></div>
+                <div class="progress-bar"><div id="fill-sleep" class="progress-fill" style="width: 80%;"></div></div>
             </div>
         </div>
 
-        <!-- TIMER (Design nach Vorlage) -->
         <div class="card" style="text-align: center;">
-            <h2>Aktive Unterrichtsstunde</h2>
+            <h2>Aktiver Unterrichts-Timer</h2>
             <div class="timer-wrapper">
                 <div class="timer-circle" id="timer-circle">
                     <div class="timer-inner">
                         <div class="timer-time" id="timer-clock">00:00</div>
-                        <div class="timer-title" id="timer-status">KEINE STUNDE</div>
+                        <div class="timer-title" id="timer-status">BEREIT</div>
                     </div>
                 </div>
             </div>
-            <p id="timer-info">Wähle im Stundenplan eine Stunde aus und klicke "Ich bin da".</p>
+            <p id="timer-info">Wähle im Stundenplan eine Stunde aus und klicke "Da sein", um Geld zu verdienen.</p>
         </div>
+    </div>
 
-        <!-- SUPERMARKT (Markenprodukte) -->
+    <!-- TAB 2: STUNDENPLAN -->
+    <div id="tab-schedule" class="tab-content">
         <div class="card">
-            <h2>Supermarkt (Essen & Trinken)</h2>
-            <div class="shop-item"><span>Red Bull Energy Drink (2.50 €)</span><button class="action-btn" onclick="buyItem('drink', 25, 2.5)">Kaufen</button></div>
-            <div class="shop-item"><span>Club Mate (1.80 €)</span><button class="action-btn" onclick="buyItem('drink', 20, 1.8)">Kaufen</button></div>
-            <div class="shop-item"><span>Paulaner Spezi (1.50 €)</span><button class="action-btn" onclick="buyItem('drink', 18, 1.5)">Kaufen</button></div>
-            <div class="shop-item"><span>Subway Sub Menü (8.99 €)</span><button class="action-btn" onclick="buyItem('food', 50, 8.99)">Kaufen</button></div>
-            <div class="shop-item"><span>Ben & Jerry's Eis (6.49 €)</span><button class="action-btn" onclick="buyItem('food', 35, 6.49)">Kaufen</button></div>
-            <div class="shop-item"><span>Haribo Goldbären (1.20 €)</span><button class="action-btn" onclick="buyItem('food', 15, 1.2)">Kaufen</button></div>
-        </div>
-
-        <!-- WOHNUNG & VERTRÄGE -->
-        <div class="card">
-            <h2>Wohnung, Verträge & Abos</h2>
-            <div class="shop-item"><span>Wohnung Miete (15 € / Tag)</span><button class="action-btn" onclick="toggleContract('rent', 15)">Mieten</button></div>
-            <div class="shop-item"><span>Vodafone 5G Handyvertrag (1.20 € / Tag)</span><button class="action-btn" onclick="toggleContract('phone', 1.2)">Abschließen</button></div>
-            <div class="shop-item"><span>Telekom Gigabit WLAN (1.50 € / Tag)</span><button class="action-btn" onclick="toggleContract('wifi', 1.5)">Abschließen</button></div>
-            <div class="shop-item"><span>Netflix Abo (0.60 € / Tag)</span><button class="action-btn" onclick="toggleContract('netflix', 0.6)">Aktivieren</button></div>
-            <div class="shop-item"><span>Spotify Premium (0.40 € / Tag)</span><button class="action-btn" onclick="toggleContract('spotify', 0.4)">Aktivieren</button></div>
-        </div>
-
-        <!-- BANK & KREDITE -->
-        <div class="card">
-            <h2>Bank & Versicherungen</h2>
-            <p>Kredit aufnehmen: <span id="loan-status">0.00 €</span></p>
-            <div class="flex-row" style="margin-bottom: 10px;">
-                <button class="action-btn" onclick="takeLoan(100)" style="flex:1;">100 € leihen</button>
-                <button class="action-btn" onclick="payLoan(100)" style="flex:1; background:#d73a49;">100 € tilgen</button>
-            </div>
-            <div class="shop-item"><span>Gartenbrand-Versicherung (0.50 € / Tag)</span><button class="action-btn" onclick="toggleContract('insurance', 0.5)">Abschließen</button></div>
-        </div>
-
-        <!-- STUNDENPLAN (Schulmanager Style) -->
-        <div class="card" style="grid-column: 1 / -1;">
             <h2>Stundenplan (Schulmanager Stil)</h2>
             <div style="overflow-x: auto;">
                 <table class="schedule-table">
@@ -230,32 +209,119 @@
                             <th>Freitag</th>
                         </tr>
                     </thead>
-                    <tbody id="schedule-body">
-                        <!-- Wird per JS generiert -->
-                    </tbody>
+                    <tbody id="schedule-body"></tbody>
                 </table>
             </div>
         </div>
+    </div>
 
+    <!-- TAB 3: SUPERMARKT -->
+    <div id="tab-supermarket" class="tab-content">
+        <div class="card">
+            <h2>Getränke-Abteilung</h2>
+            <div class="grid-shop">
+                <div class="shop-item"><span>Red Bull Energy Drink (2.50 €)</span><button class="action-btn" onclick="buyItem('drink', 25, 2.5)">Kaufen</button></div>
+                <div class="shop-item"><span>Club Mate 0,5l (1.80 €)</span><button class="action-btn" onclick="buyItem('drink', 20, 1.8)">Kaufen</button></div>
+                <div class="shop-item"><span>Paulaner Spezi 0,5l (1.50 €)</span><button class="action-btn" onclick="buyItem('drink', 18, 1.5)">Kaufen</button></div>
+                <div class="shop-item"><span>Monster Energy (2.70 €)</span><button class="action-btn" onclick="buyItem('drink', 28, 2.7)">Kaufen</button></div>
+                <div class="shop-item"><span>Coca Cola 0,5l (1.60 €)</span><button class="action-btn" onclick="buyItem('drink', 15, 1.6)">Kaufen</button></div>
+                <div class="shop-item"><span>Volvic Mineralwasser (1.10 €)</span><button class="action-btn" onclick="buyItem('drink', 10, 1.1)">Kaufen</button></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Essen & Snacks</h2>
+            <div class="grid-shop">
+                <div class="shop-item"><span>Subway Sub Menü (8.99 €)</span><button class="action-btn" onclick="buyItem('food', 55, 8.99)">Kaufen</button></div>
+                <div class="shop-item"><span>Ben & Jerry's Eis (6.49 €)</span><button class="action-btn" onclick="buyItem('food', 40, 6.49)">Kaufen</button></div>
+                <div class="shop-item"><span>Haribo Goldbären (1.20 €)</span><button class="action-btn" onclick="buyItem('food', 15, 1.2)">Kaufen</button></div>
+                <div class="shop-item"><span>Milka Schokolade (1.49 €)</span><button class="action-btn" onclick="buyItem('food', 18, 1.49)">Kaufen</button></div>
+                <div class="shop-item"><span>Dominosteine (2.29 €)</span><button class="action-btn" onclick="buyItem('food', 22, 2.29)">Kaufen</button></div>
+                <div class="shop-item"><span>Leibniz Butterkeks (1.89 €)</span><button class="action-btn" onclick="buyItem('food', 20, 1.89)">Kaufen</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: WOHNUNG & 3D -->
+    <div id="tab-housing" class="tab-content">
+        <div class="card">
+            <h2>Virtuelle 3D-Wohnung</h2>
+            <div class="scene-container">
+                <div class="room-3d">
+                    <div class="wall wall-back">Wohnzimmer</div>
+                    <div class="wall wall-left">Küche</div>
+                    <div class="floor"></div>
+                </div>
+            </div>
+            <p style="text-align: center; color: #8b949e; font-size: 0.85rem;">Live 3D-Ansicht deiner aktuellen Unterkunft</p>
+        </div>
+
+        <div class="card">
+            <h2>Immobilien-Markt</h2>
+            <div class="grid-shop">
+                <div class="shop-item"><span>WG-Zimmer (10 € / Tag)</span><button class="action-btn" onclick="setHousing('WG', 10, 2, 3)">Mieten</button></div>
+                <div class="shop-item"><span>Moderne Wohnung (25 € / Tag)</span><button class="action-btn" onclick="setHousing('Wohnung', 25, 5, 8)">Mieten</button></div>
+                <div class="shop-item"><span>Haus mit Garten (60 € / Tag)</span><button class="action-btn" onclick="setHousing('Haus', 60, 12, 20)">Mieten</button></div>
+            </div>
+            <p style="margin-top: 15px;">Aktuelle Unterkunft: <strong id="current-housing" style="color:var(--accent-blue);">Keine</strong></p>
+            <p>Tägliche Fixkosten (Miete + Strom + Wasser): <span id="housing-costs" class="money">0.00 €</span></p>
+        </div>
+    </div>
+
+    <!-- TAB 5: BANK -->
+    <div id="tab-bank" class="tab-content">
+        <div class="card">
+            <h2>Bank & Kredite</h2>
+            <p>Aktueller Kredit: <span id="loan-status">0.00 €</span></p>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="action-btn" onclick="takeLoan(100)" style="flex:1;">100 € Kredit aufnehmen</button>
+                <button class="action-btn" onclick="payLoan(100)" style="flex:1; background:var(--danger);">100 € tilgen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 6: ABOS & VERTRÄGE -->
+    <div id="tab-contracts" class="tab-content">
+        <div class="card">
+            <h2>Abos & Verträge</h2>
+            <div class="grid-shop">
+                <div class="shop-item"><span>Vodafone 5G Handy (1.20 €/Tag)</span><button class="action-btn" onclick="toggleContract('phone', 1.2)">An/Aus</button></div>
+                <div class="shop-item"><span>Telekom WLAN (1.50 €/Tag)</span><button class="action-btn" onclick="toggleContract('wifi', 1.5)">An/Aus</button></div>
+                <div class="shop-item"><span>Netflix Abo (0.60 €/Tag)</span><button class="action-btn" onclick="toggleContract('netflix', 0.6)">An/Aus</button></div>
+                <div class="shop-item"><span>Spotify Premium (0.40 €/Tag)</span><button class="action-btn" onclick="toggleContract('spotify', 0.4)">An/Aus</button></div>
+                <div class="shop-item"><span>Gartenbrand-Versicherung (0.50 €/Tag)</span><button class="action-btn" onclick="toggleContract('insurance', 0.5)">An/Aus</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 7: STATISTIK -->
+    <div id="tab-stats" class="tab-content">
+        <div class="card">
+            <h2>Finanz-Statistik</h2>
+            <p>Gesamteinnahmen bisher: <span id="stat-earnings" class="money">0.00 €</span></p>
+            <p>Gezahlte Steuern gesamt: <span id="stat-taxes">0.00 €</span></p>
+            <p>Aktive Fixkosten pro Tag: <span id="stat-fixed">0.00 €</span></p>
+        </div>
     </div>
 
     <script>
-        // Spiel-Status
         let gameState = {
             money: 50.00,
             pendingEarnings: 0.00,
+            totalEarnings: 0.00,
+            totalTaxes: 0.00,
             taxToday: 0.00,
             food: 80,
             drink: 80,
             sleep: 80,
             loan: 0,
-            activeContracts: { rent: false, phone: false, wifi: false, netflix: false, spotify: false, insurance: false },
+            housing: { name: "Keine", rent: 0, water: 0, electricity: 0 },
+            activeContracts: { phone: false, wifi: false, netflix: false, spotify: false, insurance: false },
             activeLesson: null,
             timerSeconds: 0,
             timerInterval: null
         };
 
-        // Beispiel-Stundenplan-Daten (angelehnt an dein Bild)
         const timetable = {
             1: ["PH", "PH", "Wu", "GEO", "D1"],
             2: ["m1", "PH", "Wu", "GEO", "D1"],
@@ -269,7 +335,12 @@
             10: ["-", "-", "s2", "g3", "-"]
         };
 
-        const days = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
+        function openTab(evt, tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
 
         function initSchedule() {
             const tbody = document.getElementById("schedule-body");
@@ -278,7 +349,7 @@
                 for (let d = 0; d < 5; d++) {
                     let subject = timetable[hour][d];
                     if (subject !== "-") {
-                        row += `<td>${subject}<br><button class="lesson-btn" onclick="startLesson('${subject}', ${hour})">Da sein</button></td>`;
+                        row += `<td>${subject}<br><button class="lesson-btn" onclick="startLesson('${subject}')">Da sein</button></td>`;
                     } else {
                         row += `<td>-</td>`;
                     }
@@ -288,30 +359,26 @@
             }
         }
 
-        function startLesson(subject, hour) {
+        function startLesson(subject) {
             if (gameState.activeLesson) {
                 alert("Es läuft bereits eine Stunde!");
                 return;
             }
             gameState.activeLesson = subject;
-            gameState.timerSeconds = 45 * 60; // 45 Minuten Schulstunde
+            gameState.timerSeconds = 45 * 60;
             document.getElementById("timer-status").innerText = subject.toUpperCase() + " LÄUFT";
             
             if(gameState.timerInterval) clearInterval(gameState.timerInterval);
             gameState.timerInterval = setInterval(() => {
                 if (gameState.timerSeconds > 0) {
                     gameState.timerSeconds--;
-                    let m = Math.floor(gameState.timerSeconds / 60);
-                    let s = gameState.timerSeconds % 60;
-                    document.getElementById("timer-clockveh").innerText = `${m}h ${s}m`; // Klein korrigiert im render
                     updateTimerDisplay();
-                    
-                    // Verdienst-Algorithmus: pro Sekunde Anwesenheit Geld
                     gameState.pendingEarnings += 0.05;
+                    gameState.totalEarnings += 0.05;
                 } else {
                     clearInterval(gameState.timerInterval);
                     gameState.activeLesson = null;
-                    alert("Stunde beendet! Geld wurde dem Tageskonto gutgeschrieben.");
+                    alert("Stunde beendet! Verdienst gutgeschrieben.");
                 }
             }, 1000);
         }
@@ -324,7 +391,7 @@
 
         function buyItem(type, amount, price) {
             if (gameState.money < price) {
-                alert("Nicht genug Geld auf dem Konto!");
+                alert("Nicht genug Geld!");
                 return;
             }
             gameState.money -= price;
@@ -333,9 +400,15 @@
             updateUI();
         }
 
-        function toggleContract(name, dailyCost) {
+        function setHousing(name, rent, water, electricity) {
+            gameState.housing = { name, rent, water, electricity };
+            alert(name + " erfolgreich gemietet!");
+            updateUI();
+        }
+
+        function toggleContract(name, cost) {
             gameState.activeContracts[name] = !gameState.activeContracts[name];
-            alert(name + " Status geändert.");
+            alert("Vertragsstatus geändert.");
             updateUI();
         }
 
@@ -347,7 +420,7 @@
 
         function payLoan(amount) {
             if (gameState.money < amount || gameState.loan < amount) {
-                alert("Kann Kredit nicht tilgen.");
+                alert("Nicht genug Geld oder Kredit zu niedrig.");
                 return;
             }
             gameState.loan -= amount;
@@ -355,39 +428,41 @@
             updateUI();
         }
 
+        function getFixedCosts() {
+            let contractsCost = 0;
+            if (gameState.activeContracts.phone) contractsCost += 1.2;
+            if (gameState.activeContracts.wifi) contractsCost += 1.5;
+            if (gameState.activeContracts.netflix) contractsCost += 0.6;
+            if (gameState.activeContracts.spotify) contractsCost += 0.4;
+            if (gameState.activeContracts.insurance) contractsCost += 0.5;
+
+            return gameState.housing.rent + gameState.housing.water + gameState.housing.electricity + contractsCost;
+        }
+
         function endDay() {
-            // Fixkosten abziehen
-            let fixedCosts = 0;
-            if (gameState.activeContracts.rent) fixedCosts += 15;
-            if (gameState.activeContracts.phone) fixedCosts += 1.2;
-            if (gameState.activeContracts.wifi) fixedCosts += 1.5;
-            if (gameState.activeContracts.netflix) fixedCosts += 0.6;
-            if (gameState.activeContracts.spotify) fixedCosts += 0.4;
-            if (gameState.activeContracts.insurance) fixedCosts += 0.5;
-
-            // Steuern berechnen (20% auf Verdienst)
+            let fixed = getFixedCosts();
             let tax = gameState.pendingEarnings * 0.20;
-            let netEarnings = gameState.pendingEarnings - tax - fixedCosts;
+            let net = gameState.pendingEarnings - tax - fixed;
 
-            // Zufalls-Ereignis: Gartenbrand (10% Chance, wenn nicht versichert)
-            if (!gameState.activeContracts.insurance && Math.ruch < 0.1) {
-                alert("Oh nein! Dein Garten hat gebrannt! Reparaturkosten: 50 €");
-                netEarnings -= 50;
-            } else if (gameState.activeContracts.insurance && Math.random() < 0.1) {
-                alert("Gartenbrand ausgebrochen! Dank deiner Versicherung hat die Versicherung den Schaden komplett übernommen!");
+            // Gartenbrand-Event (nur wenn Haus gemietet & keine Versicherung)
+            if (gameState.housing.name === "Haus" && !gameState.activeContracts.insurance && Math.random() < 0.15) {
+                alert("SCHOCK! Dein Garten hat gebrannt! Reparaturkosten: 80 €");
+                net -= 80;
+            } else if (gameState.housing.name === "Haus" && gameState.activeContracts.insurance && Math.random() < 0.15) {
+                alert("Gartenbrand ausgebrochen! Die Versicherung hat den Schaden komplett bezahlt.");
             }
 
-            gameState.money += netEarnings;
+            gameState.money += net;
             gameState.taxToday = tax;
+            gameState.totalTaxes += tax;
             gameState.pendingEarnings = 0;
 
-            // Werte sinken über den Tag
             gameState.food = Math.max(0, gameState.food - 20);
             gameState.drink = Math.max(0, gameState.drink - 25);
             gameState.sleep = Math.max(0, gameState.sleep - 15);
 
             updateUI();
-            alert(`Tagesabschluss:\nNetto-Verdienst nach Steuern & Fixkosten: ${netEarnings.toFixed(2)} €\nSteuern gezahlt: ${tax.toFixed(2)} €`);
+            alert(`Tagesabschluss:\nNetto-Ertrag nach Steuern & Fixkosten: ${net.toFixed(2)} €`);
         }
 
         function updateUI() {
@@ -397,15 +472,20 @@
             
             document.getElementById("fill-food").style.width = gameState.food + "%";
             document.getElementById("val-food").innerText = gameState.food + "%";
-            
             document.getElementById("fill-drink").style.width = gameState.drink + "%";
             document.getElementById("val-drink").innerText = gameState.drink + "%";
-            
             document.getElementById("fill-sleep").style.width = gameState.sleep + "%";
             document.getElementById("val-sleep").innerText = gameState.sleep + "%";
+
+            document.getElementById("current-housing").innerText = gameState.housing.name;
+            let housingTotal = gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
+            document.getElementById("housing-costs").innerText = housingTotal.toFixed(2) + " € / Tag";
+
+            document.getElementById("stat-earnings").innerText = gameState.totalEarnings.toFixed(2) + " €";
+            document.getElementById("stat-taxes").innerText = gameState.totalTaxes.toFixed(2) + " €";
+            document.getElementById("stat-fixed").innerText = getFixedCosts().toFixed(2) + " €";
         }
 
-        // Init beim Laden
         window.onload = () => {
             initSchedule();
             updateUI();
