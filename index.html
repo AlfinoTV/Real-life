@@ -72,7 +72,6 @@
             width: 170px; height: 170px; border-radius: 50%;
             background: conic-gradient(var(--accent-blue) 0deg, var(--border) 0deg);
             display: flex; align-items: center; justify-content: center; position: relative;
-            transition: background 0.2s linear;
         }
         .timer-inner {
             width: 135px; height: 135px; background-color: var(--card-bg); border-radius: 50%;
@@ -135,6 +134,12 @@
             border: 1px solid var(--border); width: 320px;
         }
         .modal-content input { width: 100%; padding: 8px; margin: 6px 0 12px 0; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 4px; box-sizing: border-box; }
+        
+        .payout-log {
+            background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border);
+            max-height: 150px; overflow-y: auto; font-size: 0.8rem; margin-top: 10px;
+        }
+        .log-entry { border-bottom: 1px solid var(--border); padding: 4px 0; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
@@ -156,7 +161,7 @@
         <button class="tab-btn" onclick="openTab(event, 'tab-housing')">Wohnung (3D)</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-bank')">Bank & Kredite</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-contracts')">Abos & Verträge</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-stats')">Statistik</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-stats')">Statistik & Steuern</button>
     </div>
 
     <!-- TAB 1: DASHBOARD -->
@@ -176,7 +181,7 @@
                     </div>
                 </div>
                 <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Min</div>
-                <div class="timer-subtext" style="color: #fff;">Bereits verdient: <span id="session-earned" class="money">0.00 €</span></div>
+                <div class="timer-subtext" style="color: #fff;">Noch nicht ausgezahlt: <span id="session-earned" class="money">0.00 €</span></div>
                 
                 <!-- Streak & Melden Info -->
                 <div id="streak-info" style="font-size: 0.8rem; color: var(--accent-orange); margin-top: 6px;">
@@ -187,7 +192,7 @@
                     <button class="action-btn" onclick="toggleTimer()">Start / Stop</button>
                     <button class="action-btn" style="background-color: var(--accent-blue);" onclick="raiseHand()">🙋‍♂️ Melden</button>
                     <button class="action-btn" style="background-color: var(--accent-orange);" onclick="startFreistunde()">Freistunde</button>
-                    <button class="action-btn" onclick="claimEarnings()">Auszahlen</button>
+                    <button class="action-btn" style="background-color: var(--accent-green);" onclick="claimEarnings()">💵 Auszahlen (inkl. Steuern)</button>
                 </div>
             </div>
 
@@ -336,12 +341,17 @@
         </div>
     </div>
 
-    <!-- TAB 7: STATISTIK -->
+    <!-- TAB 7: STATISTIK & STEUERN -->
     <div id="tab-stats" class="tab-content">
         <div class="card">
-            <h2>Statistik</h2>
-            <p>Gesamteinnahmen: <span id="stat-earnings" class="money">0.00 €</span></p>
-            <p>Gezahlte Steuern: <span id="stat-taxes">0.00 €</span></p>
+            <h2>Statistik & Steuerübersicht</h2>
+            <p>Gesamteinnahmen (Brutto): <span id="stat-earnings" class="money">0.00 €</span></p>
+            <p>Gezahlte Steuern (15%): <span id="stat-taxes" style="color: var(--danger);">0.00 €</span></p>
+            
+            <h3 style="font-size: 1rem; margin-top: 20px; color: #58a6ff;">Auszahlungs-Historie (Detailliert)</h3>
+            <div class="payout-log" id="payout-log-container">
+                <div style="color: #8b949e; text-align: center;">Noch keine Auszahlungen erfolgt.</div>
+            </div>
         </div>
     </div>
 
@@ -383,7 +393,8 @@
             startTimeEpoch: null,
             editMode: false,
             currentEditCoords: { hour: null, day: null },
-            streaks: {} // Speichert Melde-Streaks fachintern pro Tag
+            streaks: {},
+            payoutHistory: []
         };
 
         let timetableData = {};
@@ -409,6 +420,7 @@
                 let parsed = JSON.parse(saved);
                 gameState = { ...gameState, ...parsed };
                 if(!gameState.streaks) gameState.streaks = {};
+                if(!gameState.payoutHistory) gameState.payoutHistory = [];
             }
             let savedTable = localStorage.getItem("schoolSimTable");
             if (savedTable) {
@@ -441,8 +453,8 @@
             loadGame();
             renderSchedule();
             checkAutoCurrentLesson();
-            updateUI();
 
+            // Hintergrund-Fortschritt berechnen, falls Timer lief
             if (gameState.isTimerRunning && gameState.startTimeEpoch) {
                 let nowEpoch = Date.now();
                 let diffSeconds = Math.floor((nowEpoch - gameState.startTimeEpoch) / 1000);
@@ -450,8 +462,12 @@
                 let earnedExtra = (diffSeconds / 60) * gameState.currentRate;
                 gameState.pendingEarnings += earnedExtra;
                 gameState.totalEarnings += earnedExtra;
+                gameState.startTimeEpoch = nowEpoch;
             }
 
+            updateUI();
+
+            // Globaler Timer Loop (läuft immer im Hintergrund weiter)
             setInterval(() => {
                 if (gameState.isTimerRunning) {
                     gameState.timerSeconds++;
@@ -465,6 +481,7 @@
                 }
             }, 1000);
 
+            // Hunger / Durst / Schlaf Verbrauch
             setInterval(() => {
                 gameState.food = Math.max(0, gameState.food - 0.2);
                 gameState.drink = Math.max(0, gameState.drink - 0.3);
@@ -481,6 +498,7 @@
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             evt.currentTarget.classList.add('active');
+            if(tabId === 'tab-stats') renderPayoutHistory();
         }
 
         function toggleEditMode() {
@@ -626,7 +644,6 @@
             saveGame();
         }
 
-        // --- MELEN- & STREAK-SYSTEM ---
         function raiseHand() {
             if (!gameState.activeLesson || gameState.activeLesson.toLowerCase().includes("freistunde")) {
                 alert("Du kannst dich in Freistunden oder ohne aktives Fach nicht melden!");
@@ -635,17 +652,12 @@
             let subjectKey = gameState.activeLesson.toLowerCase();
             let todayKey = new Date().toDateString();
 
-            if (!gameState.streaks[todayKey]) {
-                gameState.streaks[todayKey] = {};
-            }
-            if (!gameState.streaks[todayKey][subjectKey]) {
-                gameState.streaks[todayKey][subjectKey] = 0;
-            }
+            if (!gameState.streaks[todayKey]) gameState.streaks[todayKey] = {};
+            if (!gameState.streaks[todayKey][subjectKey]) gameState.streaks[todayKey][subjectKey] = 0;
 
             gameState.streaks[todayKey][subjectKey]++;
             let streakCount = gameState.streaks[todayKey][subjectKey];
 
-            // Je öfter gemeldet, desto höher der Bonus (z.B. Basis 0.20€ * Streak)
             let bonusMoney = 0.20 * streakCount;
             gameState.pendingEarnings += bonusMoney;
             gameState.totalEarnings += bonusMoney;
@@ -654,7 +666,6 @@
             updateUI();
             saveGame();
             
-            // Kleines Feedback
             alert(`Gut mitgearbeitet! (${gameState.activeLesson}) Streak: ${streakCount}x | Bonus: +${bonusMoney.toFixed(2)} € direkt gutgeschrieben!`);
         }
 
@@ -668,11 +679,51 @@
                 `Aktuelle Melde-Streak (${gameState.activeLesson || "Kein Fach"}): <strong>${streakCount}x</strong> (Bonus: +${currentBonus.toFixed(2)} €)`;
         }
 
+        // --- AUSZAHLUNG MIT STEUERN & LISTUNG ---
         function claimEarnings() {
-            gameState.money += gameState.pendingEarnings;
+            let gross = gameState.pendingEarnings;
+            if (gross <= 0) {
+                alert("Du hast nichts zum Auszahlen!");
+                return;
+            }
+
+            let taxRate = 0.15; // 15% Steuer
+            let taxes = gross * taxRate;
+            let net = gross - taxes;
+
+            gameState.money += net;
+            gameState.totalTaxes += taxes;
+
+            // In Historie eintragen
+            let payoutEntry = {
+                date: new Date().toLocaleTimeString() + " (" + new Date().toLocaleDateString() + ")",
+                gross: gross,
+                taxes: taxes,
+                net: net
+            };
+            gameState.payoutHistory.unshift(payoutEntry); // Neuester Eintrag oben
+
             gameState.pendingEarnings = 0;
             updateUI();
             saveGame();
+
+            alert(`Auszahlung erfolgreich!\nBrutto: ${gross.toFixed(2)} €\nSteuern (15%): -${taxes.toFixed(2)} €\nNetto ausgezahlt: ${net.toFixed(2)} €`);
+        }
+
+        function renderPayoutHistory() {
+            const container = document.getElementById("payout-log-container");
+            if (!gameState.payoutHistory || gameState.payoutHistory.length === 0) {
+                container.innerHTML = `<div style="color: #8b949e; text-align: center;">Noch keine Auszahlungen erfolgt.</div>`;
+                return;
+            }
+            let html = "";
+            gameState.payoutHistory.forEach(entry => {
+                html += `<div class="log-entry">
+                    <span>${entry.date}</span>
+                    <span>Brutto: <strong>${entry.gross.toFixed(2)}€</strong> | Steuer: <strong style="color:var(--danger)">-${entry.taxes.toFixed(2)}€</strong> | Netto: <strong style="color:var(--accent-green)">+${entry.net.toFixed(2)}€</strong></span>
+                </div>`;
+            });
+            container.innerHTML = html;
         }
 
         function buyItem(type, amount, cost) {
@@ -681,11 +732,8 @@
                 return;
             }
             gameState.money -= cost;
-            if (type === 'food') {
-                gameState.food = Math.min(100, gameState.food + amount);
-            } else if (type === 'drink') {
-                gameState.drink = Math.min(100, gameState.drink + amount);
-            }
+            if (type === 'food') gameState.food = Math.min(100, gameState.food + amount);
+            else if (type === 'drink') gameState.drink = Math.min(100, gameState.drink + amount);
             updateUI();
             saveGame();
         }
@@ -758,7 +806,6 @@
                 (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
             document.getElementById("session-earned").innerText = gameState.pendingEarnings.toFixed(2) + " €";
 
-            // Äußeren Timer-Kreis (Conic Gradient) basierend auf Sekunden einer Minute (0 - 60s) füllen
             let progressDeg = (secs / 60) * 360;
             let circle = document.getElementById("timer-circle");
             if (gameState.isTimerRunning) {
@@ -795,6 +842,7 @@
             document.getElementById("dash-total-fixed").innerText = fixedTotal.toFixed(2) + " €";
             document.getElementById("loan-status").innerText = gameState.loan.toFixed(2) + " €";
             document.getElementById("stat-earnings").innerText = gameState.totalEarnings.toFixed(2) + " €";
+            document.getElementById("stat-taxes").innerText = gameState.totalTaxes.toFixed(2) + " €";
 
             updateTimerDisplay();
         }
