@@ -579,13 +579,22 @@
                 }
             }, 500);
 
+            // Verbrauch Loop (Sinkt schneller, wenn der Timer läuft und KEINE Freistunde ist!)
             setInterval(() => {
                 let buffs = calculateBuffs();
                 let decayMod = buffs.generalDecayMod;
-                gameState.food = Math.max(0, gameState.food - (0.2 * decayMod * buffs.foodDecayMod));
-                gameState.drink = Math.max(0, gameState.drink - (0.3 * decayMod * buffs.drinkDecayMod));
                 
-                let sleepVal = gameState.sleep - (0.1 * decayMod * buffs.sleepDecayMod);
+                // Faktor: 3x schnellerer Verbrauch während der Arbeit / aktivem Timer (außer bei Freistunde)
+                let workMultiplier = 1.0;
+                let isWorking = gameState.isTimerRunning && gameState.activeLesson && !gameState.activeLesson.toLowerCase().includes("freistunde");
+                if (isWorking) {
+                    workMultiplier = 3.0;
+                }
+
+                gameState.food = Math.max(0, gameState.food - (0.2 * decayMod * buffs.foodDecayMod * workMultiplier));
+                gameState.drink = Math.max(0, gameState.drink - (0.3 * decayMod * buffs.drinkDecayMod * workMultiplier));
+                
+                let sleepVal = gameState.sleep - (0.1 * decayMod * buffs.sleepDecayMod * workMultiplier);
                 if (buffs.minSleep > 0 && sleepVal < buffs.minSleep) sleepVal = buffs.minSleep;
                 gameState.sleep = Math.max(0, sleepVal);
 
@@ -1178,7 +1187,6 @@
             let buffs = calculateBuffs();
             document.getElementById("tax-rate-display").innerText = `(${(buffs.taxRate * 100).toFixed(0)}% aktiv)`;
 
-            // Dynamische aktive Boni anzeigen mit + und den Werten
             let activeBuffsHTML = "";
             let hasAnyBuff = false;
 
