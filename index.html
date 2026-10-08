@@ -63,9 +63,9 @@
         .stat-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; }
         .progress-bar { background-color: var(--border); border-radius: 6px; height: 10px; overflow: hidden; }
         .progress-fill { height: 100%; transition: width 0.3s ease; }
-        #fill-food { background-color: var(--accent-orange); }
-        #fill-drink { background-color: var(--accent-blue); }
         #fill-sleep { background-color: var(--accent-green); }
+        #fill-hunger { background-color: var(--accent-orange); }
+        #fill-thirst { background-color: var(--accent-blue); }
 
         .timer-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0; }
         .timer-circle {
@@ -96,9 +96,6 @@
             background: #21262d; padding: 12px; border-radius: 8px; border: 1px solid var(--border);
         }
         .shop-info { font-size: 0.8rem; color: #8b949e; margin-top: 2px; }
-        .price-tag { display: flex; align-items: center; gap: 6px; }
-        .price-tag span.old-price { text-decoration: line-through; color: var(--danger); font-size: 0.8rem; }
-        .price-tag span.new-price { color: var(--accent-green); font-weight: bold; }
         
         button.action-btn {
             background-color: var(--accent-green); color: #fff; border: none;
@@ -169,9 +166,7 @@
         <div class="header-right">
             <div class="header-stat" title="Verfügbares Bargeld">💰 Guthaben: <span id="header-money" class="money">500.00 €</span></div>
             <div class="header-stat" title="Noch nicht versteuert/ausgezahlt">📥 Zwischenspeicher: <span id="header-pending" style="color: var(--accent-orange);">0.00 €</span></div>
-            <div class="header-stat">🍔 <span id="header-food">80%</span></div>
-            <div class="header-stat">💧 <span id="header-drink">80%</span></div>
-            <div class="header-stat">💤 <span id="header-sleep">80%</span></div>
+            <div class="header-stat">💤 Schlaf: <span id="header-sleep">80%</span></div>
         </div>
     </header>
 
@@ -179,10 +174,11 @@
         <button class="tab-btn active" onclick="openTab(event, 'tab-dashboard')">Dashboard</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-schedule')">Stundenplan</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-grades')">Noten</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-supermarket')">Supermarkt</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-housing')">Wohnung & Möbel</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-food')">Essen & Trinken</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-vehicles')">Fahrzeuge</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-crypto')">Bitcoin-Mining</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-bank')">Bank & Kredite</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab-bitcoin')">Bitcoin Mining</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-contracts')">Abos & Verträge</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-stats')">Statistik & Steuern</button>
     </div>
@@ -222,19 +218,19 @@
             </div>
 
             <div class="card dashboard-box">
-                <h2>Lebensstatus & Schlaf</h2>
+                <h2>Schlaf & Bedürfnisse</h2>
                 
-                <div class="stat-bar-container">
-                    <div class="stat-label"><span>Essen</span><span id="val-food">80%</span></div>
-                    <div class="progress-bar"><div id="fill-food" class="progress-fill" style="width: 80%;"></div></div>
-                </div>
-                <div class="stat-bar-container">
-                    <div class="stat-label"><span>Trinken</span><span id="val-drink">80%</span></div>
-                    <div class="progress-bar"><div id="fill-drink" class="progress-fill" style="width: 80%;"></div></div>
-                </div>
                 <div class="stat-bar-container">
                     <div class="stat-label"><span>Schlaf / Energie</span><span id="val-sleep">80%</span></div>
                     <div class="progress-bar"><div id="fill-sleep" class="progress-fill" style="width: 80%;"></div></div>
+                </div>
+                <div class="stat-bar-container">
+                    <div class="stat-label"><span>Hunger</span><span id="val-hunger">100%</span></div>
+                    <div class="progress-bar"><div id="fill-hunger" class="progress-fill" style="width: 100%;"></div></div>
+                </div>
+                <div class="stat-bar-container">
+                    <div class="stat-label"><span>Durst</span><span id="val-thirst">100%</span></div>
+                    <div class="progress-bar"><div id="fill-thirst" class="progress-fill" style="width: 100%;"></div></div>
                 </div>
 
                 <div style="background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; font-size: 0.85rem;">
@@ -248,7 +244,7 @@
                 <div style="background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; font-size: 0.85rem;">
                     <strong style="color: var(--accent-blue);">Fixkosten pro Tag:</strong>
                     <div style="display: flex; justify-content: space-between; margin-top: 3px;">
-                        <span>Unterkunft, Verträge & Möbel:</span> <span id="dash-total-fixed" class="money">0.00 €</span>
+                        <span>Unterkunft, Verträge, Fahrzeuge & Möbel:</span> <span id="dash-total-fixed" class="money">0.00 €</span>
                     </div>
                 </div>
 
@@ -355,19 +351,7 @@
         </div>
     </div>
 
-    <!-- TAB 4: SUPERMARKT -->
-    <div id="tab-supermarket" class="tab-content">
-        <div class="card">
-            <h2>Getränke- & Energy-Auswahl</h2>
-            <div class="grid-shop" id="supermarket-drinks-container"></div>
-        </div>
-        <div class="card">
-            <h2>Essen & Snacks Auswahl</h2>
-            <div class="grid-shop" id="supermarket-food-container"></div>
-        </div>
-    </div>
-
-    <!-- TAB 5: WOHNUNG & MÖBEL -->
+    <!-- TAB 4: WOHNUNG & MÖBEL -->
     <div id="tab-housing" class="tab-content">
         <div class="card">
             <h2>Virtuelle 3D-Wohnung (<span id="room-title-name" style="color:var(--accent-blue);">Elternhaus</span>)</h2>
@@ -420,7 +404,54 @@
         </div>
     </div>
 
-    <!-- TAB 6: BANK -->
+    <!-- TAB 5: ESSEN & TRINKEN -->
+    <div id="tab-food" class="tab-content">
+        <div class="card">
+            <h2>Supermarkt & Verpflegung</h2>
+            <p style="font-size: 0.85rem; color: #8b949e;">Kaufe Lebensmittel und Getränke ein, um Hunger und Durst zu stillen.</p>
+            <div class="grid-shop" id="food-shop-container"></div>
+        </div>
+    </div>
+
+    <!-- TAB 6: FAHRZEUGE -->
+    <div id="tab-vehicles" class="tab-content">
+        <div class="card">
+            <h2>Fahrzeug-Shop</h2>
+            <p style="font-size: 0.85rem; color: #8b949e;">Kaufe Fahrräder oder Autos, um flexibel zu sein und Boni freizuschalten.</p>
+            <div class="grid-shop" id="vehicle-shop-container"></div>
+        </div>
+    </div>
+
+    <!-- TAB 7: BITCOIN-MINING -->
+    <div id="tab-crypto" class="tab-content">
+        <div class="card" style="background: linear-gradient(135deg, #1f242c, #161b22); border: 1px solid var(--accent-orange);">
+            <h2 style="color: var(--accent-orange);">₿ Bitcoin Mining Dashboard</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-top: 10px;">
+                <div>
+                    <div style="font-size: 0.85rem; color: #8b949e;">Geminte Bitcoins:</div>
+                    <div id="btc-balance" style="font-size: 1.5rem; font-weight: bold; color: var(--accent-orange);">0.00000000 BTC</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: #8b949e;">Gesamte Hashrate:</div>
+                    <div id="btc-hashrate" style="font-size: 1.2rem; font-weight: bold; color: #fff;">0 TH/s</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: #8b949e;">Stromkosten (Mining):</div>
+                    <div id="btc-power-cost" style="font-size: 1.2rem; font-weight: bold; color: var(--danger);">0.00 € / Tag</div>
+                </div>
+                <div>
+                    <button class="action-btn" style="background-color: var(--accent-orange);" onclick="sellAllBtc()">BTC zu Euro verkaufen</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Mining-Hardware & Rigs</h2>
+            <div class="grid-shop" id="crypto-shop-container"></div>
+        </div>
+    </div>
+
+    <!-- TAB 8: BANK -->
     <div id="tab-bank" class="tab-content">
         <div class="card">
             <h2>Bank & Realistisches Kreditwesen</h2>
@@ -450,15 +481,7 @@
         </div>
     </div>
 
-    <!-- TAB 7: BITCOIN MINING -->
-    <div id="tab-bitcoin" class="tab-content">
-        <div class="card" style="text-align: center; padding: 40px;">
-            <h2 style="border:none; font-size: 1.8rem; color: var(--accent-orange);">₿ Bitcoin Mining</h2>
-            <p style="font-size: 1.1rem; color: #8b949e; margin-top: 15px;">In Arbeit</p>
-        </div>
-    </div>
-
-    <!-- TAB 8: VERTRÄGE -->
+    <!-- TAB 9: VERTRÄGE -->
     <div id="tab-contracts" class="tab-content">
         <div class="card">
             <h2>Abos, Verträge & Services</h2>
@@ -466,7 +489,7 @@
         </div>
     </div>
 
-    <!-- TAB 9: STATISTIK -->
+    <!-- TAB 10: STATISTIK -->
     <div id="tab-stats" class="tab-content">
         <div class="card">
             <h2>Statistik & Steuerübersicht</h2>
@@ -520,14 +543,18 @@
             pendingEarnings: 0.00,
             totalEarnings: 0.00,
             totalTaxes: 0.00,
-            food: 80,
-            drink: 80,
             sleep: 80,
-            loansList: [], // Liste von Krediten: { id, amount, dailyRate, daysLeft }
+            hunger: 100,
+            thirst: 100,
+            btcBalance: 0.00,
+            loansList: [],
             housing: { name: "Elternhaus", rent: 0, deposit: 0 },
             utilities: {},
             furniture: {},
             contracts: {},
+            foodItems: {},
+            vehicles: {},
+            miningRigs: {},
             grades: {},
             activeLesson: null,
             currentRate: 0.50,
@@ -547,6 +574,8 @@
             payoutHistory: []
         };
 
+        const btcPriceEur = 60000.00; // Fester Kurs für Simulation
+
         const utilitiesCatalog = [
             { id: "water_basic", type: "water", name: "Stadtwerke Wasser (Standard)", daily: 1.50, desc: "Grundversorgung Wasser" },
             { id: "water_eco", type: "water", name: "Eco-Wasser Filter Tarif", daily: 2.20, desc: "Wasser + Bessere Erholung" },
@@ -558,9 +587,7 @@
             { id: "desk", name: "Ergonomischer Schreibtisch", cost: 120, daily: 0.5, bonusText: "Verdienst-Boost: +0.10 €/Min", effect: (s) => s.rateBonus = 0.10 },
             { id: "chair", name: "Gaming-Stuhl", cost: 180, daily: 0.8, bonusText: "Schlaf-Verbrauch: -20%", effect: (s) => s.sleepDecayMod = 0.8 },
             { id: "pc", name: "High-End Gaming PC", cost: 650, daily: 2.5, bonusText: "Passives Einkommen: +0.20 €/Min", effect: (s) => s.passiveIncome = 0.20 },
-            { id: "coffeemachine", name: "Kaffeemaschine", cost: 95, daily: 0.4, bonusText: "Trink-Verbrauch: -25%", effect: (s) => s.drinkDecayMod = 0.75 },
-            { id: "bed", name: "Luxus-Boxspringbett", cost: 400, daily: 1.5, bonusText: "Schlaf-Regeneration: +50%", effect: (s) => s.sleepBonus = 1.5 },
-            { id: "plants", name: "Zimmerpflanzen", cost: 40, daily: 0.1, bonusText: "Essen-Verbrauch: -10%", effect: (s) => s.foodDecayMod = 0.9 }
+            { id: "bed", name: "Luxus-Boxspringbett", cost: 400, daily: 1.5, bonusText: "Schlaf-Regeneration: +50%", effect: (s) => s.sleepBonus = 1.5 }
         ];
 
         const contractsCatalog = [
@@ -573,28 +600,25 @@
             { id: "taxadvisor", name: "Digitaler Steuerberater", daily: 3.50, bonusText: "Steuersatz: 8% (statt 15%)", effect: (s) => s.taxRate = 0.08 }
         ];
 
-        const supermarketDrinks = [
-            { name: "Leitungswasser", info: "Wasser +5%", baseCost: 0, type: "drink", amount: 5 },
-            { name: "Schulmilch", info: "Wasser +10%", baseCost: 0.80, type: "drink", amount: 10 },
-            { name: "Apfelschorle", info: "Wasser +15%", baseCost: 1.20, type: "drink", amount: 15 },
-            { name: "Mineralwasser 0,5l", info: "Wasser +12%", baseCost: 1.10, type: "drink", amount: 12 },
-            { name: "Eistee Pfirsich", info: "Wasser +18%", baseCost: 1.50, type: "drink", amount: 18 },
-            { name: "Mezzo Mix / Spezi", info: "Wasser +20%", baseCost: 1.60, type: "drink", amount: 20 },
-            { name: "Club Mate", info: "Wasser +22%", baseCost: 1.90, type: "drink", amount: 22 },
-            { name: "Red Bull", info: "Wasser +30%, Energie +10%", baseCost: 2.50, type: "drink", amount: 30, extraType: "energy", extraAmount: 10 },
-            { name: "Monster Energy", info: "Wasser +35%, Energie +15%", baseCost: 2.70, type: "drink", amount: 35, extraType: "energy", extraAmount: 15 }
+        const foodCatalog = [
+            { id: "apple", name: "Frischer Apfel", cost: 1.50, hunger: 15, thirst: 5, type: "food" },
+            { id: "sandwich", name: "Belegtes Sandwich", cost: 3.50, hunger: 40, thirst: 10, type: "food" },
+            { id: "pizza", name: "Ganze Pizza", cost: 8.00, hunger: 90, thirst: 20, type: "food" },
+            { id: "water_bottle", name: "Mineralwasser (0,5l)", cost: 1.00, hunger: 0, thirst: 40, type: "drink" },
+            { id: "energy", name: "Energy Drink", cost: 2.20, hunger: 5, thirst: 50, type: "drink" }
         ];
 
-        const supermarketFood = [
-            { name: "Apfel von zuhause", info: "Essen +8%", baseCost: 0, type: "food", amount: 8 },
-            { name: "Müsliriegel", info: "Essen +12%", baseCost: 0.90, type: "food", amount: 12 },
-            { name: "Brezel vom Bäcker", info: "Essen +15%", baseCost: 1.20, type: "food", amount: 15 },
-            { name: "Schokoriegel", info: "Essen +18%", baseCost: 1.40, type: "food", amount: 18 },
-            { name: "Käsebrötchen", info: "Essen +25%", baseCost: 2.20, type: "food", amount: 25 },
-            { name: "Döner Kebab", info: "Essen +50%", baseCost: 7.00, type: "food", amount: 50 },
-            { name: "Subway Menü", info: "Essen +65%", baseCost: 8.99, type: "food", amount: 65 },
-            { name: "Pizza Lieferung", info: "Essen +80%", baseCost: 11.50, type: "food", amount: 80 },
-            { name: "Ben & Jerry's Eis", info: "Essen +40%, Glücksgefühle", baseCost: 6.49, type: "food", amount: 40 }
+        const vehicleCatalog = [
+            { id: "bike", name: "Fahrrad", cost: 350, daily: 0.20, desc: "Zuverlässig & günstig im Unterhalt" },
+            { id: "scooter", name: "E-Scooter", cost: 600, daily: 0.80, desc: "Schneller zur Schule" },
+            { id: "used_car", name: "Gebrauchtwagen", cost: 3500, daily: 4.50, desc: "Volle Mobilität & Unabhängigkeit" },
+            { id: "sportscar", name: "Sportwagen", cost: 45000, daily: 15.00, desc: "Luxus pur & hohes Ansehen" }
+        ];
+
+        const miningCatalog = [
+            { id: "rig_basic", name: "USB Miner (BlockMiners)", cost: 250, hashrate: 2, powerCost: 0.50 },
+            { id: "rig_mid", name: "GPU Rig (6x RTX)", cost: 2200, hashrate: 25, powerCost: 3.20 },
+            { id: "rig_pro", name: "ASIC Miner Antminer S19", cost: 6500, hashrate: 110, powerCost: 12.00 }
         ];
 
         let timetableData = {};
@@ -633,11 +657,16 @@
             if (saved) {
                 let parsed = JSON.parse(saved);
                 gameState = { ...gameState, ...parsed };
+                if(gameState.hunger === undefined) gameState.hunger = 100;
+                if(gameState.thirst === undefined) gameState.thirst = 100;
+                if(gameState.btcBalance === undefined) gameState.btcBalance = 0;
                 if(!gameState.streaks) gameState.streaks = {};
                 if(!gameState.payoutHistory) gameState.payoutHistory = [];
                 if(!gameState.furniture) gameState.furniture = {};
                 if(!gameState.contracts) gameState.contracts = {};
                 if(!gameState.utilities) gameState.utilities = {};
+                if(!gameState.vehicles) gameState.vehicles = {};
+                if(!gameState.miningRigs) gameState.miningRigs = {};
                 if(!gameState.grades) gameState.grades = {};
                 if(!gameState.loansList) gameState.loansList = [];
             }
@@ -681,7 +710,9 @@
             renderFurnitureShop();
             renderUtilitiesShop();
             renderContractsShop();
-            renderSupermarket();
+            renderFoodShop();
+            renderVehicleShop();
+            renderCryptoShop();
             renderGradesTable();
             renderRoomVisual();
             renderLoansTable();
@@ -722,7 +753,19 @@
                         updateBonusTimerDisplay();
                     }
 
+                    // Bitcoin Mining Tick (per Sekunde)
+                    let totalHashrate = 0;
+                    miningCatalog.forEach(rig => {
+                        if (gameState.miningRigs[rig.id]) totalHashrate += rig.hashrate;
+                    });
+                    if (totalHashrate > 0) {
+                        // Formel: 1 TH/s mindelt ca. 0.00000001 BTC pro Sekunde als Beispiel
+                        let minedBtc = totalHashrate * 0.000000005 * (elapsedSeconds / 60);
+                        gameState.btcBalance += minedBtc;
+                    }
+
                     updateTimerDisplay();
+                    updateCryptoDisplay();
                     updateUI();
                     saveGame();
                 }
@@ -735,13 +778,13 @@
                 let workMultiplier = 1.0;
                 let isWorking = (gameState.isTimerRunning && gameState.activeLesson && !gameState.activeLesson.toLowerCase().includes("freistunde")) || gameState.isBonusTimerRunning;
                 if (isWorking) workMultiplier = 3.0;
-
-                gameState.food = Math.max(0, gameState.food - (0.2 * decayMod * buffs.foodDecayMod * workMultiplier));
-                gameState.drink = Math.max(0, gameState.drink - (0.3 * decayMod * buffs.drinkDecayMod * workMultiplier));
                 
                 let sleepVal = gameState.sleep - (0.1 * decayMod * buffs.sleepDecayMod * workMultiplier);
                 if (buffs.minSleep > 0 && sleepVal < buffs.minSleep) sleepVal = buffs.minSleep;
                 gameState.sleep = Math.max(0, sleepVal);
+
+                gameState.hunger = Math.max(0, gameState.hunger - 0.08 * decayMod);
+                gameState.thirst = Math.max(0, gameState.thirst - 0.12 * decayMod);
 
                 updateUI();
                 saveGame();
@@ -804,12 +847,9 @@
                 baseRateBonus: 0,
                 passiveIncome: 0,
                 sleepDecayMod: 1.0,
-                drinkDecayMod: 1.0,
-                foodDecayMod: 1.0,
                 generalDecayMod: 1.0,
                 sleepBonus: 1.0,
                 streakMultiplier: 1,
-                drinkBonus: 1.0,
                 shopDiscount: 1.0,
                 taxRate: 0.15,
                 minSleep: 0
@@ -826,9 +866,9 @@
             evt.currentTarget.classList.add('active');
             if(tabId === 'tab-stats') renderPayoutHistory();
             if(tabId === 'tab-grades') renderGradesTable();
-            if(tabId === 'tab-supermarket') renderSupermarket();
             if(tabId === 'tab-housing') renderRoomVisual();
             if(tabId === 'tab-bank') renderLoansTable();
+            if(tabId === 'tab-crypto') updateCryptoDisplay();
         }
 
         function renderRoomVisual() {
@@ -931,6 +971,111 @@
             });
         }
 
+        function renderFoodShop() {
+            const container = document.getElementById("food-shop-container");
+            if (!container) return;
+            container.innerHTML = "";
+            let buffs = calculateBuffs();
+            foodCatalog.forEach(item => {
+                let effectiveCost = item.cost * buffs.shopDiscount;
+                container.innerHTML += `<div class="shop-item">
+                    <div>
+                        <strong>${item.name}</strong> (${effectiveCost.toFixed(2)} €)
+                        <div class="shop-info">Stillt: Hunger +${item.hunger}%, Durst +${item.thirst}%</div>
+                    </div>
+                    <button class="action-btn" onclick="buyAndConsumeFood('${item.id}', ${effectiveCost}, ${item.hunger}, ${item.thirst})">Kaufen & Essen</button>
+                </div>`;
+            });
+        }
+
+        function buyAndConsumeFood(id, cost, hungerVal, thirstVal) {
+            if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
+            gameState.money -= cost;
+            gameState.hunger = Math.min(100, gameState.hunger + hungerVal);
+            gameState.thirst = Math.min(100, gameState.thirst + thirstVal);
+            updateUI();
+            saveGame();
+            alert("Erfolgreich konsumiert!");
+        }
+
+        function renderVehicleShop() {
+            const container = document.getElementById("vehicle-shop-container");
+            if (!container) return;
+            container.innerHTML = "";
+            vehicleCatalog.forEach(item => {
+                let owned = gameState.vehicles[item.id];
+                container.innerHTML += `<div class="shop-item">
+                    <div>
+                        <strong>${item.name}</strong> (${item.cost} € | ${item.daily} €/Tag Unterhalt)
+                        <div class="shop-info">${item.desc}</div>
+                    </div>
+                    <button class="action-btn" ${owned ? 'disabled style="background:#30363d;color:#6e7681;"' : ''} onclick="buyVehicle('${item.id}', ${item.cost})">${owned ? 'Im Besitz' : 'Kaufen'}</button>
+                </div>`;
+            });
+        }
+
+        function buyVehicle(id, cost) {
+            if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
+            gameState.money -= cost;
+            gameState.vehicles[id] = true;
+            renderVehicleShop();
+            updateUI();
+            saveGame();
+            alert("Fahrzeug erfolgreich gekauft!");
+        }
+
+        function renderCryptoShop() {
+            const container = document.getElementById("crypto-shop-container");
+            if (!container) return;
+            container.innerHTML = "";
+            miningCatalog.forEach(item => {
+                let owned = gameState.miningRigs[item.id];
+                container.innerHTML += `<div class="shop-item">
+                    <div>
+                        <strong>${item.name}</strong> (${item.cost.toLocaleString()} €)
+                        <div class="shop-info" style="color:var(--accent-orange);">Hashrate: ${item.hashrate} TH/s | Strom: ${item.powerCost.toFixed(2)} €/Tag</div>
+                    </div>
+                    <button class="action-btn" onclick="buyMiningRig('${item.id}', ${item.cost})">Rig Kaufen</button>
+                </div>`;
+            });
+        }
+
+        function buyMiningRig(id, cost) {
+            if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
+            gameState.money -= cost;
+            if(!gameState.miningRigs[id]) gameState.miningRigs[id] = 0;
+            gameState.miningRigs[id]++;
+            updateCryptoDisplay();
+            updateUI();
+            saveGame();
+            alert("Mining-Rig erfolgreich erweitert!");
+        }
+
+        function updateCryptoDisplay() {
+            let totalHashrate = 0;
+            let totalPower = 0;
+            miningCatalog.forEach(rig => {
+                let count = gameState.miningRigs[rig.id] || 0;
+                totalHashrate += rig.hashrate * count;
+                totalPower += rig.powerCost * count;
+            });
+            document.getElementById("btc-balance").innerText = gameState.btcBalance.toFixed(8) + " BTC";
+            document.getElementById("btc-hashrate").innerText = totalHashrate + " TH/s";
+            document.getElementById("btc-power-cost").innerText = totalPower.toFixed(2) + " € / Tag";
+        }
+
+        function sellAllBtc() {
+            if (gameState.btcBalance <= 0) { alert("Keine Bitcoins zum Verkaufen vorhanden!"); return; }
+            let eurValue = gameState.btcBalance * btcPriceEur;
+            gameState.money += eurValue;
+            let soldBtc = gameState.btcBalance;
+            gameState.btcBalance = 0;
+            updateCryptoDisplay();
+            updateUI();
+            saveGame();
+            alert(`${soldBtc.toFixed(8)} BTC für ${eurValue.toFixed(2)} € verkauft!`);
+        }
+
         function buyFurniture(id, cost) {
             if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
             gameState.money -= cost;
@@ -944,7 +1089,6 @@
         function toggleContract(id) {
             gameState.contracts[id] = !gameState.contracts[id];
             renderContractsShop();
-            renderSupermarket();
             updateUI();
             saveGame();
         }
@@ -958,8 +1102,8 @@
             let newLoan = {
                 id: Date.now(),
                 amount: amount,
-                dailyRate: 0.05, // 5% tägliche Zinsen
-                daysLeft: 14 // 14 Tage Laufzeit
+                dailyRate: 0.05,
+                daysLeft: 14
             };
             gameState.loansList.push(newLoan);
             gameState.money += amount;
@@ -1146,8 +1290,13 @@
             utilitiesCatalog.forEach(item => { if (gameState.utilities[item.id]) fixedTotal += item.daily; });
             furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
             contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
+            vehicleCatalog.forEach(item => { if (gameState.vehicles[item.id]) fixedTotal += item.daily; });
+            
+            miningCatalog.forEach(rig => {
+                let count = gameState.miningRigs[rig.id] || 0;
+                fixedTotal += rig.powerCost * count;
+            });
 
-            // Kreditzinsen abziehen & Laufzeit verringern
             let totalLoanInterest = 0;
             gameState.loansList.forEach(loan => {
                 totalLoanInterest += (loan.amount * loan.dailyRate);
@@ -1180,7 +1329,7 @@
             updateUI();
             saveGame();
 
-            alert(`Tag beendet & abgerechnet!\n\nBrutto: ${gross.toFixed(2)} €\nSteuern: -${taxes.toFixed(2)} €\nNetto: +${netEarnings.toFixed(2)} €\nFixkosten & Kreditzinsen: -${fixedTotal.toFixed(2)} €`);
+            alert(`Tag beendet & abgerechnet!\n\nBrutto: ${gross.toFixed(2)} €\nSteuern: -${taxes.toFixed(2)} €\nNetto: +${netEarnings.toFixed(2)} €\nFixkosten, Fahrzeuge & Strom: -${fixedTotal.toFixed(2)} €`);
         }
 
         function renderPayoutHistory() {
@@ -1197,69 +1346,6 @@
                 </div>`;
             });
             container.innerHTML = html;
-        }
-
-        function renderSupermarket() {
-            let buffs = calculateBuffs();
-            let hasDiscount = buffs.shopDiscount < 1.0;
-
-            const drinksContainer = document.getElementById("supermarket-drinks-container");
-            drinksContainer.innerHTML = "";
-            supermarketDrinks.forEach(item => {
-                let finalCost = item.baseCost * buffs.shopDiscount;
-                let priceHtml = "";
-                if (hasDiscount && item.baseCost > 0) {
-                    priceHtml = `<span class="old-price">${item.baseCost.toFixed(2)} €</span><span class="new-price">${finalCost.toFixed(2)} €</span>`;
-                } else {
-                    priceHtml = `<span class="new-price">${item.baseCost === 0 ? 'Gratis' : item.baseCost.toFixed(2) + ' €'}</span>`;
-                }
-
-                drinksContainer.innerHTML += `
-                    <div class="shop-item">
-                        <div><strong>${item.name}</strong><div class="shop-info">${item.info}</div></div>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <div class="price-tag">${priceHtml}</div>
-                            <button class="action-btn" onclick="buyItem('${item.type}', ${item.amount}, ${item.baseCost}, '${item.extraType || ''}', ${item.extraAmount || 0})">${item.baseCost === 0 ? 'Trinken' : 'Kaufen'}</button>
-                        </div>
-                    </div>`;
-            });
-
-            const foodContainer = document.getElementById("supermarket-food-container");
-            foodContainer.innerHTML = "";
-            supermarketFood.forEach(item => {
-                let finalCost = item.baseCost * buffs.shopDiscount;
-                let priceHtml = "";
-                if (hasDiscount && item.baseCost > 0) {
-                    priceHtml = `<span class="old-price">${item.baseCost.toFixed(2)} €</span><span class="new-price">${finalCost.toFixed(2)} €</span>`;
-                } else {
-                    priceHtml = `<span class="new-price">${item.baseCost === 0 ? 'Gratis' : item.baseCost.toFixed(2) + ' €'}</span>`;
-                }
-
-                foodContainer.innerHTML += `
-                    <div class="shop-item">
-                        <div><strong>${item.name}</strong><div class="shop-info">${item.info}</div></div>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <div class="price-tag">${priceHtml}</div>
-                            <button class="action-btn" onclick="buyItem('${item.type}', ${item.amount}, ${item.baseCost})">${item.baseCost === 0 ? 'Essen' : 'Kaufen'}</button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function buyItem(type, amount, baseCost, extraType = null, extraAmount = 0) {
-            let buffs = calculateBuffs();
-            let cost = baseCost * buffs.shopDiscount;
-            if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
-            gameState.money -= cost;
-            if (type === 'food') {
-                gameState.food = Math.min(100, gameState.food + amount);
-            } else if (type === 'drink') {
-                let actualDrink = amount * buffs.drinkBonus;
-                gameState.drink = Math.min(100, gameState.drink + actualDrink);
-                if (extraType === 'energy') { gameState.sleep = Math.min(100, gameState.sleep + extraAmount); }
-            }
-            updateUI();
-            saveGame();
         }
 
         function logRealSleep() {
@@ -1293,23 +1379,25 @@
         function updateUI() {
             document.getElementById("header-money").innerText = gameState.money.toFixed(2) + " €";
             document.getElementById("header-pending").innerText = gameState.pendingEarnings.toFixed(2) + " €";
-            document.getElementById("header-food").innerText = Math.round(gameState.food) + "%";
-            document.getElementById("header-drink").innerText = Math.round(gameState.drink) + "%";
             document.getElementById("header-sleep").innerText = Math.round(gameState.sleep) + "%";
-
-            document.getElementById("val-food").innerText = Math.round(gameState.food) + "%";
-            document.getElementById("fill-food").style.width = gameState.food + "%";
-
-            document.getElementById("val-drink").innerText = Math.round(gameState.drink) + "%";
-            document.getElementById("fill-drink").style.width = gameState.drink + "%";
 
             document.getElementById("val-sleep").innerText = Math.round(gameState.sleep) + "%";
             document.getElementById("fill-sleep").style.width = gameState.sleep + "%";
+            document.getElementById("val-hunger").innerText = Math.round(gameState.hunger) + "%";
+            document.getElementById("fill-hunger").style.width = gameState.hunger + "%";
+            document.getElementById("val-thirst").innerText = Math.round(gameState.thirst) + "%";
+            document.getElementById("fill-thirst").style.width = gameState.thirst + "%";
 
             let fixedTotal = gameState.housing.rent;
             utilitiesCatalog.forEach(item => { if (gameState.utilities[item.id]) fixedTotal += item.daily; });
             furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
             contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
+            vehicleCatalog.forEach(item => { if (gameState.vehicles[item.id]) fixedTotal += item.daily; });
+            
+            miningCatalog.forEach(rig => {
+                let count = gameState.miningRigs[rig.id] || 0;
+                fixedTotal += rig.powerCost * count;
+            });
             
             gameState.loansList.forEach(loan => { fixedTotal += (loan.amount * loan.dailyRate); });
 
@@ -1325,10 +1413,9 @@
             if (buffs.rateBonus > 0) { activeBuffsHTML += `<span class="buff-tag">+${buffs.rateBonus.toFixed(2)} €/Min Verdienst-Boost</span>`; hasAnyBuff = true; }
             if (buffs.baseRateBonus > 0) { activeBuffsHTML += `<span class="buff-tag">+${buffs.baseRateBonus.toFixed(2)} €/Min Grundverdienst</span>`; hasAnyBuff = true; }
             if (buffs.passiveIncome > 0) { activeBuffsHTML += `<span class="buff-tag">+${buffs.passiveIncome.toFixed(2)} €/Min Passiv</span>`; hasAnyBuff = true; }
-            if (buffs.drinkBonus > 1.0) { activeBuffsHTML += `<span class="buff-tag">+${Math.round((buffs.drinkBonus - 1) * 100)}% Trink-Regeneration</span>`; hasAnyBuff = true; }
             if (buffs.sleepBonus > 1.0) { activeBuffsHTML += `<span class="buff-tag">+${Math.round((buffs.sleepBonus - 1) * 100)}% Schlaf-Regeneration</span>`; hasAnyBuff = true; }
             if (buffs.streakMultiplier > 1) { activeBuffsHTML += `<span class="buff-tag">+${buffs.streakMultiplier}x Melde-Multiplikator</span>`; hasAnyBuff = true; }
-            if (buffs.shopDiscount < 1.0) { activeBuffsHTML += `<span class="buff-tag">-${Math.round((1 - buffs.shopDiscount) * 100)}% Supermarkt-Rabatt</span>`; hasAnyBuff = true; }
+            if (buffs.shopDiscount < 1.0) { activeBuffsHTML += `<span class="buff-tag">-${Math.round((1 - buffs.shopDiscount) * 100)}% Shop-Rabatt</span>`; hasAnyBuff = true; }
             if (buffs.taxRate < 0.15) { activeBuffsHTML += `<span class="buff-tag">-${Math.round((0.15 - buffs.taxRate) * 100)}% Steuersatz-Rabatt</span>`; hasAnyBuff = true; }
 
             document.getElementById("active-buffs-list").innerHTML = hasAnyBuff ? activeBuffsHTML : "Keine aktiven Boni";
