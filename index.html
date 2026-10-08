@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Life & Economy Simulator</title>
+    <title>School Life & Economy & Grades Simulator</title>
     <style>
         :root {
             --bg-color: #0d1117;
@@ -119,9 +119,9 @@
         .wall-left { width: 180px; height: 130px; transform: rotateY(90deg) translateZ(-90px); }
         .floor { width: 180px; height: 180px; transform: rotateX(90deg) translateZ(65px); background: #1f242c; }
 
-        table.schedule-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
-        table.schedule-table th, table.schedule-table td { border: 1px solid var(--border); padding: 8px; text-align: center; vertical-align: middle; }
-        table.schedule-table th { background-color: #21262d; }
+        table.schedule-table, table.grades-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        table.schedule-table th, table.schedule-table td, table.grades-table th, table.grades-table td { border: 1px solid var(--border); padding: 8px; text-align: center; vertical-align: middle; }
+        table.schedule-table th, table.grades-table th { background-color: #21262d; }
         .schedule-cell { cursor: pointer; padding: 6px; border-radius: 4px; transition: 0.2s; min-height: 40px; }
         .schedule-cell:hover { background-color: #21262d; }
         .cell-subject { font-weight: bold; color: var(--accent-blue); }
@@ -142,6 +142,8 @@
             max-height: 150px; overflow-y: auto; font-size: 0.8rem; margin-top: 10px;
         }
         .log-entry { border-bottom: 1px solid var(--border); padding: 6px 0; display: flex; justify-content: space-between; flex-wrap: column; }
+        .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: #21262d; color: var(--accent-blue); border: 1px solid var(--border); }
+        .badge-lk { background: #3d1c1c; color: var(--danger); border-color: var(--danger); }
     </style>
 </head>
 <body>
@@ -160,6 +162,7 @@
     <div class="tabs-container">
         <button class="tab-btn active" onclick="openTab(event, 'tab-dashboard')">Dashboard</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-schedule')">Stundenplan</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-grades')">Noten</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-supermarket')">Supermarkt</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-housing')">Wohnung & Möbel</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-bank')">Bank & Kredite</button>
@@ -275,7 +278,36 @@
         </div>
     </div>
 
-    <!-- TAB 3: SUPERMARKT (ERWEITERT) -->
+    <!-- TAB 3: NOTEN -->
+    <div id="tab-grades" class="tab-content">
+        <div class="card" style="background: linear-gradient(135deg, #1f242c, #161b22); border: 1px solid var(--accent-blue);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin:0; border:none; color: #fff;">Gesamtschnitt aller Fächer (Halbjahr):</h2>
+                <span id="overall-grade-display" style="font-size: 1.5rem; font-weight: bold; color: var(--accent-green);">-</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Notenpunkte-Verwaltung (0 – 15 Punkte)</h2>
+            <p style="font-size: 0.85rem; color: #8b949e;">Trage Notenpunkte kommagetrennt ein (z.B. <code>13, 11, 14</code>). LKs stehen ganz oben, gefolgt von Grundkursen.</p>
+            <div style="overflow-x: auto;">
+                <table class="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Fach</th>
+                            <th>Typ</th>
+                            <th>Schriftliche Punkte</th>
+                            <th>Mündliche Punkte</th>
+                            <th>Schnitt (HJ)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="grades-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: SUPERMARKT -->
     <div id="tab-supermarket" class="tab-content">
         <div class="card">
             <h2>Getränke- & Energy-Auswahl</h2>
@@ -307,7 +339,7 @@
         </div>
     </div>
 
-    <!-- TAB 4: WOHNUNG & MÖBEL (MIT VORTEILEN) -->
+    <!-- TAB 5: WOHNUNG & MÖBEL -->
     <div id="tab-housing" class="tab-content">
         <div class="card">
             <h2>Virtuelle 3D-Wohnung</h2>
@@ -332,13 +364,11 @@
         
         <div class="card">
             <h2>Möbel & Einrichtung (Gibt aktive Boni!)</h2>
-            <div class="grid-shop" id="furniture-shop-container">
-                <!-- Wird per JS gerendert mit Vorteilen -->
-            </div>
+            <div class="grid-shop" id="furniture-shop-container"></div>
         </div>
     </div>
 
-    <!-- TAB 5: BANK -->
+    <!-- TAB 6: BANK -->
     <div id="tab-bank" class="tab-content">
         <div class="card">
             <h2>Bank & Kredite</h2>
@@ -350,18 +380,16 @@
         </div>
     </div>
 
-    <!-- TAB 6: VERTRÄGE & ABOS (ERWEITERT MIT VORTEILEN) -->
+    <!-- TAB 7: VERTRÄGE -->
     <div id="tab-contracts" class="tab-content">
         <div class="card">
             <h2>Abos, Verträge & Services</h2>
             <p style="font-size:0.85rem; color:#8b949e; margin-bottom:15px;">Jeder Vertrag schaltet nützliche Vorteile im Simulator frei!</p>
-            <div class="grid-shop" id="contracts-shop-container">
-                <!-- Per JS gerendert -->
-            </div>
+            <div class="grid-shop" id="contracts-shop-container"></div>
         </div>
     </div>
 
-    <!-- TAB 7: STATISTIK & STEUERN -->
+    <!-- TAB 8: STATISTIK -->
     <div id="tab-stats" class="tab-content">
         <div class="card">
             <h2>Statistik & Steuerübersicht</h2>
@@ -405,8 +433,9 @@
             sleep: 80,
             loan: 0,
             housing: { name: "Elternhaus", rent: 0, water: 0, electricity: 0 },
-            furniture: {}, // Key -> bool
-            contracts: {}, // Key -> bool
+            furniture: {},
+            contracts: {},
+            grades: {}, // Speichert written und oral Punkte pro Fach
             activeLesson: null,
             currentRate: 0.50,
             isTimerRunning: false,
@@ -418,7 +447,6 @@
             payoutHistory: []
         };
 
-        // Erweiterte Möbel mit Vorteilen
         const furnitureCatalog = [
             { id: "desk", name: "Ergonomischer Schreibtisch", cost: 120, daily: 0.5, bonusText: "+0.10 € / Min Verdienst-Boost", effect: (s) => s.rateBonus = 0.10 },
             { id: "chair", name: "Gaming-Stuhl", cost: 180, daily: 0.8, bonusText: "Schlaf sinkt 20% langsamer", effect: (s) => s.sleepDecayMod = 0.8 },
@@ -428,13 +456,12 @@
             { id: "plants", name: "Zimmerpflanzen", cost: 40, daily: 0.1, bonusText: "Essen sinkt 10% langsamer", effect: (s) => s.foodDecayMod = 0.9 }
         ];
 
-        // Erweiterte Verträge & Abos mit Vorteilen
         const contractsCatalog = [
-            { id: "phone", name: "Smartphone-Flat", daily: 1.20, bonusText: "Melde-Streak Bonus verdoppelt sich (+0.40€ statt +0.20€)", effect: (s) => s.streakMultiplier = 2 },
+            { id: "phone", name: "Smartphone-Flat", daily: 1.20, bonusText: "Melde-Streak Bonus verdoppelt sich", effect: (s) => s.streakMultiplier = 2 },
             { id: "wifi", name: "Highspeed Gigabit WLAN", daily: 1.50, bonusText: "+0.05 € / Min Grundverdienst in allen Fächern", effect: (s) => s.baseRateBonus = 0.05 },
             { id: "netflix", name: "Netflix & Streaming", daily: 0.60, bonusText: "Schlaf-Wert sinkt in Freizeit niemals unter 20%", effect: (s) => s.minSleep = 20 },
-            { id: "spotify", name: "Spotify Music", daily: 0.40, bonusText: "+5% extra Bonus auf alle Trink-Regenerationen", effect: (s) => s.drinkBonus = 1.05 },
-            { id: "gym", name: "Fitnessstudio-Mitgliedschaft", daily: 2.00, bonusText: "Essen & Trinken verbrauchen sich insgesamt 15% langsamer", effect: (s) => s.generalDecayMod = 0.85 },
+            { id: "spotify", name: "Spotify Music", daily: 0.40, bonusText: "+5% extra Bonus auf Trink-Regenerationen", effect: (s) => s.drinkBonus = 1.05 },
+            { id: "gym", name: "Fitnessstudio-Mitgliedschaft", daily: 2.00, bonusText: "Essen & Trinken verbrauchen sich 15% langsamer", effect: (s) => s.generalDecayMod = 0.85 },
             { id: "prime", name: "Express-Lieferdienst Abo", daily: 0.90, bonusText: "Supermarkt-Preise um 10% rabattiert", effect: (s) => s.shopDiscount = 0.9 },
             { id: "taxadvisor", name: "Digitaler Steuerberater", daily: 3.50, bonusText: "Steuersatz sinkt von 15% auf 8%", effect: (s) => s.taxRate = 0.08 }
         ];
@@ -465,6 +492,7 @@
                 if(!gameState.payoutHistory) gameState.payoutHistory = [];
                 if(!gameState.furniture) gameState.furniture = {};
                 if(!gameState.contracts) gameState.contracts = {};
+                if(!gameState.grades) gameState.grades = {};
             }
             let savedTable = localStorage.getItem("schoolSimTable");
             if (savedTable) {
@@ -498,6 +526,7 @@
             renderSchedule();
             renderFurnitureShop();
             renderContractsShop();
+            renderGradesTable();
             checkAutoCurrentLesson();
 
             if (gameState.isTimerRunning && gameState.startTimeEpoch) {
@@ -514,7 +543,6 @@
 
             updateUI();
 
-            // Timer Loop
             setInterval(() => {
                 if (gameState.isTimerRunning) {
                     gameState.timerSeconds++;
@@ -533,7 +561,6 @@
                 }
             }, 1000);
 
-            // Verbrauch Loop mit Buffs
             setInterval(() => {
                 let buffs = calculateBuffs();
                 let decayMod = buffs.generalDecayMod;
@@ -567,21 +594,8 @@
                 taxRate: 0.15,
                 minSleep: 0
             };
-
-            // Möbel Effekte anwenden
-            furnitureCatalog.forEach(item => {
-                if (gameState.furniture[item.id]) {
-                    item.effect(buffs);
-                }
-            });
-
-            // Verträge Effekte anwenden
-            contractsCatalog.forEach(item => {
-                if (gameState.contracts[item.id]) {
-                    item.effect(buffs);
-                }
-            });
-
+            furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) item.effect(buffs); });
+            contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) item.effect(buffs); });
             return buffs;
         }
 
@@ -591,6 +605,7 @@
             document.getElementById(tabId).classList.add('active');
             evt.currentTarget.classList.add('active');
             if(tabId === 'tab-stats') renderPayoutHistory();
+            if(tabId === 'tab-grades') renderGradesTable();
         }
 
         function toggleEditMode() {
@@ -612,6 +627,135 @@
                 }
                 row += `</tr>`;
                 tbody.innerHTML += row;
+            }
+        }
+
+        function getUniqueSubjectsList() {
+            let subjectsMap = new Map();
+            for (let h = 1; h <= hoursCount; h++) {
+                for (let d = 0; d < daysCount; d++) {
+                    let item = timetableData[h][d];
+                    if (item && item.subject && item.subject.toLowerCase() !== "freistunde" && item.subject !== "-") {
+                        let name = item.subject.trim();
+                        let isLk = name === name.toUpperCase() || item.rate >= 0.55; 
+                        subjectsMap.set(name, { name, isLk });
+                    }
+                }
+            }
+            let list = Array.from(subjectsMap.values());
+            list.sort((a, b) => {
+                if (a.isLk && !b.isLk) return -1;
+                if (!a.isLk && b.isLk) return 1;
+                return a.name.localeCompare(b.name);
+            });
+            return list;
+        }
+
+        // Notenpunkte (0-15) parsen
+        function parsePointsString(str) {
+            if (!str) return [];
+            return str.split(',').map(s => {
+                let num = parseFloat(s.trim().replace(',', '.'));
+                return (!isNaN(num) && num >= 0 && num <= 15) ? num : null;
+            }).filter(n => n !== null);
+        }
+
+        // Konvertiere Punkte (0-15) in deutsche Note (1,0 - 6,0)
+        function pointsToGrade(points) {
+            if (points === null || isNaN(points)) return "-";
+            let grade = 1.0 + (15 - points) * (5.0 / 14.0);
+            if (grade < 1.0) grade = 1.0;
+            if (grade > 6.0) grade = 6.0;
+            return grade.toFixed(2);
+        }
+
+        function calculateSubjectPointsAverage(writtenStr, oralStr) {
+            let written = parsePointsString(writtenStr);
+            let oral = parsePointsString(oralStr);
+            let all = [...written, ...oral];
+            if (all.length === 0) return null;
+
+            let avgW = written.length > 0 ? written.reduce((a, b) => a + b, 0) / written.length : null;
+            let avgO = oral.length > 0 ? oral.reduce((a, b) => a + b, 0) / oral.length : null;
+
+            if (avgW !== null && avgO !== null) {
+                return (avgW + avgO) / 2;
+            } else {
+                return all.reduce((a, b) => a + b, 0) / all.length;
+            }
+        }
+
+        function updateSubjectGrade(subjectName, type, value) {
+            if (!gameState.grades[subjectName]) {
+                gameState.grades[subjectName] = { written: '', oral: '' };
+            }
+            let oldPointsAvg = calculateSubjectPointsAverage(gameState.grades[subjectName].written, gameState.grades[subjectName].oral) || 0;
+
+            gameState.grades[subjectName][type] = value;
+
+            let newPointsAvg = calculateSubjectPointsAverage(gameState.grades[subjectName].written, gameState.grades[subjectName].oral) || 0;
+
+            // Geld-Belohnung / Abzug bei Notenpunkt-Änderung (höherer Schnitt = mehr Geld)
+            if (oldPointsAvg > 0 && newPointsAvg > 0 && oldPointsAvg !== newPointsAvg) {
+                let diff = newPointsAvg - oldPointsAvg; // Positiv = Verbesserung (mehr Punkte)
+                let reward = diff * 8.00; // 8 € pro Notenpunkt Differenz
+                gameState.money += reward;
+                if (reward > 0) {
+                    alert(`Gratis-Bonus! Leistung in ${subjectName} gesteigert (${oldPointsAvg.toFixed(1)} NP -> ${newPointsAvg.toFixed(1)} NP). +${reward.toFixed(2)} € erhalten!`);
+                } else {
+                    alert(`Leistung in ${subjectName} verschlechtert (${oldPointsAvg.toFixed(1)} NP -> ${newPointsAvg.toFixed(1)} NP). ${Math.abs(reward).toFixed(2)} € abgezogen!`);
+                }
+            }
+
+            renderGradesTable();
+            updateUI();
+            saveGame();
+        }
+
+        function renderGradesTable() {
+            const tbody = document.getElementById("grades-tbody");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            let subjects = getUniqueSubjectsList();
+            let allPoints = [];
+
+            if (subjects.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#8b949e;">Keine Fächer im Stundenplan gefunden!</td></tr>`;
+                document.getElementById("overall-grade-display").innerText = "-";
+                return;
+            }
+
+            subjects.forEach(subj => {
+                if (!gameState.grades[subj.name]) {
+                    gameState.grades[subj.name] = { written: '', oral: '' };
+                }
+                let gData = gameState.grades[subj.name];
+                let ptsAvg = calculateSubjectPointsAverage(gData.written, gData.oral);
+
+                if (ptsAvg !== null) allPoints.push(ptsAvg);
+
+                let gradeStr = ptsAvg !== null ? pointsToGrade(ptsAvg) : "-";
+                let ptsStr = ptsAvg !== null ? `${ptsAvg.toFixed(1)} NP` : "-";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${subj.name}</strong></td>
+                        <td>${subj.isLk ? '<span class="badge badge-lk">LK</span>' : '<span class="badge">GK</span>'}</td>
+                        <td><input type="text" value="${gData.written}" placeholder="z.B. 13, 11" oninput="updateSubjectGrade('${subj.name}', 'written', this.value)"></td>
+                        <td><input type="text" value="${gData.oral}" placeholder="z.B. 14, 12" oninput="updateSubjectGrade('${subj.name}', 'oral', this.value)"></td>
+                        <td><strong>${ptsStr} (${gradeStr})</strong></td>
+                    </tr>
+                `;
+            });
+
+            let overallDisplay = document.getElementById("overall-grade-display");
+            if (allPoints.length > 0) {
+                let overallPts = allPoints.reduce((a, b) => a + b, 0) / allPoints.length;
+                let overallGrade = pointsToGrade(overallPts);
+                overallDisplay.innerText = `${overallPts.toFixed(1)} NP (${overallGrade})`;
+            } else {
+                overallDisplay.innerText = "-";
             }
         }
 
@@ -646,10 +790,7 @@
         }
 
         function buyFurniture(id, cost) {
-            if (gameState.money < cost) {
-                alert("Nicht genug Guthaben!");
-                return;
-            }
+            if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
             gameState.money -= cost;
             gameState.furniture[id] = true;
             renderFurnitureShop();
@@ -709,12 +850,11 @@
             };
             closeModal();
             renderSchedule();
+            renderGradesTable();
             saveGame();
         }
 
-        function closeModal() {
-            document.getElementById("edit-modal").style.display = "none";
-        }
+        function closeModal() { document.getElementById("edit-modal").style.display = "none"; }
 
         function checkAutoCurrentLesson() {
             let now = new Date();
@@ -754,9 +894,7 @@
                 gameState.startTimeEpoch = null;
                 document.getElementById("timer-status").innerText += " (PAUSE)";
             } else {
-                if (!gameState.activeLesson) {
-                    switchTask("Unterricht", 0.50);
-                }
+                if (!gameState.activeLesson) { switchTask("Unterricht", 0.50); }
                 gameState.isTimerRunning = true;
                 gameState.startTimeEpoch = Date.now();
                 document.getElementById("timer-status").innerText = gameState.activeLesson.toUpperCase();
@@ -774,10 +912,7 @@
 
         function startCustomActivity() {
             let activityName = document.getElementById("custom-activity-input").value.trim();
-            if(!activityName) {
-                alert("Bitte gib eine Aktivität ein!");
-                return;
-            }
+            if(!activityName) { alert("Bitte gib eine Aktivität ein!"); return; }
             switchTask(activityName, 0.50);
             gameState.isTimerRunning = true;
             gameState.startTimeEpoch = Date.now();
@@ -825,14 +960,9 @@
             let gross = gameState.pendingEarnings;
             let buffs = calculateBuffs();
             
-            // Fixkosten inkl Möbel & Abos
             let fixedTotal = gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
-            furnitureCatalog.forEach(item => {
-                if (gameState.furniture[item.id]) fixedTotal += item.daily;
-            });
-            contractsCatalog.forEach(item => {
-                if (gameState.contracts[item.id]) fixedTotal += item.daily;
-            });
+            furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
+            contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
 
             let taxRate = buffs.taxRate;
             let taxes = gross * taxRate;
@@ -858,7 +988,7 @@
             updateUI();
             saveGame();
 
-            alert(`Tag beendet & abgerechnet!\n\nErarbeitetes Brutto: ${gross.toFixed(2)} €\nSteuern (${(taxRate*100).toFixed(0)}%): -${taxes.toFixed(2)} €\nNetto-Einnahme: +${netEarnings.toFixed(2)} €\nFixkosten & Abos abgezogen: -${fixedTotal.toFixed(2)} €`);
+            alert(`Tag beendet & abgerechnet!\n\nErarbeitetes Brutto: ${gross.toFixed(2)} €\nSteuern (${(taxRate*100).toFixed(0)}%): -${taxes.toFixed(2)} €\nNetto-Einnahme: +${netEarnings.toFixed(2)} €\nFixkosten abgezogen: -${fixedTotal.toFixed(2)} €`);
         }
 
         function renderPayoutHistory() {
@@ -880,19 +1010,14 @@
         function buyItem(type, amount, baseCost, extraType = null, extraAmount = 0) {
             let buffs = calculateBuffs();
             let cost = baseCost * buffs.shopDiscount;
-            if (gameState.money < cost) {
-                alert("Nicht genug Guthaben!");
-                return;
-            }
+            if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
             gameState.money -= cost;
             if (type === 'food') {
                 gameState.food = Math.min(100, gameState.food + amount);
             } else if (type === 'drink') {
                 let actualDrink = amount * buffs.drinkBonus;
                 gameState.drink = Math.min(100, gameState.drink + actualDrink);
-                if (extraType === 'energy') {
-                    gameState.sleep = Math.min(100, gameState.sleep + extraAmount);
-                }
+                if (extraType === 'energy') { gameState.sleep = Math.min(100, gameState.sleep + extraAmount); }
             }
             updateUI();
             saveGame();
@@ -914,10 +1039,7 @@
 
         function payLoan(amount) {
             let pay = Math.min(amount, gameState.loan);
-            if (gameState.money < pay) {
-                alert("Nicht genug Guthaben zum Tilgen!");
-                return;
-            }
+            if (gameState.money < pay) { alert("Nicht genug Guthaben zum Tilgen!"); return; }
             gameState.money -= pay;
             gameState.loan -= pay;
             updateUI();
@@ -926,10 +1048,7 @@
 
         function logRealSleep() {
             let hours = parseFloat(document.getElementById("sleep-hours-input").value);
-            if (isNaN(hours) || hours <= 0) {
-                alert("Bitte gültige Stunden eingeben!");
-                return;
-            }
+            if (isNaN(hours) || hours <= 0) { alert("Bitte gültige Stunden eingeben!"); return; }
             let buffs = calculateBuffs();
             let restore = Math.min(100, hours * 12.5 * buffs.sleepBonus);
             gameState.sleep = restore;
@@ -971,14 +1090,9 @@
             document.getElementById("val-sleep").innerText = Math.round(gameState.sleep) + "%";
             document.getElementById("fill-sleep").style.width = gameState.sleep + "%";
 
-            // Fixkosten inkl Möbel & Verträge berechnen
             let fixedTotal = gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
-            furnitureCatalog.forEach(item => {
-                if (gameState.furniture[item.id]) fixedTotal += item.daily;
-            });
-            contractsCatalog.forEach(item => {
-                if (gameState.contracts[item.id]) fixedTotal += item.daily;
-            });
+            furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
+            contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
 
             document.getElementById("dash-total-fixed").innerText = fixedTotal.toFixed(2) + " €";
             document.getElementById("loan-status").innerText = gameState.loan.toFixed(2) + " €";
