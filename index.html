@@ -30,7 +30,7 @@
         }
         h1 { margin: 0; font-size: 1.4rem; color: #fff; }
         .header-right {
-            display: flex; gap: 15px; align-items: center; font-size: 0.9rem; font-weight: bold;
+            display: flex; gap: 15px; align-items: center; font-size: 0.9rem; font-weight: bold; flex-wrap: wrap;
         }
         .header-stat { display: flex; gap: 5px; align-items: center; }
 
@@ -139,7 +139,7 @@
             background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border);
             max-height: 150px; overflow-y: auto; font-size: 0.8rem; margin-top: 10px;
         }
-        .log-entry { border-bottom: 1px solid var(--border); padding: 4px 0; display: flex; justify-content: space-between; }
+        .log-entry { border-bottom: 1px solid var(--border); padding: 6px 0; display: flex; justify-content: space-between; flex-wrap: column; }
     </style>
 </head>
 <body>
@@ -147,7 +147,8 @@
     <header>
         <h1>School Life Simulator</h1>
         <div class="header-right">
-            <div class="header-stat">💰 <span id="header-money" class="money">50.00 €</span></div>
+            <div class="header-stat" title="Verfügbares Bargeld">💰 Guthaben: <span id="header-money" class="money">50.00 €</span></div>
+            <div class="header-stat" title="Noch nicht versteuert/ausgezahlt">📥 Zwischenspeicher: <span id="header-pending" style="color: var(--accent-orange);">0.00 €</span></div>
             <div class="header-stat">🍔 <span id="header-food">80%</span></div>
             <div class="header-stat">💧 <span id="header-drink">80%</span></div>
             <div class="header-stat">💤 <span id="header-sleep">80%</span></div>
@@ -181,7 +182,7 @@
                     </div>
                 </div>
                 <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Min</div>
-                <div class="timer-subtext" style="color: #fff;">Noch nicht ausgezahlt: <span id="session-earned" class="money">0.00 €</span></div>
+                <div class="timer-subtext" style="color: var(--accent-orange);">Noch nicht ausgezahlt: <span id="session-earned">0.00 €</span></div>
                 
                 <!-- Streak & Melden Info -->
                 <div id="streak-info" style="font-size: 0.8rem; color: var(--accent-orange); margin-top: 6px;">
@@ -192,7 +193,6 @@
                     <button class="action-btn" onclick="toggleTimer()">Start / Stop</button>
                     <button class="action-btn" style="background-color: var(--accent-blue);" onclick="raiseHand()">🙋‍♂️ Melden</button>
                     <button class="action-btn" style="background-color: var(--accent-orange);" onclick="startFreistunde()">Freistunde</button>
-                    <button class="action-btn" style="background-color: var(--accent-green);" onclick="claimEarnings()">💵 Auszahlen (inkl. Steuern)</button>
                 </div>
             </div>
 
@@ -229,7 +229,7 @@
                     </div>
                 </div>
 
-                <button class="action-btn danger-btn" onclick="endDay()" style="width:100%; margin-top: 12px;">Tag beenden & Auszahlen</button>
+                <button class="action-btn danger-btn" onclick="endDay()" style="width:100%; margin-top: 12px;">Tag beenden & Abrechnen (Steuern abziehen)</button>
             </div>
         </div>
     </div>
@@ -245,7 +245,7 @@
                     </label>
                 </div>
             </div>
-            <p style="font-size: 0.85rem; color: #8b949e;">Im Bearbeitungsmodus kannst du Fach, Raum, Lehrer und den **Verdienst pro Minute** festlegen. Freistunden bringen 0 €.</p>
+            <p style="font-size: 0.85rem; color: #8b949e;">Beim Wechseln des Fachs startet der Timer automatisch bei 00:00.</p>
             
             <div style="overflow-x: auto;">
                 <table class="schedule-table">
@@ -345,12 +345,12 @@
     <div id="tab-stats" class="tab-content">
         <div class="card">
             <h2>Statistik & Steuerübersicht</h2>
-            <p>Gesamteinnahmen (Brutto): <span id="stat-earnings" class="money">0.00 €</span></p>
-            <p>Gezahlte Steuern (15%): <span id="stat-taxes" style="color: var(--danger);">0.00 €</span></p>
+            <p>Gesamteinnahmen (Brutto erarbeitet): <span id="stat-earnings" class="money">0.00 €</span></p>
+            <p>Insgesamt gezahlte Steuern (15%): <span id="stat-taxes" style="color: var(--danger);">0.00 €</span></p>
             
-            <h3 style="font-size: 1rem; margin-top: 20px; color: #58a6ff;">Auszahlungs-Historie (Detailliert)</h3>
+            <h3 style="font-size: 1rem; margin-top: 20px; color: #58a6ff;">Abrechnungs-Historie (Tagesabschluss)</h3>
             <div class="payout-log" id="payout-log-container">
-                <div style="color: #8b949e; text-align: center;">Noch keine Auszahlungen erfolgt.</div>
+                <div style="color: #8b949e; text-align: center;">Noch keine Abrechnungen erfolgt.</div>
             </div>
         </div>
     </div>
@@ -377,7 +377,7 @@
     <script>
         let gameState = {
             money: 50.00,
-            pendingEarnings: 0.00,
+            pendingEarnings: 0.00, // Noch nicht ausgezahlt / zwischengespeichert
             totalEarnings: 0.00,
             totalTaxes: 0.00,
             food: 80,
@@ -467,7 +467,7 @@
 
             updateUI();
 
-            // Globaler Timer Loop (läuft immer im Hintergrund weiter)
+            // Globaler Timer Loop
             setInterval(() => {
                 if (gameState.isTimerRunning) {
                     gameState.timerSeconds++;
@@ -523,6 +523,19 @@
             }
         }
 
+        // --- TIMER & AUFGABENWECHSEL (Reset auf 0) ---
+        function switchTask(newSubject, newRate) {
+            gameState.activeLesson = newSubject;
+            gameState.currentRate = newRate;
+            gameState.timerSeconds = 0; // Timer bei Aufgabenwechsel auf 0 zurücksetzen
+            gameState.startTimeEpoch = gameState.isTimerRunning ? Date.now() : null;
+            document.getElementById("timer-status").innerText = newSubject.toUpperCase();
+            document.getElementById("current-rate").innerText = newRate.toFixed(2) + " €";
+            updateStreakDisplay();
+            updateTimerDisplay();
+            saveGame();
+        }
+
         function handleCellClick(hour, day) {
             if (gameState.editMode) {
                 gameState.currentEditCoords = { hour, day };
@@ -534,11 +547,7 @@
                 document.getElementById("edit-modal").style.display = "flex";
             } else {
                 let cellData = timetableData[hour][day];
-                gameState.activeLesson = cellData.subject;
-                gameState.currentRate = cellData.rate !== undefined ? cellData.rate : 0.50;
-                document.getElementById("timer-status").innerText = cellData.subject.toUpperCase();
-                document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2) + " €";
-                updateStreakDisplay();
+                switchTask(cellData.subject, cellData.rate !== undefined ? cellData.rate : 0.50);
             }
         }
 
@@ -586,13 +595,9 @@
                 let dayIndex = day - 1;
                 let lesson = timetableData[detectedHour][dayIndex];
                 if (gameState.activeLesson === null && !gameState.isTimerRunning) {
-                    gameState.activeLesson = lesson.subject;
-                    gameState.currentRate = lesson.rate !== undefined ? lesson.rate : 0.50;
-                    document.getElementById("timer-status").innerText = lesson.subject.toUpperCase();
-                    document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2) + " €";
-                    updateStreakDisplay();
+                    switchTask(lesson.subject, lesson.rate !== undefined ? lesson.rate : 0.50);
                 }
-                infoBox.innerText = `Erkannt: ${detectedHour}. Stunde (${lesson.subject} - ${gameState.currentRate} €/Min)`;
+                infoBox.innerText = `Erkannt: ${detectedHour}. Stunde (${lesson.subject})`;
             } else {
                 infoBox.innerText = `Keine Schulstunde aktiv`;
             }
@@ -605,8 +610,7 @@
                 document.getElementById("timer-status").innerText += " (PAUSE)";
             } else {
                 if (!gameState.activeLesson) {
-                    gameState.activeLesson = "Unterricht";
-                    gameState.currentRate = 0.50;
+                    switchTask("Unterricht", 0.50);
                 }
                 gameState.isTimerRunning = true;
                 gameState.startTimeEpoch = Date.now();
@@ -617,14 +621,9 @@
         }
 
         function startFreistunde() {
+            switchTask("Freistunde", 0);
             gameState.isTimerRunning = false;
-            gameState.activeLesson = "Freistunde";
-            gameState.currentRate = 0;
-            gameState.timerSeconds = 0;
             document.getElementById("timer-status").innerText = "FREISTUNDE (0 €)";
-            document.getElementById("current-rate").innerText = "0.00 €";
-            updateStreakDisplay();
-            updateTimerDisplay();
             saveGame();
         }
 
@@ -634,13 +633,9 @@
                 alert("Bitte gib eine Aktivität ein!");
                 return;
             }
-            gameState.activeLesson = activityName;
-            gameState.currentRate = 0.50;
+            switchTask(activityName, 0.50);
             gameState.isTimerRunning = true;
             gameState.startTimeEpoch = Date.now();
-            document.getElementById("timer-status").innerText = activityName.toUpperCase();
-            document.getElementById("current-rate").innerText = "0.50 €";
-            updateStreakDisplay();
             saveGame();
         }
 
@@ -666,7 +661,7 @@
             updateUI();
             saveGame();
             
-            alert(`Gut mitgearbeitet! (${gameState.activeLesson}) Streak: ${streakCount}x | Bonus: +${bonusMoney.toFixed(2)} € direkt gutgeschrieben!`);
+            alert(`Gut mitgearbeitet! (${gameState.activeLesson}) Streak: ${streakCount}x | Bonus: +${bonusMoney.toFixed(2)} € im Zwischenspeicher!`);
         }
 
         function updateStreakDisplay() {
@@ -679,19 +674,28 @@
                 `Aktuelle Melde-Streak (${gameState.activeLesson || "Kein Fach"}): <strong>${streakCount}x</strong> (Bonus: +${currentBonus.toFixed(2)} €)`;
         }
 
-        // --- AUSZAHLUNG MIT STEUERN & LISTUNG ---
-        function claimEarnings() {
+        // --- TAG BEENDEN & ABRECHNEN (STEUERN WERDEN HIER ABGEZOGEN) ---
+        function endDay() {
             let gross = gameState.pendingEarnings;
-            if (gross <= 0) {
-                alert("Du hast nichts zum Auszahlen!");
-                return;
+            
+            // Fixkosten berechnen
+            let fixedTotal = gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
+            for (let k in gameState.activeContracts) {
+                if (gameState.activeContracts[k]) {
+                    if (k === 'phone') fixedTotal += 1.20;
+                    if (k === 'wifi') fixedTotal += 1.50;
+                    if (k === 'netflix') fixedTotal += 0.60;
+                    if (k === 'spotify') fixedTotal += 0.40;
+                }
             }
 
             let taxRate = 0.15; // 15% Steuer
             let taxes = gross * taxRate;
-            let net = gross - taxes;
+            let netEarnings = gross - taxes;
 
-            gameState.money += net;
+            // Auf Guthaben aufrechnen und Fixkosten abziehen
+            gameState.money += netEarnings;
+            gameState.money -= fixedTotal;
             gameState.totalTaxes += taxes;
 
             // In Historie eintragen
@@ -699,28 +703,33 @@
                 date: new Date().toLocaleTimeString() + " (" + new Date().toLocaleDateString() + ")",
                 gross: gross,
                 taxes: taxes,
-                net: net
+                net: netEarnings,
+                fixed: fixedTotal
             };
-            gameState.payoutHistory.unshift(payoutEntry); // Neuester Eintrag oben
+            gameState.payoutHistory.unshift(payoutEntry);
 
+            // Zwischenspeicher zurücksetzen
             gameState.pendingEarnings = 0;
+            gameState.timerSeconds = 0;
+            gameState.isTimerRunning = false;
+
             updateUI();
             saveGame();
 
-            alert(`Auszahlung erfolgreich!\nBrutto: ${gross.toFixed(2)} €\nSteuern (15%): -${taxes.toFixed(2)} €\nNetto ausgezahlt: ${net.toFixed(2)} €`);
+            alert(`Tag beendet & abgerechnet!\n\nErarbeitetes Brutto: ${gross.toFixed(2)} €\nSteuern (15%): -${taxes.toFixed(2)} €\nNetto-Einnahme: +${netEarnings.toFixed(2)} €\nFixkosten abgezogen: -${fixedTotal.toFixed(2)} €`);
         }
 
         function renderPayoutHistory() {
             const container = document.getElementById("payout-log-container");
             if (!gameState.payoutHistory || gameState.payoutHistory.length === 0) {
-                container.innerHTML = `<div style="color: #8b949e; text-align: center;">Noch keine Auszahlungen erfolgt.</div>`;
+                container.innerHTML = `<div style="color: #8b949e; text-align: center;">Noch keine Abrechnungen erfolgt.</div>`;
                 return;
             }
             let html = "";
             gameState.payoutHistory.forEach(entry => {
                 html += `<div class="log-entry">
-                    <span>${entry.date}</span>
-                    <span>Brutto: <strong>${entry.gross.toFixed(2)}€</strong> | Steuer: <strong style="color:var(--danger)">-${entry.taxes.toFixed(2)}€</strong> | Netto: <strong style="color:var(--accent-green)">+${entry.net.toFixed(2)}€</strong></span>
+                    <span>🕒 ${entry.date}</span>
+                    <span>Brutto: <strong>${entry.gross.toFixed(2)}€</strong> | Steuer (15%): <strong style="color:var(--danger)">-${entry.taxes.toFixed(2)}€</strong> | Netto: <strong style="color:var(--accent-green)">+${entry.net.toFixed(2)}€</strong> | Fixkosten: <strong style="color:var(--danger)">-${entry.fixed.toFixed(2)}€</strong></span>
                 </div>`;
             });
             container.innerHTML = html;
@@ -728,7 +737,7 @@
 
         function buyItem(type, amount, cost) {
             if (gameState.money < cost) {
-                alert("Nicht genug Geld!");
+                alert("Nicht genug Guthaben!");
                 return;
             }
             gameState.money -= cost;
@@ -761,7 +770,7 @@
         function payLoan(amount) {
             let pay = Math.min(amount, gameState.loan);
             if (gameState.money < pay) {
-                alert("Nicht genug Geld zum Tilgen!");
+                alert("Nicht genug Guthaben zum Tilgen!");
                 return;
             }
             gameState.money -= pay;
@@ -783,28 +792,13 @@
             alert(`Schlaf eingetragen! Energie auf ${restore}% aufgeladen.`);
         }
 
-        function endDay() {
-            let fixedTotal = gameState.housing.rent + gameState.housing.water + gameState.housing.electricity;
-            for (let k in gameState.activeContracts) {
-                if (gameState.activeContracts[k]) {
-                    if (k === 'phone') fixedTotal += 1.20;
-                    if (k === 'wifi') fixedTotal += 1.50;
-                    if (k === 'netflix') fixedTotal += 0.60;
-                    if (k === 'spotify') fixedTotal += 0.40;
-                }
-            }
-            gameState.money -= fixedTotal;
-            claimEarnings();
-            saveGame();
-            alert(`Tag beendet! Fixkosten in Höhe von ${fixedTotal.toFixed(2)} € wurden abgezogen.`);
-        }
-
         function updateTimerDisplay() {
             let mins = Math.floor(gameState.timerSeconds / 60);
             let secs = gameState.timerSeconds % 60;
             document.getElementById("timer-clock").innerText = 
                 (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
             document.getElementById("session-earned").innerText = gameState.pendingEarnings.toFixed(2) + " €";
+            document.getElementById("header-pending").innerText = gameState.pendingEarnings.toFixed(2) + " €";
 
             let progressDeg = (secs / 60) * 360;
             let circle = document.getElementById("timer-circle");
@@ -817,6 +811,7 @@
 
         function updateUI() {
             document.getElementById("header-money").innerText = gameState.money.toFixed(2) + " €";
+            document.getElementById("header-pending").innerText = gameState.pendingEarnings.toFixed(2) + " €";
             document.getElementById("header-food").innerText = Math.round(gameState.food) + "%";
             document.getElementById("header-drink").innerText = Math.round(gameState.drink) + "%";
             document.getElementById("header-sleep").innerText = Math.round(gameState.sleep) + "%";
