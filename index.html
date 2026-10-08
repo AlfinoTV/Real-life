@@ -199,15 +199,6 @@
                 <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Min <span id="rate-bonus-text" style="font-size:0.75rem; color:var(--accent-blue);"></span></div>
                 <div class="timer-subtext" style="color: var(--accent-orange);">Noch nicht ausgezahlt: <span id="session-earned">0.00 €</span></div>
                 
-                <!-- Manuelles Zeit nachtragen Feld -->
-                <div style="background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-top: 12px; font-size: 0.85rem; text-align: left;">
-                    <strong>Vergangene Zeit nachtragen:</strong>
-                    <div style="display: flex; gap: 8px; margin-top: 6px;">
-                        <input type="number" id="manual-minutes-input" placeholder="Minuten (z.B. 45)" min="1" max="600" style="flex:1; padding: 6px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px;">
-                        <button class="action-btn" onclick="logManualTime()" style="padding: 6px 10px; background-color: var(--accent-blue);">Nachtragen</button>
-                    </div>
-                </div>
-
                 <!-- Aktive Boni Box -->
                 <div class="active-buffs-box">
                     <strong>Aktive Boni:</strong>
@@ -294,11 +285,14 @@
             </div>
         </div>
 
+        <!-- Eigene Sache & Zeit nachtragen (mit Uhr-Auswahl) -->
         <div class="card">
-            <h2>Andere Aktivität starten</h2>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="custom-activity-input" placeholder="z.B. Lernen, Zocken..." style="flex: 1; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
-                <button class="action-btn" onclick="startCustomActivity()">Starten</button>
+            <h2>Eigene Sache & Zeit nachtragen</h2>
+            <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 10px;">Trage hier eine vergangene Aktivität und die Dauer über das Uhr-Feld ein. Das Geld landet direkt im Zwischenspeicher!</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="custom-activity-input" placeholder="z.B. Lernen, Projektarbeit..." style="flex: 2; min-width: 180px; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
+                <input type="time" id="custom-time-input" value="00:30" style="flex: 1; min-width: 110px; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;" title="Dauer auswählen">
+                <button class="action-btn" onclick="startCustomActivityWithTime()" style="flex: 1; min-width: 140px; background-color: var(--accent-blue);">Nachtragen & Verdienen</button>
             </div>
         </div>
     </div>
@@ -610,39 +604,62 @@
             }, 60000);
         };
 
-        // Funktion zum manuellen Nachtragen von Minuten
-        function logManualTime() {
-            let minutesInput = parseFloat(document.getElementById("manual-minutes-input").value);
-            if (isNaN(minutesInput) || minutesInput <= 0) {
-                alert("Bitte gib eine gültige Minutenanzahl ein!");
+        // Funktion zum Nachtragen von eigener Sache über das Uhr-Feld
+        function startCustomActivityWithTime() {
+            let activityName = document.getElementById("custom-activity-input").value.trim();
+            let timeVal = document.getElementById("custom-time-input").value; // Format "HH:MM"
+
+            if (!activityName) {
+                alert("Bitte gib einen Namen für die Aktivität ein!");
+                return;
+            }
+            if (!timeVal) {
+                alert("Bitte wähle eine Zeit aus!");
                 return;
             }
 
+            // Zeit in Minuten umrechnen
+            let parts = timeVal.split(':');
+            let hours = parseInt(parts[0]) || 0;
+            let minutes = parseInt(parts[1]) || 0;
+            let totalMinutes = (hours * 60) + minutes;
+
+            if (totalMinutes <= 0) {
+                alert("Bitte gib eine Zeit größer als 0 Minuten an!");
+                return;
+            }
+
+            let defaultRate = 0.50;
             let buffs = calculateBuffs();
-            let effectiveRate = gameState.currentRate > 0 ? (gameState.currentRate + buffs.rateBonus + buffs.baseRateBonus) : 0;
-            let earned = minutesInput * effectiveRate + minutesInput * buffs.passiveIncome;
+            let effectiveRate = defaultRate + buffs.rateBonus + buffs.baseRateBonus;
+            let earned = totalMinutes * effectiveRate + totalMinutes * buffs.passiveIncome;
 
             gameState.pendingEarnings += earned;
             gameState.totalEarnings += earned;
 
-            // Verbrauch für die nachgetragene Zeit anrechnen (falls nicht Freistunde)
-            let isWorking = gameState.activeLesson && !gameState.activeLesson.toLowerCase().includes("freistunde");
-            let workMultiplier = isWorking ? 3.0 : 1.0;
+            // Verbrauch für die nachgetragene Zeit anrechnen (3x schneller, da gearbeitet)
+            let workMultiplier = 3.0;
             let decayMod = buffs.generalDecayMod;
 
-            // Da 1 Minute im Intervall normalerweise 1/60 Minute ist, multiplizieren wir den Verbrauch pro Minute entsprechend
-            gameState.food = Math.max(0, gameState.food - (0.2 * decayMod * buffs.foodDecayMod * workMultiplier * (minutesInput)));
-            gameState.drink = Math.max(0, gameState.drink - (0.3 * decayMod * buffs.drinkDecayMod * workMultiplier * (minutesInput)));
+            gameState.food = Math.max(0, gameState.food - (0.2 * decayMod * buffs.foodDecayMod * workMultiplier * totalMinutes));
+            gameState.drink = Math.max(0, gameState.drink - (0.3 * decayMod * buffs.drinkDecayMod * workMultiplier * totalMinutes));
             
-            let sleepVal = gameState.sleep - (0.1 * decayMod * buffs.sleepDecayMod * workMultiplier * (minutesInput));
+            let sleepVal = gameState.sleep - (0.1 * decayMod * buffs.sleepDecayMod * workMultiplier * totalMinutes);
             if (buffs.minSleep > 0 && sleepVal < buffs.minSleep) sleepVal = buffs.minSleep;
             gameState.sleep = Math.max(0, sleepVal);
 
-            document.getElementById("manual-minutes-input").value = "";
+            // Aktive Aktivität im Timer setzen (aber pausiert lassen)
+            gameState.activeLesson = activityName;
+            gameState.currentRate = defaultRate;
+            document.getElementById("timer-status").innerText = activityName.toUpperCase() + " (PAUSE)";
+            document.getElementById("current-rate").innerText = effectiveRate.toFixed(2) + " €";
+
+            document.getElementById("custom-activity-input").value = "";
+            updateStreakDisplay();
             updateUI();
             saveGame();
 
-            alert(`${minutesInput} Minuten erfolgreich nachgetragen!\n+${earned.toFixed(2)} € wurden deinem Zwischenspeicher gutgeschrieben.`);
+            alert(`"${activityName}" (${hours} Std. ${minutes} Min.) erfolgreich nachgetragen!\n+${earned.toFixed(2)} € wurden deinem Zwischenspeicher gutgeschrieben.`);
         }
 
         function calculateBuffs() {
@@ -1036,13 +1053,6 @@
         function startFreistunde() {
             switchTask("Freistunde", 0);
             document.getElementById("timer-status").innerText = "FREISTUNDE (0 €)";
-            saveGame();
-        }
-
-        function startCustomActivity() {
-            let activityName = document.getElementById("custom-activity-input").value.trim();
-            if(!activityName) { alert("Bitte gib eine Aktivität ein!"); return; }
-            switchTask(activityName, 0.50);
             saveGame();
         }
 
