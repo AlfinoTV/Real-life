@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+[cite: 1]<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -599,7 +599,7 @@
             insurances: {},
             foodItems: {},
             vehicles: {},
-            vehicleStates: {}, // Speichert Tank/Akku & Verschleiß pro Fahrzeug
+            vehicleStates: {}, 
             miningRigs: {},
             grades: {},
             activeLesson: null,
@@ -656,13 +656,11 @@
         ];
 
         const foodCatalog = [
-            // Essen
             { id: "apple", name: "Frischer Apfel", cost: 1.50, hunger: 15, thirst: 5, category: "food" },
             { id: "sandwich", name: "Belegtes Sandwich", cost: 3.50, hunger: 40, thirst: 10, category: "food" },
             { id: "salad", name: "Gesunder Caesar Salad", cost: 5.50, hunger: 50, thirst: 15, category: "food" },
             { id: "pizza", name: "Ganze Pizza Salami", cost: 8.00, hunger: 90, thirst: 20, category: "food" },
             { id: "döner", name: "Großer Döner Kebap", cost: 7.00, hunger: 85, thirst: 15, category: "food" },
-            // Trinken
             { id: "water_bottle", name: "Mineralwasser (0,5l)", cost: 1.00, hunger: 0, thirst: 40, category: "drink" },
             { id: "club_mate", name: "Club-Mate (0,5l)", cost: 1.80, hunger: 2, thirst: 55, category: "drink" },
             { id: "energy", name: "Energy Drink", cost: 2.20, hunger: 5, thirst: 50, category: "drink" },
@@ -819,7 +817,6 @@
                         updateBonusTimerDisplay();
                     }
 
-                    // Bitcoin Mining Tick (per Sekunde)
                     let totalHashrate = 0;
                     miningCatalog.forEach(rig => {
                         if (gameState.miningRigs[rig.id]) totalHashrate += rig.hashrate;
@@ -836,21 +833,18 @@
                 }
             }, 200);
 
-            // Bedürfnissenkung (realistischer, schneller und auch wenn Timer nicht läuft)
             setInterval(() => {
                 let buffs = calculateBuffs();
                 let decayMod = buffs.generalDecayMod;
                 
                 let workMultiplier = 1.0;
                 let isWorking = (gameState.isTimerRunning && gameState.activeLesson && !gameState.activeLesson.toLowerCase().includes("freistunde")) || gameState.isBonusTimerRunning;
-                if (isWorking) workMultiplier = 3.5; // Erhöht während der Arbeit
+                if (isWorking) workMultiplier = 3.5;
                 
-                // Schlaf sinkt kontinuierlich, beschleunigt beim Arbeiten
                 let sleepVal = gameState.sleep - (0.15 * decayMod * buffs.sleepDecayMod * workMultiplier);
                 if (buffs.minSleep > 0 && sleepVal < buffs.minSleep) sleepVal = buffs.minSleep;
                 gameState.sleep = Math.max(0, sleepVal);
 
-                // Hunger und Durst sinken jetzt deutlich schneller und IMMER (auch ohne aktiven Timer)
                 let hungerDecay = isWorking ? 0.25 : 0.12;
                 let thirstDecay = isWorking ? 0.35 : 0.18;
 
@@ -1028,6 +1022,17 @@
             });
         }
 
+        function buyFurniture(id, cost) {
+            if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
+            gameState.money -= cost;
+            gameState.furniture[id] = true;
+            renderFurnitureShop();
+            renderRoomVisual();
+            updateUI();
+            saveGame();
+            alert("Möbelstück erfolgreich gekauft und aufgebaut!");
+        }
+
         function renderContractsShop() {
             const container = document.getElementById("contracts-shop-container");
             if (!container) return;
@@ -1042,6 +1047,13 @@
                     <button class="action-btn ${active ? 'danger-btn' : ''}" onclick="toggleContract('${item.id}')">${active ? 'Kündigen' : 'Abschließen'}</button>
                 </div>`;
             });
+        }
+
+        function toggleContract(id) {
+            gameState.contracts[id] = !gameState.contracts[id];
+            renderContractsShop();
+            updateUI();
+            saveGame();
         }
 
         function renderInsuranceShop() {
@@ -1143,7 +1155,7 @@
             if (vehicleDef) {
                 gameState.vehicleStates[id] = {
                     fuelOrBattery: vehicleDef.maxFuelOrBattery,
-                    wear: 0 // in % Verschleiß
+                    wear: 0
                 };
             }
 
@@ -1187,184 +1199,140 @@
                     </div>
                     <div style="margin-top: 8px; display: flex; gap: 4px; align-items: center;">
                         <input type="number" id="trip-km-${v.id}" placeholder="Km" min="1" max="200" style="width: 50px; padding: 2px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.75rem;">
-                        <button class="action-btn" style="flex:1; font-size:0.75rem; padding:4px; background-color: var(--accent-blue);" onclick="makeTrip('${v.id}')">Fahrt machen</button>
+                        <button class="action-btn" style="flex:1; font-size:0.75rem; padding:4px; background-color: var(--accent-blue);" onclick="driveVehicle('${v.id}')">Fahren</button>
                     </div>
                 </div>`;
             });
-
-            // ÖPNV oder Laufen Option für Fahrten
-            html += `<div style="background: #161b22; border: 1px solid var(--border); border-radius: 8px; padding: 12px; min-width: 220px; text-align: left;">
-                <strong>🚶‍♂️ Zu Fuß / ÖPNV</strong>
-                <div style="font-size: 0.8rem; margin: 6px 0; color: #8b949e;">
-                    Kostenlos laufen oder Öffis nutzen<br>
-                    (Laufen kostet Energie & macht hungrig!)
-                </div>
-                <div style="margin-top: 18px; display: flex; gap: 4px; align-items: center;">
-                    <input type="number" id="trip-km-walk" placeholder="Km" min="1" max="50" style="width: 50px; padding: 2px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.75rem;">
-                    <button class="action-btn" style="flex:1; font-size:0.75rem; padding:4px; background-color: var(--accent-orange);" onclick="makeWalkOrTransitTrip()">Strecke machen</button>
-                </div>
-            </div>`;
-
             html += `</div>`;
             garageContainer.innerHTML = html;
         }
 
-        let selectedRefuelVehicleId = null;
+        let currentRefuelVehicleId = null;
 
-        function openRefuelModal(vehicleId) {
-            selectedRefuelVehicleId = vehicleId;
-            let v = vehicleCatalog.find(item => item.id === vehicleId);
-            let state = gameState.vehicleStates[vehicleId];
-            let isElectric = v.type === 'electric';
-
-            document.getElementById("refuel-modal-title").innerText = isElectric ? "Fahrzeug aufladen" : "Fahrzeug betanken";
-            document.getElementById("refuel-info").innerText = `${v.name} - Aktuell: ${Math.round(state.fuelOrBattery)} / ${v.maxFuelOrBattery} ${v.unit}`;
-            document.getElementById("refuel-amount-input").value = Math.round(v.maxFuelOrBattery - state.fuelOrBattery);
-            document.getElementById("refuel-amount-input").max = v.maxFuelOrBattery;
+        function openRefuelModal(id) {
+            currentRefuelVehicleId = id;
+            let v = vehicleCatalog.find(item => item.id === id);
+            let state = gameState.vehicleStates[id];
+            let missing = v.maxFuelOrBattery - state.fuelOrBattery;
             
-            updateRefuelCostPreview();
-            document.getElementById("refuel-amount-input").oninput = updateRefuelCostPreview;
+            document.getElementById("refuel-modal-title").innerText = `${v.name} auftanken / laden`;
+            document.getElementById("refuel-info").innerText = `Fehlend: ${Math.round(missing)} ${v.unit}`;
+            document.getElementById("refuel-amount-input").value = Math.round(missing);
             document.getElementById("refuel-modal").style.display = "flex";
+            updateRefuelCost();
+            
+            document.getElementById("refuel-amount-input").oninput = updateRefuelCost;
         }
 
-        function updateRefuelCostPreview() {
-            let v = vehicleCatalog.find(item => item.id === selectedRefuelVehicleId);
+        function updateRefuelCost() {
             let amount = parseFloat(document.getElementById("refuel-amount-input").value) || 0;
-            let costPerUnit = v.type === 'electric' ? 0.35 : v.fuelCostPerLiter;
-            let totalCost = amount * costPerUnit;
-            document.getElementById("refuel-cost-display").innerText = totalCost.toFixed(2) + " €";
+            let v = vehicleCatalog.find(item => item.id === currentRefuelVehicleId);
+            let costPerUnit = v.type === 'electric' ? 0.30 : v.fuelCostPerLiter;
+            let total = amount * costPerUnit;
+            document.getElementById("refuel-cost-display").innerText = total.toFixed(2) + " €";
         }
 
         function closeRefuelModal() {
             document.getElementById("refuel-modal").style.display = "none";
+            currentRefuelVehicleId = null;
         }
 
         function confirmRefuel() {
-            let v = vehicleCatalog.find(item => item.id === selectedRefuelVehicleId);
+            if (!currentRefuelVehicleId) return;
             let amount = parseFloat(document.getElementById("refuel-amount-input").value) || 0;
-            let costPerUnit = v.type === 'electric' ? 0.35 : v.fuelCostPerLiter;
-            let totalCost = amount * costPerUnit;
+            let v = vehicleCatalog.find(item => item.id === currentRefuelVehicleId);
+            let state = gameState.vehicleStates[currentRefuelVehicleId];
+            let costPerUnit = v.type === 'electric' ? 0.30 : v.fuelCostPerLiter;
+            let total = amount * costPerUnit;
 
-            if (gameState.money < totalCost) {
-                alert("Nicht genug Guthaben!");
-                return;
+            if (gameState.money < total) { alert("Nicht genug Guthaben!"); return; }
+            if (state.fuelOrBattery + amount > v.maxFuelOrBattery) {
+                amount = v.maxFuelOrBattery - state.fuelOrBattery;
+                total = amount * costPerUnit;
             }
 
-            let state = gameState.vehicleStates[selectedRefuelVehicleId];
-            state.fuelOrBattery = Math.min(v.maxFuelOrBattery, state.fuelOrBattery + amount);
-            gameState.money -= totalCost;
-
+            gameState.money -= total;
+            state.fuelOrBattery += amount;
             closeRefuelModal();
             renderGarage();
             updateUI();
             saveGame();
-            alert("Erfolgreich nachgefüllt!");
+            alert("Erfolgreich aufgetankt / aufgeladen!");
         }
 
-        function repairVehicle(vehicleId) {
-            let state = gameState.vehicleStates[vehicleId];
-            if (state.wear <= 0) {
-                alert("Das Fahrzeug ist bereits in einwandfreiem Zustand!");
+        function driveVehicle(id) {
+            let kmInput = document.getElementById(`trip-km-${id}`);
+            let km = parseFloat(kmInput.value) || 0;
+            if (km <= 0) { alert("Bitte gib eine gültige Kilometeranzahl ein!"); return; }
+
+            let v = vehicleCatalog.find(item => item.id === id);
+            let state = gameState.vehicleStates[id];
+            
+            let consumptionRate = v.type === 'electric' ? 0.25 : 0.08; 
+            let needed = km * consumptionRate;
+
+            if (state.fuelOrBattery < needed) {
+                alert(`Nicht genug ${v.type === 'electric' ? 'Akku' : 'Tank'} für diese Strecke! Bitte erst aufladen.`);
                 return;
             }
-            let repairCost = state.wear * 4.50; // Realistischer Reparaturpreis pro % Verschleiß
-            if (gameState.insurances['ins_auto_med']) repairCost *= 0.7; // 30% Rabatt durch Versicherung
 
-            if (gameState.money < repairCost) {
-                alert(`Nicht genug Guthaben für die Reparatur! Benötigt: ${repairCost.toFixed(2)} €`);
-                return;
+            state.fuelOrBattery -= needed;
+            state.wear += km * 0.05; // Verschleiß steigt
+
+            // Zufallsereignisse beim Fahren
+            let eventRoll = Math.random();
+            let msg = `Fahrt von ${km} km erfolgreich absolviert.`;
+            if (eventRoll < 0.15) {
+                let fine = 35.00;
+                gameState.money -= fine;
+                msg += ` 📸 Oh nein, du wurdest geblitzt und musst ${fine.toFixed(2)} € Strafe zahlen!`;
+            } else if (eventRoll < 0.30) {
+                state.fuelOrBattery -= 5;
+                msg += ` 🚗 Stau! Du hast extra Energie/Sprit verbraucht.`;
+            } else if (eventRoll < 0.40) {
+                let found = 20.00;
+                gameState.money += found;
+                msg += ` 💰 Glück gehabt! Du hast ${found.toFixed(2)} € auf dem Parkplatz gefunden.`;
             }
 
-            gameState.money -= repairCost;
+            renderGarage();
+            updateUI();
+            saveGame();
+            alert(msg);
+        }
+
+        function repairVehicle(id) {
+            let state = gameState.vehicleStates[id];
+            if (state.wear <= 0) { alert("Das Fahrzeug hat keinen Verschleiß!"); return; }
+
+            let cost = state.wear * 4.00; // 4 € pro % Verschleiß
+            if (gameState.insurances["ins_auto_med"]) cost *= 0.7; // 30% Rabatt durch Teilkasko
+
+            if (gameState.money < cost) { alert(`Nicht genug Guthaben für die Reparatur (${cost.toFixed(2)} € nötig)!`); return; }
+
+            gameState.money -= cost;
             state.wear = 0;
             renderGarage();
             updateUI();
             saveGame();
-            alert(`Fahrzeug erfolgreich für ${repairCost.toFixed(2)} € repariert! Alle Verschleißteile behoben.`);
-        }
-
-        function makeTrip(vehicleId) {
-            let kmInput = document.getElementById(`trip-km-${vehicleId}`);
-            let km = parseFloat(kmInput.value) || 0;
-            if (km <= 0) { alert("Bitte gib eine gültige Kilometerstrecke ein!"); return; }
-
-            let v = vehicleCatalog.find(item => item.id === vehicleId);
-            let state = gameState.vehicleStates[vehicleId];
-
-            // Verbrauch pro km berechnen
-            let consumptionRate = v.type === 'electric' ? 0.8 : 0.07; // 0.8% Akku pro km oder 0.07l pro km
-            let totalNeeded = km * consumptionRate;
-
-            if (state.fuelOrBattery < totalNeeded) {
-                alert(`Nicht genügend ${v.type === 'electric' ? 'Akku' : 'Kraftstoff'} für ${km} km! Bitte vorher aufladen/tanken.`);
-                return;
-            }
-
-            state.fuelOrBattery -= totalNeeded;
-            state.wear += km * 0.35; // Verschleiß steigt pro km
-
-            kmInput.value = "";
-            renderGarage();
-            updateUI();
-            saveGame();
-            alert(`Fahrt über ${km} km mit ${v.name} erfolgreich absolviert!\nVerbrauch: ${totalNeeded.toFixed(1)} ${v.unit}, Neuer Verschleiß: ${state.wear.toFixed(1)}%`);
-        }
-
-        function makeWalkOrTransitTrip() {
-            let kmInput = document.getElementById("trip-km-walk");
-            let km = parseFloat(kmInput.value) || 0;
-            if (km <= 0) { alert("Bitte gib eine gültige Kilometerstrecke ein!"); return; }
-
-            let buffs = calculateBuffs();
-            let useTransit = buffs.freeTransit;
-
-            if (!useTransit) {
-                let ticketCost = 2.80; // Busticket
-                if (gameState.money < ticketCost) {
-                    alert(`Kein Deutschlandticket vorhanden und nicht genug Geld für ein Busticket (${ticketCost.toFixed(2)} €)! Du musst zu Fuß gehen.`);
-                } else {
-                    let choice = confirm(`Kein Deutschlandticket aktiv. Ein Einzelticket kostet ${ticketCost.toFixed(2)} €. Möchtest du zahlen oder zu Fuß gehen (OK = Ticket kaufen, Abbrechen = Laufen)?`);
-                    if (choice) {
-                        gameState.money -= ticketCost;
-                        kmInput.value = "";
-                        updateUI();
-                        saveGame();
-                        alert(`ÖPNV-Fahrt über ${km} km für ${ticketCost.toFixed(2)} € absolviert.`);
-                        return;
-                    }
-                }
-            } else {
-                alert(`Dank des Deutschlandtickets kostenlose ÖPNV-Fahrt über ${km} km durchgeführt!`);
-                kmInput.value = "";
-                return;
-            }
-
-            // Wenn zu Fuß gegangen wird:
-            let energyCost = km * 4.0;
-            let hungerCost = km * 3.0;
-            let thirstCost = km * 3.5;
-
-            gameState.sleep = Math.max(0, gameState.sleep - energyCost);
-            gameState.hunger = Math.max(0, gameState.hunger - hungerCost);
-            gameState.thirst = Math.max(0, gameState.thirst - thirstCost);
-
-            kmInput.value = "";
-            updateUI();
-            saveGame();
-            alert(`Du bist ${km} km zu Fuß gegangen!\nEnergie, Hunger und Durst sind stark gesunken.`);
+            alert(`Fahrzeug erfolgreich für ${cost.toFixed(2)} € repariert!`);
         }
 
         function renderCryptoShop() {
             const container = document.getElementById("crypto-shop-container");
             if (!container) return;
             container.innerHTML = "";
-            miningCatalog.forEach(item => {
+            miningCatalog.forEach(rig => {
+                let count = gameState.miningRigs[rig.id] || 0;
                 container.innerHTML += `<div class="shop-item">
                     <div>
-                        <strong>${item.name}</strong> (${item.cost.toLocaleString()} €)
-                        <div class="shop-info" style="color:var(--accent-orange);">Hashrate: ${item.hashrate} TH/s | Strom: ${item.powerCost.toFixed(2)} €/Tag</div>
+                        <strong>${rig.name}</strong> (${rig.cost.toLocaleString()} €)
+                        <div class="shop-info">Hashrate: +${rig.hashrate} TH/s | Strom: ${rig.powerCost.toFixed(2)} €/Tag</div>
                     </div>
-                    <button class="action-btn" onclick="buyMiningRig('${item.id}', ${item.cost})">Rig Kaufen</button>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <span style="font-weight:bold; color:var(--accent-orange);">Anzahl: ${count}</span>
+                        <button class="action-btn" onclick="buyMiningRig('${rig.id}', ${rig.cost})">Kaufen</button>
+                    </div>
                 </div>`;
             });
         }
@@ -1372,109 +1340,63 @@
         function buyMiningRig(id, cost) {
             if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
             gameState.money -= cost;
-            if(!gameState.miningRigs[id]) gameState.miningRigs[id] = 0;
-            gameState.miningRigs[id]++;
+            gameState.miningRigs[id] = (gameState.miningRigs[id] || 0) + 1;
+            renderCryptoShop();
             updateCryptoDisplay();
             updateUI();
             saveGame();
-            alert("Mining-Rig erfolgreich erweitert!");
+            alert("Mining-Rig erfolgreich gekauft!");
         }
 
         function updateCryptoDisplay() {
             let totalHashrate = 0;
-            let totalPower = 0;
+            let totalPowerCost = 0;
             miningCatalog.forEach(rig => {
                 let count = gameState.miningRigs[rig.id] || 0;
                 totalHashrate += rig.hashrate * count;
-                totalPower += rig.powerCost * count;
+                totalPowerCost += rig.powerCost * count;
             });
-            let eurVal = gameState.btcBalance * btcPriceEur;
+
             document.getElementById("btc-balance").innerText = gameState.btcBalance.toFixed(8) + " BTC";
-            document.getElementById("btc-euro-value").innerText = `Entspricht: ${eurVal.toFixed(2)} €`;
+            let euroValue = gameState.btcBalance * btcPriceEur;
+            document.getElementById("btc-euro-value").innerText = `Entspricht: ${euroValue.toFixed(2)} €`;
             document.getElementById("btc-hashrate").innerText = totalHashrate + " TH/s";
-            document.getElementById("btc-power-cost").innerText = totalPower.toFixed(2) + " € / Tag";
+            document.getElementById("btc-power-cost").innerText = totalPowerCost.toFixed(2) + " € / Tag";
         }
 
         function sellAllBtc() {
-            if (gameState.btcBalance <= 0) { alert("Keine Bitcoins zum Verkaufen vorhanden!"); return; }
-            let eurValue = gameState.btcBalance * btcPriceEur;
-            gameState.money += eurValue;
-            let soldBtc = gameState.btcBalance;
+            let euroValue = gameState.btcBalance * btcPriceEur;
+            if (euroValue <= 0) { alert("Du hast keine Bitcoins zum Verkaufen!"); return; }
+            gameState.money += euroValue;
             gameState.btcBalance = 0;
             updateCryptoDisplay();
             updateUI();
             saveGame();
-            alert(`${soldBtc.toFixed(8)} BTC für ${eurValue.toFixed(2)} € verkauft!`);
+            alert(`Alle Bitcoins für ${euroValue.toFixed(2)} € verkauft!`);
         }
 
         function withdrawPartialBtc() {
-            let amountInput = parseFloat(document.getElementById("btc-withdraw-input").value);
-            if (isNaN(amountInput) || amountInput <= 0) {
-                alert("Bitte gib eine gültige Bitcoin-Menge zum Abheben ein!");
-                return;
-            }
-            if (amountInput > gameState.btcBalance) {
-                alert("Du hast nicht so viele Bitcoins!");
-                return;
-            }
-            let eurValue = amountInput * btcPriceEur;
-            gameState.btcBalance -= amountInput;
-            gameState.money += eurValue;
+            let amount = parseFloat(document.getElementById("btc-withdraw-input").value) || 0;
+            if (amount <= 0 || amount > gameState.btcBalance) { alert("Ungültige Bitcoin-Menge!"); return; }
+            let euroValue = amount * btcPriceEur;
+            gameState.money += euroValue;
+            gameState.btcBalance -= amount;
             document.getElementById("btc-withdraw-input").value = "";
             updateCryptoDisplay();
             updateUI();
             saveGame();
-            alert(`${amountInput.toFixed(8)} BTC erfolgreich abgehoben und ${eurValue.toFixed(2)} € in Euro ausgezahlt!`);
-        }
-
-        function renderFurnitureShop() {
-            const container = document.getElementById("furniture-shop-container");
-            if (!container) return;
-            container.innerHTML = "";
-            furnitureCatalog.forEach(item => {
-                let owned = gameState.furniture[item.id];
-                container.innerHTML += `<div class="shop-item">
-                    <div>
-                        <strong>${item.name}</strong> (${item.cost} € | ${item.daily} €/Tag)
-                        <div class="shop-info" style="color:var(--accent-blue);">Vorteil: +${item.bonusText}</div>
-                    </div>
-                    <button class="action-btn" ${owned ? 'disabled style="background:#30363d;color:#6e7681;"' : ''} onclick="buyFurniture('${item.id}', ${item.cost})">${owned ? 'Gekauft' : 'Kaufen'}</button>
-                </div>`;
-            });
-        }
-
-        function buyFurniture(id, cost) {
-            if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
-            gameState.money -= cost;
-            gameState.furniture[id] = true;
-            renderFurnitureShop();
-            renderRoomVisual();
-            updateUI();
-            saveGame();
-        }
-
-        function toggleContract(id) {
-            gameState.contracts[id] = !gameState.contracts[id];
-            renderContractsShop();
-            renderFoodShop(); // Aktualisiert Rabatte im Shop sofort
-            updateUI();
-            saveGame();
+            alert(`${amount.toFixed(4)} BTC für ${euroValue.toFixed(2)} € verkauft!`);
         }
 
         function takeCustomLoan() {
-            let amount = parseFloat(document.getElementById("custom-loan-input").value);
-            if (isNaN(amount) || amount <= 0) {
-                alert("Bitte gib einen gültigen Kreditbetrag ein!");
-                return;
-            }
-            let newLoan = {
-                id: Date.now(),
-                amount: amount,
-                dailyRate: 0.05,
-                daysLeft: 14
-            };
-            gameState.loansList.push(newLoan);
+            let amount = parseFloat(document.getElementById("custom-loan-input").value) || 0;
+            if (amount <= 0) { alert("Bitte gib einen gültigen Kreditbetrag ein!"); return; }
+            
+            let dailyInterest = amount * 0.02; // 2% tägliche Zinsen
+            let durationDays = 14; // 2 Wochen Laufzeit
+
             gameState.money += amount;
+            gameState.loansList.push({ amount, dailyInterest, durationDays });
             document.getElementById("custom-loan-input").value = "";
             renderLoansTable();
             updateUI();
@@ -1482,256 +1404,199 @@
             alert(`Kredit über ${amount.toFixed(2)} € erfolgreich aufgenommen!`);
         }
 
-        function repayLoan(id) {
-            let index = gameState.loansList.findIndex(l => l.id === id);
-            if (index !== -1) {
-                let loan = gameState.loansList[index];
-                let totalDue = loan.amount * (1 + loan.dailyRate * Math.min(1, loan.daysLeft));
-                if (gameState.money < totalDue) {
-                    alert(`Nicht genug Guthaben zum Tilgen! Benötigt: ${totalDue.toFixed(2)} €`);
-                    return;
-                }
-                gameState.money -= totalDue;
-                gameState.loansList.splice(index, 1);
-                renderLoansTable();
-                updateUI();
-                saveGame();
-                alert("Kredit vollständig getilgt!");
-            }
-        }
-
         function renderLoansTable() {
             const tbody = document.getElementById("loans-tbody");
             if (!tbody) return;
-            if (!gameState.loansList || gameState.loansList.length === 0) {
+            if (gameState.loansList.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #8b949e;">Keine aktiven Kredite vorhanden.</td></tr>`;
                 return;
             }
-            let html = "";
-            gameState.loansList.forEach(loan => {
-                let dailyInterestAmount = loan.amount * loan.dailyRate;
-                html += `<tr>
+            tbody.innerHTML = "";
+            gameState.loansList.forEach((loan, index) => {
+                tbody.innerHTML += `<tr>
                     <td><strong>${loan.amount.toFixed(2)} €</strong></td>
-                    <td style="color: var(--danger);">+${dailyInterestAmount.toFixed(2)} € / Tag (5%)</td>
-                    <td>${loan.daysLeft} Tage</td>
-                    <td><button class="action-btn danger-btn" onclick="repayLoan(${loan.id})" style="padding: 4px 8px;">Tilgen</button></td>
+                    <td style="color:var(--danger);">${loan.dailyInterest.toFixed(2)} € / Tag</td>
+                    <td>${loan.durationDays} Tage</td>
+                    <td><button class="action-btn" onclick="payOffLoan(${index})">Ablösen</button></td>
                 </tr>`;
             });
-            tbody.innerHTML = html;
         }
 
-        function switchTask(newSubject, newRate) {
-            gameState.activeLesson = newSubject;
-            gameState.currentRate = newRate;
-            gameState.timerSeconds = 0;
-            gameState.isTimerRunning = false;
-            
-            document.getElementById("timer-status").innerText = newSubject.toUpperCase() + " (PAUSE)";
-            
-            let buffs = calculateBuffs();
-            let effectiveRate = newRate > 0 ? (newRate + buffs.rateBonus + buffs.baseRateBonus) : 0;
-            document.getElementById("current-rate").innerText = effectiveRate.toFixed(2) + " €";
-            document.getElementById("rate-bonus-text").innerText = (buffs.rateBonus > 0 || buffs.baseRateBonus > 0) ? `(inkl. Buffs)` : "";
-
-            updateStreakDisplay();
-            updateTimerDisplay();
+        function payOffLoan(index) {
+            let loan = gameState.loansList[index];
+            if (gameState.money < loan.amount) { alert("Nicht genug Guthaben, um den Kredit abzulösen!"); return; }
+            gameState.money -= loan.amount;
+            gameState.loansList.splice(index, 1);
+            renderLoansTable();
+            updateUI();
             saveGame();
+            alert("Kredit erfolgreich abgelöst!");
         }
 
-        function checkAutoCurrentLesson(isInitial = false) {
-            let now = new Date();
-            let day = now.getDay();
-            let hourNum = now.getHours();
-            let minuteNum = now.getMinutes();
-            let totalMins = hourNum * 60 + minuteNum;
+        function renderSchedule() {
+            const tbody = document.getElementById("schedule-body");
+            if (!tbody) return;
+            tbody.innerHTML = "";
 
-            let detectedHour = null;
+            const dayNames = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
+
             for (let h = 1; h <= hoursCount; h++) {
-                let t = lessonTimes[h];
-                if (t && t.start && t.end) {
-                    let [startH, startM] = t.start.split(':').map(Number);
-                    let [endH, endM] = t.end.split(':').map(Number);
-                    let startTotal = startH * 60 + startM;
-                    let endTotal = endH * 60 + endM;
-                    if (totalMins >= startTotal && totalMins < endTotal) {
-                        detectedHour = h;
-                        break;
-                    }
-                }
-            }
+                let times = lessonTimes[h] || { start: "00:00", end: "00:00" };
+                let tr = document.createElement("tr");
+                
+                let tdHour = document.createElement("td");
+                tdHour.className = "hour-col";
+                tdHour.innerHTML = `<strong>${h}. Std</strong><br><span style="font-size:0.7rem; color:#8b949e;">${times.start} - ${times.end}</span>`;
+                tdHour.onclick = () => openTimeModal(h);
+                tr.appendChild(tdHour);
 
-            let infoBox = document.getElementById("auto-detected-info");
-            if (day >= 1 && day <= 5 && detectedHour) {
-                let dayIndex = day - 1;
-                let lesson = timetableData[detectedHour][dayIndex];
-                let currentHourKey = `${day}-${detectedHour}`;
-
-                if (gameState.lastDetectedHourKey !== currentHourKey) {
-                    gameState.lastDetectedHourKey = currentHourKey;
-                    if (!isInitial) {
-                        switchTask(lesson.subject, lesson.rate !== undefined ? lesson.rate : 0.50);
-                    } else if (!gameState.activeLesson) {
-                        gameState.activeLesson = lesson.subject;
-                        gameState.currentRate = lesson.rate !== undefined ? lesson.rate : 0.50;
-                    }
+                for (let d = 0; d < daysCount; d++) {
+                    let td = document.createElement("td");
+                    let lesson = timetableData[h][d] || { subject: "Freistunde", room: "-", teacher: "-", rate: 0 };
+                    
+                    td.className = "schedule-cell";
+                    td.innerHTML = `<div class="cell-subject">${lesson.subject}</div>
+                                    <div class="cell-details">${lesson.room} | ${lesson.teacher}</div>
+                                    <div style="font-size:0.7rem; color:var(--accent-green);">+${lesson.rate.toFixed(2)} €/m</div>`;
+                    
+                    td.onclick = () => {
+                        if (gameState.editMode) {
+                            openEditModal(h, d);
+                        } else {
+                            selectLesson(h, d);
+                        }
+                    };
+                    tr.appendChild(td);
                 }
-                infoBox.innerText = `Erkannt: ${detectedHour}. Stunde (${lesson.subject}) - Bereit`;
-            } else {
-                infoBox.innerText = `Keine Schulstunde aktiv`;
+                tbody.appendChild(tr);
             }
         }
 
-        function toggleTimer() {
-            if (gameState.isTimerRunning) {
-                gameState.isTimerRunning = false;
-                document.getElementById("timer-status").innerText = (gameState.activeLesson || "BEREIT").toUpperCase() + " (PAUSE)";
-            } else {
-                if (!gameState.activeLesson) {
-                    gameState.activeLesson = "Unterricht";
-                    gameState.currentRate = 0.50;
-                }
-                gameState.isTimerRunning = true;
-                gameState.lastTickTimestamp = Date.now();
-                document.getElementById("timer-status").innerText = gameState.activeLesson.toUpperCase();
-            }
-            updateStreakDisplay();
-            saveGame();
+        function toggleEditMode() {
+            gameState.editMode = document.getElementById("edit-mode-toggle").checked;
         }
 
-        function startFreistunde() {
-            switchTask("Freistunde", 0);
-            document.getElementById("timer-status").innerText = "FREISTUNDE (0 €)";
-            saveGame();
+        function openEditModal(h, d) {
+            gameState.currentEditCoords = { hour: h, day: d };
+            let lesson = timetableData[h][d];
+            document.getElementById("modal-subject").value = lesson.subject;
+            document.getElementById("modal-room").value = lesson.room;
+            document.getElementById("modal-teacher").value = lesson.teacher;
+            document.getElementById("modal-rate").value = lesson.rate;
+            document.getElementById("edit-modal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("edit-modal").style.display = "none";
+        }
+
+        function saveLessonEdit() {
+            let h = gameState.currentEditCoords.hour;
+            let d = gameState.currentEditCoords.day;
+            if (h !== null && d !== null) {
+                timetableData[h][d] = {
+                    subject: document.getElementById("modal-subject").value || "Freistunde",
+                    room: document.getElementById("modal-room").value || "-",
+                    teacher: document.getElementById("modal-teacher").value || "-",
+                    rate: parseFloat(document.getElementById("modal-rate").value) || 0
+                };
+                renderSchedule();
+                renderGradesTable();
+                closeModal();
+                saveGame();
+            }
+        }
+
+        function openTimeModal(h) {
+            gameState.currentTimeEditHour = h;
+            let times = lessonTimes[h] || { start: "00:00", end: "00:00" };
+            document.getElementById("modal-start-time").value = times.start;
+            document.getElementById("modal-end-time").value = times.end;
+            document.getElementById("time-modal").style.display = "flex";
+        }
+
+        function closeTimeModal() {
+            document.getElementById("time-modal").style.display = "none";
+        }
+
+        function saveTimeEdit() {
+            let h = gameState.currentTimeEditHour;
+            if (h !== null) {
+                let start = document.getElementById("modal-start-time").value;
+                let end = document.getElementById("modal-end-time").value;
+                lessonTimes[h] = { start, end };
+                renderSchedule();
+                closeTimeModal();
+                saveGame();
+            }
+        }
+
+        function selectLesson(h, d) {
+            let lesson = timetableData[h][d];
+            gameState.activeLesson = lesson.subject;
+            let buffs = calculateBuffs();
+            gameState.currentRate = lesson.rate + buffs.baseRateBonus;
+            
+            document.getElementById("auto-detected-info").innerText = `Ausgewählt: ${lesson.subject} (${lesson.room}, ${lesson.teacher})`;
+            document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2);
+            document.getElementById("rate-box-text").innerText = buffs.rateBonus > 0 ? `(+${buffs.rateBonus.toFixed(2)} € Möbel-Boost)` : "";
+            
+            // Streak laden
+            let key = `${d}-${lesson.subject}`;
+            let currentStreak = gameState.streaks[key] || 0;
+            updateStreakDisplay(currentStreak);
+        }
+
+        function updateStreakDisplay(streak) {
+            let buffs = calculateBuffs();
+            let bonus = streak * 0.05 * buffs.streakMultiplier;
+            document.getElementById("streak-info").innerHTML = `Aktuelle Melde-Streak (dieses Fach): <strong>${streak}x</strong> (Bonus: +${bonus.toFixed(2)} €/Min)`;
         }
 
         function raiseHand() {
             if (!gameState.activeLesson || gameState.activeLesson.toLowerCase().includes("freistunde")) {
-                alert("Du kannst dich in Freistunden oder ohne aktives Fach nicht melden!");
+                alert("Wähle zuerst eine gültige Unterrichtsstunde aus!");
                 return;
             }
-            let subjectKey = gameState.activeLesson.toLowerCase();
-            let todayKey = new Date().toDateString();
-
-            if (!gameState.streaks[todayKey]) gameState.streaks[todayKey] = {};
-            if (!gameState.streaks[todayKey][subjectKey]) gameState.streaks[todayKey][subjectKey] = 0;
-
-            gameState.streaks[todayKey][subjectKey]++;
-            let streakCount = gameState.streaks[todayKey][subjectKey];
-
+            // Finde aktuellen Tag und Fach heraus
             let buffs = calculateBuffs();
-            let bonusMoney = 0.20 * streakCount * buffs.streakMultiplier;
-            gameState.pendingEarnings += bonusMoney;
-            gameState.totalEarnings += bonusMoney;
-
-            updateStreakDisplay();
-            updateUI();
-            saveGame();
-            
-            alert(`Gut mitgearbeitet! Streak: ${streakCount}x | Bonus: +${bonusMoney.toFixed(2)} €`);
-        }
-
-        function updateStreakDisplay() {
-            let subjectKey = (gameState.activeLesson || "allgemein").toLowerCase();
-            let todayKey = new Date().toDateString();
-            let streakCount = (gameState.streaks[todayKey] && gameState.streaks[todayKey][subjectKey]) ? gameState.streaks[todayKey][subjectKey] : 0;
-            let buffs = calculateBuffs();
-            let currentBonus = 0.20 * streakCount * buffs.streakMultiplier;
-
-            document.getElementById("streak-info").innerHTML = 
-                `Aktuelle Melde-Streak (${gameState.activeLesson || "Kein Fach"}): <strong>${streakCount}x</strong> (Bonus: +${currentBonus.toFixed(2)} €)`;
-        }
-
-        function endDay() {
-            if (gameState.housing.name !== "Elternhaus") {
-                let hasWater = Object.keys(gameState.utilities).some(id => id.includes("water") && gameState.utilities[id]);
-                let hasPower = Object.keys(gameState.utilities).some(id => id.includes("power") && gameState.utilities[id]);
-                if (!hasWater || !hasPower) {
-                    alert("⚠️ Achtung! Du hast keinen aktiven Wasser- und/oder Stromvertrag angemeldet!");
-                    return;
+            // Wir erhöhen einfach die Streak für das aktuell aktive Fach
+            let foundKey = null;
+            for (let d = 0; d < daysCount; d++) {
+                for (let h = 1; h <= hoursCount; h++) {
+                    if (timetableData[h][d].subject === gameState.activeLesson) {
+                        foundKey = `${d}-${gameState.activeLesson}`;
+                        break;
+                    }
                 }
+                if (foundKey) break;
             }
+            if (!foundKey) foundKey = `0-${gameState.activeLesson}`;
 
-            let gross = gameState.pendingEarnings;
-            let buffs = calculateBuffs();
+            gameState.streaks[foundKey] = (gameState.streaks[foundKey] || 0) + 1;
+            let streak = gameState.streaks[foundKey];
+            let streakBonus = streak * 0.05 * buffs.streakMultiplier;
             
-            let fixedTotal = gameState.housing.rent;
-            utilitiesCatalog.forEach(item => { if (gameState.utilities[item.id]) fixedTotal += item.daily; });
-            furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
-            contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
-            insuranceCatalog.forEach(item => { if (gameState.insurances[item.id]) fixedTotal += item.daily; });
-            vehicleCatalog.forEach(item => { if (gameState.vehicles[item.id]) fixedTotal += item.daily; });
-            
-            miningCatalog.forEach(rig => {
-                let count = gameState.miningRigs[rig.id] || 0;
-                fixedTotal += rig.powerCost * count;
-            });
-
-            let totalLoanInterest = 0;
-            gameState.loansList.forEach(loan => {
-                totalLoanInterest += (loan.amount * loan.dailyRate);
-                loan.daysLeft = Math.max(0, loan.daysLeft - 1);
-            });
-            fixedTotal += totalLoanInterest;
-
-            let taxRate = buffs.taxRate;
-            let taxes = gross * taxRate;
-            let netEarnings = gross - taxes;
-
-            gameState.money += netEarnings;
-            gameState.money -= fixedTotal;
-            gameState.totalTaxes += taxes;
-
-            let foodSpentToday = gameState.dailyFoodSpent;
-
-            let payoutEntry = {
-                date: new Date().toLocaleTimeString() + " (" + new Date().toLocaleDateString() + ")",
-                gross: gross,
-                taxes: taxes,
-                net: netEarnings,
-                fixed: fixedTotal,
-                foodSpent: foodSpentToday
-            };
-            gameState.payoutHistory.unshift(payoutEntry);
-
-            // Zurücksetzen für den nächsten Tag
-            gameState.dailyFoodSpent = 0;
-            gameState.pendingEarnings = 0;
-            gameState.timerSeconds = 0;
-            gameState.isTimerRunning = false;
-
-            renderLoansTable();
-            updateUI();
+            gameState.currentRate += streakBonus;
+            document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2);
+            updateStreakDisplay(streak);
+            alert(`Meldung erfolgreich! Streak erhöht auf ${streak}x. Verdienst-Rate erhöht!`);
             saveGame();
-
-            alert(`Tag beendet & abgerechnet!\n\nBrutto: ${gross.toFixed(2)} €\nSteuern: -${taxes.toFixed(2)} €\nNetto: +${netEarnings.toFixed(2)} €\nFixkosten, Verträge & Versicherungen: -${fixedTotal.toFixed(2)} €\n🍔 Ausgaben für Essen & Trinken heute: ${foodSpentToday.toFixed(2)} €`);
         }
 
-        function renderPayoutHistory() {
-            const container = document.getElementById("payout-log-container");
-            if (!gameState.payoutHistory || gameState.payoutHistory.length === 0) {
-                container.innerHTML = `<div style="color: #8b949e; text-align: center;">Noch keine Abrechnungen erfolgt.</div>`;
-                return;
-            }
-            let html = "";
-            gameState.payoutHistory.forEach(entry => {
-                let foodInfo = entry.foodSpent !== undefined ? ` | Essen/Trinken: <strong style="color:var(--accent-orange);">${entry.foodSpent.toFixed(2)}€</strong>` : "";
-                html += `<div class="log-entry">
-                    <span>🕒 ${entry.date}</span>
-                    <span>Brutto: <strong>${entry.gross.toFixed(2)}€</strong> | Steuer: <strong style="color:var(--danger)">-${entry.taxes.toFixed(2)}€</strong> | Netto: <strong style="color:var(--accent-green)">+${entry.net.toFixed(2)}€</strong> | Fix: <strong style="color:var(--danger)">-${entry.fixed.toFixed(2)}€</strong>${foodInfo}</span>
-                </div>`;
-            });
-            container.innerHTML = html;
+        function startFreistunde() {
+            gameState.activeLesson = "Freistunde";
+            gameState.currentRate = 0;
+            document.getElementById("auto-detected-info").innerText = "Aktueller Status: Freistunde (Kein Verdienst)";
+            document.getElementById("current-rate").innerText = "0.00";
+            document.getElementById("streak-info").innerHTML = `Freistunde – nutze die Zeit zum Entspannen oder Arbeiten.`;
         }
 
-        function logRealSleep() {
-            let hours = parseFloat(document.getElementById("sleep-hours-input").value);
-            if (isNaN(hours) || hours <= 0) { alert("Bitte gültige Stunden eingeben!"); return; }
-            let buffs = calculateBuffs();
-            let restore = Math.min(100, hours * 12.5 * buffs.sleepBonus);
-            gameState.sleep = restore;
-            updateUI();
-            saveGame();
-            alert(`Schlaf eingetragen! Energie auf ${restore}% aufgeladen.`);
+        function toggleTimer() {
+            gameState.isTimerRunning = !gameState.isTimerRunning;
+            let statusEl = document.getElementById("timer-status");
+            statusEl.innerText = gameState.isTimerRunning ? "LÄUFT" : "GESTOPPT";
+            statusEl.style.color = gameState.isTimerRunning ? "var(--accent-green)" : "var(--danger)";
         }
 
         function updateTimerDisplay() {
@@ -1740,15 +1605,218 @@
             document.getElementById("timer-clock").innerText = 
                 (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
             document.getElementById("session-earned").innerText = gameState.pendingEarnings.toFixed(2) + " €";
-            document.getElementById("header-pending").innerText = gameState.pendingEarnings.toFixed(2) + " €";
+        }
 
-            let progressDeg = (secs / 60) * 360;
-            let circle = document.getElementById("timer-circle");
-            if (gameState.isTimerRunning) {
-                circle.style.background = `conic-gradient(var(--accent-blue) ${progressDeg}deg, var(--border) ${progressDeg}deg)`;
-            } else {
-                circle.style.background = `conic-gradient(var(--border) 360deg, var(--border) 360deg)`;
+        function checkAutoCurrentLesson(force) {
+            let now = new Date();
+            let day = now.getDay() - 1; // 0 = Montag, 4 = Freitag
+            if (day < 0 || day > 4) {
+                if (force) document.getElementById("auto-detected-info").innerText = "Wochenende – Keine Schule";
+                return;
             }
+            let currentTimeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+
+            for (let h = 1; h <= hoursCount; h++) {
+                let times = lessonTimes[h];
+                if (times && currentTimeStr >= times.start && currentTimeStr <= times.end) {
+                    let hourKey = `${day}-${h}`;
+                    if (force || gameState.lastDetectedHourKey !== hourKey) {
+                        gameState.lastDetectedHourKey = hourKey;
+                        selectLesson(h, day);
+                    }
+                    return;
+                }
+            }
+        }
+
+        function logRealSleep() {
+            let hours = parseFloat(document.getElementById("sleep-hours-input").value) || 0;
+            if (hours <= 0) { alert("Bitte gib eine gültige Stundenzahl ein!"); return; }
+            
+            let buffs = calculateBuffs();
+            let recovery = hours * 10 * buffs.sleepBonus;
+            gameState.sleep = Math.min(100, gameState.sleep + recovery);
+            document.getElementById("sleep-hours-input").value = "";
+            updateUI();
+            saveGame();
+            alert(`Schlaf erfolgreich eingetragen! Energie um +${Math.round(recovery)}% aufgeladen.`);
+        }
+
+        function startCustomActivity() {
+            let input = document.getElementById("custom-activity-input").value.trim();
+            if (!input) { alert("Bitte gib eine Aktivität ein!"); return; }
+            gameState.activeLesson = input;
+            gameState.currentRate = 0.50; // Standard Verdienst für eigene Sachen
+            document.getElementById("auto-detected-info").innerText = `Eigene Aktivität: ${input}`;
+            document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2);
+            document.getElementById("custom-activity-input").value = "";
+            alert(`Aktivität "${input}" gestartet! Starte den Timer im Dashboard.`);
+        }
+
+        function logPastActivityWithTime() {
+            let title = document.getElementById("past-activity-input").value.trim();
+            let timeStr = document.getElementById("past-time-input").value;
+            if (!title) { alert("Bitte gib eine Aktivität ein!"); return; }
+            
+            let parts = timeStr.split(":");
+            let minutes = (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
+            if (minutes <= 0) { alert("Bitte gib eine gültige Zeitdauer ein!"); return; }
+
+            let earned = (minutes / 60) * 12.00; // Fester Stundensatz für nachträgliche Arbeit
+            gameState.pendingEarnings += earned;
+            gameState.totalEarnings += earned;
+            
+            document.getElementById("past-activity-input").value = "";
+            updateUI();
+            saveGame();
+            alert(`Aktivität "${title}" (${minutes} Min.) nachgetragen!\n+${earned.toFixed(2)} € wurden deinem Zwischenspeicher gutgeschrieben.`);
+        }
+
+        function renderGradesTable() {
+            const tbody = document.getElementById("grades-tbody");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            // Alle Fächer aus dem Stundenplan sammeln
+            let subjectsMap = {};
+            for (let h = 1; h <= hoursCount; h++) {
+                for (let d = 0; d < daysCount; d++) {
+                    let sub = timetableData[h][d].subject;
+                    if (sub && sub !== "Freistunde") {
+                        subjectsMap[sub] = true;
+                    }
+                }
+            }
+
+            let totalPoints = 0;
+            let countSubjects = 0;
+
+            Object.keys(subjectsMap).forEach(sub => {
+                if (!gameState.grades[sub]) {
+                    gameState.grades[sub] = { type: "GK", written: 10, oral: 10 };
+                }
+                let g = gameState.grades[sub];
+                let Schnitt = (g.written * 0.5 + g.oral * 0.5).toFixed(1);
+                
+                totalPoints += parseFloat(Schnitt);
+                countSubjects++;
+
+                tbody.innerHTML += `<tr>
+                    <td><strong>${sub}</strong></td>
+                    <td>
+                        <select onchange="updateGradeType('${sub}', this.value)" style="background:#0d1117; color:#fff; border:1px solid var(--border); padding:4px; border-radius:4px;">
+                            <option value="GK" ${g.type==='GK'?'selected':''}>GK</option>
+                            <option value="LK" ${g.type==='LK'?'selected':''}>LK</option>
+                        </select>
+                    </td>
+                    <td><input type="number" min="0" max="15" value="${g.written}" onchange="updateGradeVal('${sub}', 'written', this.value)" style="width:60px; padding:4px; background:#0d1117; color:#fff; border:1px solid var(--border); text-align:center;"></td>
+                    <td><input type="number" min="0" max="15" value="${g.oral}" onchange="updateGradeVal('${sub}', 'oral', this.value)" style="width:60px; padding:4px; background:#0d1117; color:#fff; border:1px solid var(--border); text-align:center;"></td>
+                    <td style="font-weight:bold; color:var(--accent-blue);">${Schnitt} Pkt.</td>
+                </tr>`;
+            });
+
+            let overall = countSubjects > 0 ? (totalPoints / countSubjects).toFixed(2) : "-";
+            document.getElementById("overall-grade-display").innerText = overall !== "-" ? `${overall} Punkte` : "-";
+        }
+
+        function updateGradeType(sub, val) {
+            if (gameState.grades[sub]) {
+                gameState.grades[sub].type = val;
+                saveGame();
+            }
+        }
+
+        function updateGradeVal(sub, field, val) {
+            if (gameState.grades[sub]) {
+                gameState.grades[sub][field] = Math.max(0, Math.min(15, parseFloat(val) || 0));
+                renderGradesTable();
+                saveGame();
+            }
+        }
+
+        function endDay() {
+            let buffs = calculateBuffs();
+            
+            // Fixkosten berechnen
+            let housingCost = gameState.housing.rent;
+            let utilitiesCost = 0;
+            utilitiesCatalog.forEach(u => { if (gameState.utilities[u.id]) utilitiesCost += u.daily; });
+            
+            let furnitureCost = 0;
+            furnitureCatalog.forEach(f => { if (gameState.furniture[f.id]) furnitureCost += f.daily; });
+
+            let contractsCost = 0;
+            contractsCatalog.forEach(c => { if (gameState.contracts[c.id]) contractsCost += c.daily; });
+
+            let insuranceCost = 0;
+            insuranceCatalog.forEach(i => { if (gameState.insurances[i.id]) insuranceCost += i.daily; });
+
+            let vehiclesCost = 0;
+            vehicleCatalog.forEach(v => { if (gameState.vehicles[v.id]) vehiclesCost += v.daily; });
+
+            let miningPowerCost = 0;
+            miningCatalog.forEach(m => {
+                let count = gameState.miningRigs[m.id] || 0;
+                miningPowerCost += m.powerCost * count;
+            });
+
+            let totalFixedCosts = housingCost + utilitiesCost + furnitureCost + contractsCost + insuranceCost + vehiclesCost + miningPowerCost;
+
+            // Kreditzinsen abziehen
+            let totalLoanInterest = 0;
+            gameState.loansList.forEach(loan => {
+                totalLoanInterest += loan.dailyInterest;
+                loan.durationDays = Math.max(0, loan.durationDays - 1);
+            });
+            // Abgelaufene Kredite entfernen oder verrechnen
+            gameState.loansList = gameState.loansList.filter(loan => loan.durationDays > 0);
+
+            let grossPending = gameState.pendingEarnings;
+            let taxRate = buffs.taxRate;
+            let taxes = grossPending * taxRate;
+            let netEarnings = grossPending - taxes;
+
+            gameState.money += netEarnings;
+            gameState.money -= totalFixedCosts;
+            gameState.money -= totalLoanInterest;
+
+            gameState.totalTaxes += taxes;
+            gameState.pendingEarnings = 0;
+
+            // Logeintrag erstellen
+            let logEntry = {
+                date: new Date().toLocaleDateString(),
+                gross: grossPending,
+                taxes: taxes,
+                fixed: totalFixedCosts,
+                interest: totalLoanInterest,
+                net: netEarnings - totalFixedCosts - totalLoanInterest
+            };
+            gameState.payoutHistory.unshift(logEntry);
+
+            // Bedürfnisse zurücksetzen für den neuen Tag
+            gameState.sleep = Math.min(100, gameState.sleep + 40);
+            gameState.dailyFoodSpent = 0;
+
+            updateUI();
+            saveGame();
+            alert(`Tag erfolgreich beendet!\n\nBrutto: +${grossPending.toFixed(2)} €\nSteuern (${(taxRate*100).toFixed(0)}%): -${taxes.toFixed(2)} €\nFixkosten & Zinsen: -${(totalFixedCosts + totalLoanInterest).toFixed(2)} €\n\nDein Guthaben wurde aktualisiert!`);
+        }
+
+        function renderPayoutHistory() {
+            const container = document.getElementById("payout-log-container");
+            if (!container) return;
+            if (gameState.payoutHistory.length === 0) {
+                container.innerHTML = `<div style="color: #8b949e; text-align: center;">Noch keine Abrechnungen erfolgt.</div>`;
+                return;
+            }
+            container.innerHTML = "";
+            gameState.payoutHistory.forEach(entry => {
+                container.innerHTML += `<div class="log-entry">
+                    <span>${entry.date} – Brutto: <strong class="money">+${entry.gross.toFixed(2)} €</strong> | Steuern: <span style="color:var(--danger)">-${entry.taxes.toFixed(2)} €</span></span>
+                    <span>Fixkosten: -${(entry.fixed + entry.interest).toFixed(2)} € | Netto: <strong class="money">${entry.net.toFixed(2)} €</strong></span>
+                </div>`;
+            });
         }
 
         function updateUI() {
@@ -1757,249 +1825,43 @@
             document.getElementById("header-sleep").innerText = Math.round(gameState.sleep) + "%";
 
             document.getElementById("val-sleep").innerText = Math.round(gameState.sleep) + "%";
-            document.getElementById("fill-sleep").style.width = gameState.sleep + "%";
+            document.getElementById("fill-sleep").style.width = Math.round(gameState.sleep) + "%";
+
             document.getElementById("val-hunger").innerText = Math.round(gameState.hunger) + "%";
-            document.getElementById("fill-hunger").style.width = gameState.hunger + "%";
+            document.getElementById("fill-hunger").style.width = Math.round(gameState.hunger) + "%";
+
             document.getElementById("val-thirst").innerText = Math.round(gameState.thirst) + "%";
-            document.getElementById("fill-thirst").style.width = gameState.thirst + "%";
+            document.getElementById("fill-thirst").style.width = Math.round(gameState.thirst) + "%";
 
-            let fixedTotal = gameState.housing.rent;
-            utilitiesCatalog.forEach(item => { if (gameState.utilities[item.id]) fixedTotal += item.daily; });
-            furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
-            contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
-            insuranceCatalog.forEach(item => { if (gameState.insurances[item.id]) fixedTotal += item.daily; });
-            vehicleCatalog.forEach(item => { if (gameState.vehicles[item.id]) fixedTotal += item.daily; });
-            
-            miningCatalog.forEach(rig => {
-                let count = gameState.miningRigs[rig.id] || 0;
-                fixedTotal += rig.powerCost * count;
+            // Fixkosten im Dashboard berechnen & anzeigen
+            let totalFixed = gameState.housing.rent;
+            utilitiesCatalog.forEach(u => { if (gameState.utilities[u.id]) totalFixed += u.daily; });
+            furnitureCatalog.forEach(f => { if (gameState.furniture[f.id]) totalFixed += f.daily; });
+            contractsCatalog.forEach(c => { if (gameState.contracts[c.id]) totalFixed += c.daily; });
+            insuranceCatalog.forEach(i => { if (gameState.insurances[i.id]) totalFixed += i.daily; });
+            vehicleCatalog.forEach(v => { if (gameState.vehicles[v.id]) totalFixed += v.daily; });
+            miningCatalog.forEach(m => {
+                let count = gameState.miningRigs[m.id] || 0;
+                totalFixed += m.powerCost * count;
             });
-            
-            gameState.loansList.forEach(loan => { fixedTotal += (loan.amount * loan.dailyRate); });
+            document.getElementById("dash-total-fixed").innerText = totalFixed.toFixed(2) + " €";
 
-            document.getElementById("dash-total-fixed").innerText = fixedTotal.toFixed(2) + " €";
+            // Statistik-Tab aktualisieren
             document.getElementById("stat-earnings").innerText = gameState.totalEarnings.toFixed(2) + " €";
             document.getElementById("stat-taxes").innerText = gameState.totalTaxes.toFixed(2) + " €";
 
             let buffs = calculateBuffs();
-            document.getElementById("tax-rate-display").innerText = `(${(buffs.taxRate * 100).toFixed(0)}% aktiv)`;
+            document.getElementById("tax-rate-display").innerText = `(${(buffs.taxRate * 100).toFixed(0)}% Tarif)`;
 
-            let activeBuffsHTML = "";
-            let hasAnyBuff = false;
-            if (buffs.rateBonus > 0) { activeBuffsHTML += `<span class="buff-tag">+${buffs.rateBonus.toFixed(2)} €/Min Verdienst-Boost</span>`; hasAnyBuff = true; }
-            if (buffs.baseRateBonus > 0) { activeBuffsHTML += `<span class="buff-tag">+${buffs.baseRateBonus.toFixed(2)} €/Min Grundverdienst</span>`; hasAnyBuff = true; }
-            if (buffs.passiveIncome > 0) { activeBuffsHTML += `<span class="buff-tag">+${buffs.passiveIncome.toFixed(2)} €/Min Passiv</span>`; hasAnyBuff = true; }
-            if (buffs.sleepBonus > 1.0) { activeBuffsHTML += `<span class="buff-tag">+${Math.round((buffs.sleepBonus - 1) * 100)}% Schlaf-Regeneration</span>`; hasAnyBuff = true; }
-            if (buffs.streakMultiplier > 1) { activeBuffsHTML += `<span class="buff-tag">+${buffs.streakMultiplier}x Melde-Multiplikator</span>`; hasAnyBuff = true; }
-            if (buffs.shopDiscount < 1.0) { activeBuffsHTML += `<span class="buff-tag">-${Math.round((1 - buffs.shopDiscount) * 100)}% Shop-Rabatt</span>`; hasAnyBuff = true; }
-            if (buffs.freeTransit) { activeBuffsHTML += `<span class="buff-tag">Deutschlandticket (ÖPNV frei)</span>`; hasAnyBuff = true; }
-            if (buffs.taxRate < 0.15) { activeBuffsHTML += `<span class="buff-tag">-${Math.round((0.15 - buffs.taxRate) * 100)}% Steuersatz-Rabatt</span>`; hasAnyBuff = true; }
-
-            document.getElementById("active-buffs-list").innerHTML = hasAnyBuff ? activeBuffsHTML : "Keine aktiven Boni";
-            updateTimerDisplay();
-        }
-
-        function renderSchedule() {
-            const tbody = document.getElementById("schedule-body");
-            if(!tbody) return;
-            tbody.innerHTML = "";
-            for (let hour = 1; hour <= hoursCount; hour++) {
-                let times = lessonTimes[hour] || { start: "00:00", end: "00:00" };
-                let row = `<tr>
-                    <td class="hour-col" onclick="handleHourClick(${hour})">
-                        <strong>${hour}</strong><br><span style="font-size:0.65rem; color:#8b949e;">${times.start}-${times.end}</span>
-                    </td>`;
-                for (let d = 0; d < daysCount; d++) {
-                    let cellData = timetableData[hour][d];
-                    row += `<td class="schedule-cell" onclick="handleCellClick(${hour}, ${d})">
-                        <div class="cell-subject">${cellData.subject}</div>
-                        <div class="cell-details">${cellData.room} | ${cellData.rate}€/m</div>
-                    </td>`;
-                }
-                row += `</tr>`;
-                tbody.innerHTML += row;
+            // Aktive Boni Box im Dashboard
+            let buffsContainer = document.getElementById("active-buffs-list");
+            if (buffsContainer) {
+                let tags = [];
+                furnitureCatalog.forEach(f => { if (gameState.furniture[f.id]) tags.push(`<span class="buff-tag">📦 ${f.name}</span>`); });
+                contractsCatalog.forEach(c => { if (gameState.contracts[c.id]) tags.push(`<span class="buff-tag">📜 ${c.name}</span>`); });
+                insuranceCatalog.forEach(i => { if (gameState.insurances[i.id]) tags.push(`<span class="buff-tag">🛡️ ${i.name}</span>`); });
+                buffsContainer.innerHTML = tags.length > 0 ? tags.join(" ") : "Keine aktiven Boni";
             }
-        }
-
-        function toggleEditMode() {
-            gameState.editMode = document.getElementById("edit-mode-toggle").checked;
-            renderSchedule();
-        }
-
-        function handleHourClick(hour) {
-            if (gameState.editMode) {
-                gameState.currentTimeEditHour = hour;
-                let t = lessonTimes[hour] || { start: "07:45", end: "08:30" };
-                document.getElementById("modal-start-time").value = t.start;
-                document.getElementById("modal-end-time").value = t.end;
-                document.getElementById("time-modal-title").innerText = `${hour}. Stunde - Uhrzeit anpassen`;
-                document.getElementById("time-modal").style.display = "flex";
-            }
-        }
-
-        function saveTimeEdit() {
-            let hour = gameState.currentTimeEditHour;
-            let start = document.getElementById("modal-start-time").value;
-            let end = document.getElementById("modal-end-time").value;
-            if (hour && start && end) {
-                lessonTimes[hour] = { start, end };
-                closeTimeModal();
-                renderSchedule();
-                saveGame();
-            }
-        }
-
-        function closeTimeModal() { document.getElementById("time-modal").style.display = "none"; }
-        function closeModal() { document.getElementById("edit-modal").style.display = "none"; }
-
-        function handleCellClick(hour, day) {
-            if (gameState.editMode) {
-                gameState.currentEditCoords = { hour, day };
-                let cellData = timetableData[hour][day];
-                document.getElementById("modal-subject").value = cellData.subject;
-                document.getElementById("modal-room").value = cellData.room;
-                document.getElementById("modal-teacher").value = cellData.teacher;
-                document.getElementById("modal-rate").value = cellData.rate !== undefined ? cellData.rate : 0.50;
-                document.getElementById("edit-modal").style.display = "flex";
-            } else {
-                let cellData = timetableData[hour][day];
-                switchTask(cellData.subject, cellData.rate !== undefined ? cellData.rate : 0.50);
-            }
-        }
-
-        function saveLessonEdit() {
-            let { hour, day } = gameState.currentEditCoords;
-            let sub = document.getElementById("modal-subject").value || "Freistunde";
-            let rateVal = sub.toLowerCase().includes("freistunde") ? 0 : parseFloat(document.getElementById("modal-rate").value) || 0.50;
-            
-            timetableData[hour][day] = {
-                subject: sub,
-                room: document.getElementById("modal-room").value || "-",
-                teacher: document.getElementById("modal-teacher").value || "-",
-                rate: rateVal
-            };
-            closeModal();
-            renderSchedule();
-            renderGradesTable();
-            saveGame();
-        }
-
-        function getUniqueSubjectsList() {
-            let subjectsMap = new Map();
-            for (let h = 1; h <= hoursCount; h++) {
-                for (let d = 0; d < daysCount; d++) {
-                    let item = timetableData[h][d];
-                    if (item && item.subject && item.subject.toLowerCase() !== "freistunde" && item.subject !== "-") {
-                        let name = item.subject.trim();
-                        let isLk = name === name.toUpperCase() || item.rate >= 0.55; 
-                        subjectsMap.set(name, { name, isLk });
-                    }
-                }
-            }
-            return Array.from(subjectsMap.values());
-        }
-
-        function parsePointsString(str) {
-            if (!str) return [];
-            return str.split(',').map(s => {
-                let num = parseFloat(s.trim().replace(',', '.'));
-                return (!isNaN(num) && num >= 0 && num <= 15) ? num : null;
-            }).filter(n => n !== null);
-        }
-
-        function pointsToGrade(points) {
-            if (points === null || isNaN(points)) return "-";
-            let grade = 1.0 + (15 - points) * (5.0 / 14.0);
-            if (grade < 1.0) grade = 1.0;
-            if (grade > 6.0) grade = 6.0;
-            return grade.toFixed(2);
-        }
-
-        function calculateSubjectPointsAverage(writtenStr, oralStr) {
-            let written = parsePointsString(writtenStr);
-            let oral = parsePointsString(oralStr);
-            let all = [...written, ...oral];
-            if (all.length === 0) return null;
-            let avgW = written.length > 0 ? written.reduce((a, b) => a + b, 0) / written.length : null;
-            let avgO = oral.length > 0 ? oral.reduce((a, b) => a + b, 0) / oral.length : null;
-            if (avgW !== null && avgO !== null) return (avgW + avgO) / 2;
-            return all.reduce((a, b) => a + b, 0) / all.length;
-        }
-
-        function updateSubjectGrade(subjectName, type, value) {
-            if (!gameState.grades[subjectName]) gameState.grades[subjectName] = { written: '', oral: '' };
-            gameState.grades[subjectName][type] = value;
-            renderGradesTable();
-            saveGame();
-        }
-
-        function renderGradesTable() {
-            const tbody = document.getElementById("grades-tbody");
-            if (!tbody) return;
-            tbody.innerHTML = "";
-            let subjects = getUniqueSubjectsList();
-            let allPoints = [];
-
-            if (subjects.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#8b949e;">Keine Fächer gefunden!</td></tr>`;
-                document.getElementById("overall-grade-display").innerText = "-";
-                return;
-            }
-
-            subjects.forEach(subj => {
-                if (!gameState.grades[subj.name]) gameState.grades[subj.name] = { written: '', oral: '' };
-                let gData = gameState.grades[subj.name];
-                let ptsAvg = calculateSubjectPointsAverage(gData.written, gData.oral);
-                if (ptsAvg !== null) allPoints.push(ptsAvg);
-                let gradeStr = ptsAvg !== null ? pointsToGrade(ptsAvg) : "-";
-                let ptsStr = ptsAvg !== null ? `${ptsAvg.toFixed(1)} NP` : "-";
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${subj.name}</strong></td>
-                        <td>${subj.isLk ? '<span class="badge badge-lk">LK</span>' : '<span class="badge">GK</span>'}</td>
-                        <td><input type="text" value="${gData.written}" placeholder="z.B. 13, 11" oninput="updateSubjectGrade('${subj.name}', 'written', this.value)"></td>
-                        <td><input type="text" value="${gData.oral}" placeholder="z.B. 14, 12" oninput="updateSubjectGrade('${subj.name}', 'oral', this.value)"></td>
-                        <td><strong>${ptsStr} (${gradeStr})</strong></td>
-                    </tr>
-                `;
-            });
-
-            let overallDisplay = document.getElementById("overall-grade-display");
-            if (allPoints.length > 0) {
-                let overallPts = allPoints.reduce((a, b) => a + b, 0) / allPoints.length;
-                overallDisplay.innerText = `${overallPts.toFixed(1)} NP (${pointsToGrade(overallPts)})`;
-            } else {
-                overallDisplay.innerText = "-";
-            }
-        }
-
-        function startCustomActivity() {
-            let activityName = document.getElementById("custom-activity-input").value.trim();
-            if(!activityName) { alert("Bitte gib eine Aktivität ein!"); return; }
-            switchTask(activityName, 0.50);
-            document.getElementById("custom-activity-input").value = "";
-            saveGame();
-            alert(`"${activityName}" als aktive Sache geladen!`);
-        }
-
-        function logPastActivityWithTime() {
-            let activityName = document.getElementById("past-activity-input").value.trim();
-            let timeVal = document.getElementById("past-time-input").value;
-            if (!activityName || !timeVal) { alert("Bitte Name und Zeit eingeben!"); return; }
-            let parts = timeVal.split(':');
-            let hours = parseInt(parts[0]) || 0;
-            let minutes = parseInt(parts[1]) || 0;
-            let totalMinutes = (hours * 60) + minutes;
-            if (totalMinutes <= 0) return;
-
-            let buffs = calculateBuffs();
-            let earned = totalMinutes * (0.50 + buffs.rateBonus + buffs.baseRateBonus) + totalMinutes * buffs.passiveIncome;
-            gameState.pendingEarnings += earned;
-            gameState.totalEarnings += earned;
-            updateUI();
-            saveGame();
-            alert(`"${activityName}" nachgetragen! +${earned.toFixed(2)} € im Zwischenspeicher.`);
         }
     </script>
 </body>
