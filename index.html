@@ -23,7 +23,6 @@
             padding: 20px;
         }
 
-        /* Header mit Kontostand und Status oben rechts */
         header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 25px; background-color: var(--card-bg); padding: 15px 20px;
@@ -35,7 +34,6 @@
         }
         .header-stat { display: flex; gap: 5px; align-items: center; }
 
-        /* Tabs Navigation */
         .tabs-container {
             display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
             margin-bottom: 25px; background-color: var(--card-bg); padding: 12px;
@@ -56,13 +54,11 @@
         }
         h2 { font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0; color: #58a6ff; }
 
-        /* Dashboard Grid (Timer & Stats nebeneinander) */
         .dashboard-flex {
             display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch;
         }
         .dashboard-box { flex: 1; min-width: 300px; }
 
-        /* Stats & Progress */
         .stat-bar-container { margin-bottom: 12px; }
         .stat-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; }
         .progress-bar { background-color: var(--border); border-radius: 6px; height: 10px; overflow: hidden; }
@@ -71,7 +67,6 @@
         #fill-drink { background-color: var(--accent-blue); }
         #fill-sleep { background-color: var(--accent-green); }
 
-        /* Timer (Clean Design) */
         .timer-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 10px 0; }
         .timer-circle {
             width: 170px; height: 170px; border-radius: 50%;
@@ -86,10 +81,8 @@
         .timer-title { font-size: 0.65rem; color: #8b949e; letter-spacing: 1px; margin-top: 2px; }
         .timer-subtext { font-size: 0.85rem; color: var(--accent-green); margin-top: 4px; font-weight: bold; text-align: center; }
 
-        /* Timer Kontroll-Buttons */
-        .timer-controls { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
+        .timer-controls { display: flex; gap: 8px; margin-top: 15px; justify-content: center; flex-wrap: wrap; }
 
-        /* Shop Grid */
         .grid-shop { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
         .shop-item {
             display: flex; justify-content: space-between; align-items: center;
@@ -103,7 +96,6 @@
         button.danger-btn { background-color: var(--danger); }
         .money { color: var(--accent-green); font-weight: bold; }
 
-        /* 3D Room */
         .scene-container {
             width: 100%; height: 200px; background: #010409; border-radius: 8px;
             perspective: 800px; display: flex; align-items: center; justify-content: center;
@@ -125,7 +117,6 @@
         .wall-left { width: 180px; height: 130px; transform: rotateY(90deg) translateZ(-90px); }
         .floor { width: 180px; height: 180px; transform: rotateX(90deg) translateZ(65px); background: #1f242c; }
 
-        /* Stundenplan */
         table.schedule-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
         table.schedule-table th, table.schedule-table td { border: 1px solid var(--border); padding: 8px; text-align: center; vertical-align: middle; }
         table.schedule-table th { background-color: #21262d; }
@@ -134,21 +125,19 @@
         .cell-subject { font-weight: bold; color: var(--accent-blue); }
         .cell-details { font-size: 0.7rem; color: #8b949e; }
 
-        /* Modal Popup */
         .modal {
             display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;
         }
         .modal-content {
             background-color: var(--card-bg); padding: 20px; border-radius: 12px;
-            border: 1px solid var(--border); width: 300px;
+            border: 1px solid var(--border); width: 320px;
         }
-        .modal-content input { width: 100%; padding: 8px; margin: 8px 0 15px 0; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 4px; box-sizing: border-box; }
+        .modal-content input { width: 100%; padding: 8px; margin: 6px 0 12px 0; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 4px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <!-- HEADER OBEN: Titel links, Geld & Stats rechts -->
     <header>
         <h1>School Life Simulator</h1>
         <div class="header-right">
@@ -159,7 +148,6 @@
         </div>
     </header>
 
-    <!-- TABS NAVIGATION MENÜ -->
     <div class="tabs-container">
         <button class="tab-btn active" onclick="openTab(event, 'tab-dashboard')">Dashboard</button>
         <button class="tab-btn" onclick="openTab(event, 'tab-schedule')">Stundenplan</button>
@@ -173,7 +161,7 @@
     <!-- TAB 1: DASHBOARD -->
     <div id="tab-dashboard" class="tab-content active">
         <div class="dashboard-flex">
-            <!-- Linke Box: Timer mit Start/Stop & Automatik -->
+            <!-- Timer Box -->
             <div class="card dashboard-box" style="text-align: center;">
                 <h2>Live-Timer & Aktuelle Stunde</h2>
                 <p id="auto-detected-info" style="font-size: 0.85rem; color: var(--accent-blue); margin-bottom: 10px;">Erkenne Stunde...</p>
@@ -186,18 +174,19 @@
                         </div>
                     </div>
                 </div>
-                <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Minute</div>
+                <div class="timer-subtext">Verdienst: <span id="current-rate">0.50 €</span> / Min</div>
                 <div class="timer-subtext" style="color: #fff;">Bereits verdient: <span id="session-earned" class="money">0.00 €</span></div>
                 
                 <div class="timer-controls">
                     <button class="action-btn" onclick="toggleTimer()">Start / Stop</button>
-                    <button class="action-btn" style="background-color: var(--accent-orange);" onclick="startFreistunde()">Freistunde starten</button>
+                    <button class="action-btn" style="background-color: var(--accent-orange);" onclick="startFreistunde()">Freistunde</button>
+                    <button class="action-btn" style="background-color: var(--accent-blue);" onclick="claimEarnings()">Auszahlen</button>
                 </div>
             </div>
 
-            <!-- Rechte Box: Stats & Laufende Kosten -->
+            <!-- Stats & Sleep Box -->
             <div class="card dashboard-box">
-                <h2>Lebensstatus & Fixkosten</h2>
+                <h2>Lebensstatus & Schlaf</h2>
                 
                 <div class="stat-bar-container">
                     <div class="stat-label"><span>Essen</span><span id="val-food">80%</span></div>
@@ -212,20 +201,23 @@
                     <div class="progress-bar"><div id="fill-sleep" class="progress-fill" style="width: 80%;"></div></div>
                 </div>
 
-                <div style="background: #21262d; padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-top: 15px; font-size: 0.85rem;">
-                    <strong style="color: var(--accent-blue);">Laufende Fixkosten pro Tag:</strong>
-                    <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                        <span>Unterkunft & Verbrauch:</span> <span id="dash-housing-cost">0.00 €</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 3px;">
-                        <span>Aktive Abos & Verträge:</span> <span id="dash-contracts-cost">0.00 €</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 5px; border-top: 1px solid var(--border); padding-top: 5px; font-weight: bold;">
-                        <span>Gesamt / Tag:</span> <span id="dash-total-fixed" class="money">0.00 €</span>
+                <!-- Echter Schlaf Eintragen -->
+                <div style="background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; font-size: 0.85rem;">
+                    <strong>Echten Schlaf eintragen:</strong>
+                    <div style="display: flex; gap: 8px; margin-top: 6px;">
+                        <input type="number" id="sleep-hours-input" placeholder="Stunden (z.B. 8)" min="1" max="16" style="flex:1; padding: 6px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px;">
+                        <button class="action-btn" onclick="logRealSleep()" style="padding: 6px 10px;">Schlaf eintragen</button>
                     </div>
                 </div>
 
-                <button class="action-btn danger-btn" onclick="endDay()" style="width:100%; margin-top: 15px;">Tag beenden & Auszahlen</button>
+                <div style="background: #21262d; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; font-size: 0.85rem;">
+                    <strong style="color: var(--accent-blue);">Fixkosten pro Tag:</strong>
+                    <div style="display: flex; justify-content: space-between; margin-top: 3px;">
+                        <span>Unterkunft & Abos:</span> <span id="dash-total-fixed" class="money">0.00 €</span>
+                    </div>
+                </div>
+
+                <button class="action-btn danger-btn" onclick="endDay()" style="width:100%; margin-top: 12px;">Tag beenden & Auszahlen</button>
             </div>
         </div>
     </div>
@@ -234,14 +226,14 @@
     <div id="tab-schedule" class="tab-content">
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h2 style="margin:0; border:none;">Stundenplan & Aktivitäten</h2>
+                <h2 style="margin:0; border:none;">Stundenplan & Fächer</h2>
                 <div>
                     <label style="font-size: 0.85rem; cursor: pointer; background: #21262d; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);">
                         <input type="checkbox" id="edit-mode-toggle" onchange="toggleEditMode()"> Bearbeitungsmodus
                     </label>
                 </div>
             </div>
-            <p style="font-size: 0.85rem; color: #8b949e;">Im normalen Modus kannst du direkt auf eine Stunde klicken, um sie auszuwählen. Aktiviere den Bearbeitungsmodus, um Fächer, Räume und Lehrer zu ändern.</p>
+            <p style="font-size: 0.85rem; color: #8b949e;">Im Bearbeitungsmodus kannst du Fach, Raum, Lehrer und den **Verdienst pro Minute** festlegen. Freistunden bringen 0 €.</p>
             
             <div style="overflow-x: auto;">
                 <table class="schedule-table">
@@ -260,12 +252,11 @@
             </div>
         </div>
 
-        <!-- Eigene Aktivität eintragen -->
         <div class="card">
             <h2>Andere Aktivität starten</h2>
             <div style="display: flex; gap: 10px;">
-                <input type="text" id="custom-activity-input" placeholder="z.B. Lernen, Zimmer aufräumen..." style="flex: 1; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
-                <button class="action-btn" onclick="startCustomActivity()">Aktivität starten</button>
+                <input type="text" id="custom-activity-input" placeholder="z.B. Lernen, Zocken..." style="flex: 1; padding: 8px; background: #21262d; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
+                <button class="action-btn" onclick="startCustomActivity()">Starten (0.50 €/Min)</button>
             </div>
         </div>
     </div>
@@ -275,29 +266,23 @@
         <div class="card">
             <h2>Getränke-Abteilung</h2>
             <div class="grid-shop">
-                <div class="shop-item"><span>Red Bull Energy Drink (2.50 €)</span><button class="action-btn" onclick="buyItem('drink', 25, 2.5)">Kaufen</button></div>
-                <div class="shop-item"><span>Club Mate 0,5l (1.80 €)</span><button class="action-btn" onclick="buyItem('drink', 20, 1.8)">Kaufen</button></div>
-                <div class="shop-item"><span>Paulaner Spezi 0,5l (1.50 €)</span><button class="action-btn" onclick="buyItem('drink', 18, 1.5)">Kaufen</button></div>
-                <div class="shop-item"><span>Monster Energy (2.70 €)</span><button class="action-btn" onclick="buyItem('drink', 28, 2.7)">Kaufen</button></div>
-                <div class="shop-item"><span>Coca Cola 0,5l (1.60 €)</span><button class="action-btn" onclick="buyItem('drink', 15, 1.6)">Kaufen</button></div>
-                <div class="shop-item"><span>Volvic Mineralwasser (1.10 €)</span><button class="action-btn" onclick="buyItem('drink', 10, 1.1)">Kaufen</button></div>
+                <div class="shop-item"><span>Red Bull (2.50 €)</span><button class="action-btn" onclick="buyItem('drink', 25, 2.5)">Kaufen</button></div>
+                <div class="shop-item"><span>Club Mate (1.80 €)</span><button class="action-btn" onclick="buyItem('drink', 20, 1.8)">Kaufen</button></div>
+                <div class="shop-item"><span>Spezi (1.50 €)</span><button class="action-btn" onclick="buyItem('drink', 18, 1.5)">Kaufen</button></div>
+                <div class="shop-item"><span>Wasser (1.10 €)</span><button class="action-btn" onclick="buyItem('drink', 10, 1.1)">Kaufen</button></div>
             </div>
         </div>
-
         <div class="card">
             <h2>Essen & Snacks</h2>
             <div class="grid-shop">
-                <div class="shop-item"><span>Subway Sub Menü (8.99 €)</span><button class="action-btn" onclick="buyItem('food', 55, 8.99)">Kaufen</button></div>
-                <div class="shop-item"><span>Ben & Jerry's Eis (6.49 €)</span><button class="action-btn" onclick="buyItem('food', 40, 6.49)">Kaufen</button></div>
-                <div class="shop-item"><span>Haribo Goldbären (1.20 €)</span><button class="action-btn" onclick="buyItem('food', 15, 1.2)">Kaufen</button></div>
-                <div class="shop-item"><span>Milka Schokolade (1.49 €)</span><button class="action-btn" onclick="buyItem('food', 18, 1.49)">Kaufen</button></div>
-                <div class="shop-item"><span>Dominosteine (2.29 €)</span><button class="action-btn" onclick="buyItem('food', 22, 2.29)">Kaufen</button></div>
-                <div class="shop-item"><span>Leibniz Butterkeks (1.89 €)</span><button class="action-btn" onclick="buyItem('food', 20, 1.89)">Kaufen</button></div>
+                <div class="shop-item"><span>Subway Menü (8.99 €)</span><button class="action-btn" onclick="buyItem('food', 55, 8.99)">Kaufen</button></div>
+                <div class="shop-item"><span>Ben & Jerry's (6.49 €)</span><button class="action-btn" onclick="buyItem('food', 40, 6.49)">Kaufen</button></div>
+                <div class="shop-item"><span>Schokolade (1.49 €)</span><button class="action-btn" onclick="buyItem('food', 18, 1.49)">Kaufen</button></div>
             </div>
         </div>
     </div>
 
-    <!-- TAB 4: WOHNUNG & 3D -->
+    <!-- TAB 4: WOHNUNG -->
     <div id="tab-housing" class="tab-content">
         <div class="card">
             <h2>Virtuelle 3D-Wohnung</h2>
@@ -309,13 +294,11 @@
                 </div>
             </div>
         </div>
-
         <div class="card">
             <h2>Immobilien-Markt</h2>
             <div class="grid-shop">
                 <div class="shop-item"><span>WG-Zimmer (10 € / Tag)</span><button class="action-btn" onclick="setHousing('WG', 10, 2, 3)">Mieten</button></div>
                 <div class="shop-item"><span>Moderne Wohnung (25 € / Tag)</span><button class="action-btn" onclick="setHousing('Wohnung', 25, 5, 8)">Mieten</button></div>
-                <div class="shop-item"><span>Haus mit Garten (60 € / Tag)</span><button class="action-btn" onclick="setHousing('Haus', 60, 12, 20)">Mieten</button></div>
             </div>
             <p style="margin-top: 15px;">Aktuelle Unterkunft: <strong id="current-housing" style="color:var(--accent-blue);">Keine</strong></p>
         </div>
@@ -327,22 +310,21 @@
             <h2>Bank & Kredite</h2>
             <p>Aktueller Kredit: <span id="loan-status">0.00 €</span></p>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button class="action-btn" onclick="takeLoan(100)" style="flex:1;">100 € Kredit aufnehmen</button>
-                <button class="action-btn" onclick="payLoan(100)" style="flex:1; background:var(--danger);">100 € tilgen</button>
+                <button class="action-btn" onclick="takeLoan(100)" style="flex:1;">100 € aufnehmen</button>
+                <button class="action-btn danger-btn" onclick="payLoan(100)" style="flex:1;">100 € tilgen</button>
             </div>
         </div>
     </div>
 
-    <!-- TAB 6: ABOS & VERTRÄGE -->
+    <!-- TAB 6: VERTRÄGE -->
     <div id="tab-contracts" class="tab-content">
         <div class="card">
             <h2>Abos & Verträge</h2>
             <div class="grid-shop">
-                <div class="shop-item"><span>Vodafone 5G Handy (1.20 €/Tag)</span><button class="action-btn" onclick="toggleContract('phone', 1.2)">An/Aus</button></div>
-                <div class="shop-item"><span>Telekom WLAN (1.50 €/Tag)</span><button class="action-btn" onclick="toggleContract('wifi', 1.5)">An/Aus</button></div>
-                <div class="shop-item"><span>Netflix Abo (0.60 €/Tag)</span><button class="action-btn" onclick="toggleContract('netflix', 0.6)">An/Aus</button></div>
-                <div class="shop-item"><span>Spotify Premium (0.40 €/Tag)</span><button class="action-btn" onclick="toggleContract('spotify', 0.4)">An/Aus</button></div>
-                <div class="shop-item"><span>Gartenbrand-Versicherung (0.50 €/Tag)</span><button class="action-btn" onclick="toggleContract('insurance', 0.5)">An/Aus</button></div>
+                <div class="shop-item"><span>Handy (1.20 €/Tag)</span><button class="action-btn" onclick="toggleContract('phone', 1.2)">An/Aus</button></div>
+                <div class="shop-item"><span>WLAN (1.50 €/Tag)</span><button class="action-btn" onclick="toggleContract('wifi', 1.5)">An/Aus</button></div>
+                <div class="shop-item"><span>Netflix (0.60 €/Tag)</span><button class="action-btn" onclick="toggleContract('netflix', 0.6)">An/Aus</button></div>
+                <div class="shop-item"><span>Spotify (0.40 €/Tag)</span><button class="action-btn" onclick="toggleContract('spotify', 0.4)">An/Aus</button></div>
             </div>
         </div>
     </div>
@@ -350,9 +332,9 @@
     <!-- TAB 7: STATISTIK -->
     <div id="tab-stats" class="tab-content">
         <div class="card">
-            <h2>Finanz-Statistik</h2>
-            <p>Gesamteinnahmen bisher: <span id="stat-earnings" class="money">0.00 €</span></p>
-            <p>Gezahlte Steuern gesamt: <span id="stat-taxes">0.00 €</span></p>
+            <h2>Statistik</h2>
+            <p>Gesamteinnahmen: <span id="stat-earnings" class="money">0.00 €</span></p>
+            <p>Gezahlte Steuern: <span id="stat-taxes">0.00 €</span></p>
         </div>
     </div>
 
@@ -366,7 +348,9 @@
             <input type="text" id="modal-room" placeholder="z.B. 1.01">
             <label>Lehrer:</label>
             <input type="text" id="modal-teacher" placeholder="z.B. Müller">
-            <div style="display: flex; gap: 10px;">
+            <label>Verdienst pro Minute (€):</label>
+            <input type="number" id="modal-rate" step="0.05" min="0" placeholder="z.B. 0.50">
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <button class="action-btn" onclick="saveLessonEdit()" style="flex:1;">Speichern</button>
                 <button class="action-btn danger-btn" onclick="closeModal()" style="flex:1;">Abbrechen</button>
             </div>
@@ -385,11 +369,12 @@
             sleep: 80,
             loan: 0,
             housing: { name: "Keine", rent: 0, water: 0, electricity: 0 },
-            activeContracts: { phone: false, wifi: false, netflix: false, spotify: false, insurance: false },
+            activeContracts: { phone: false, wifi: false, netflix: false, spotify: false },
             activeLesson: null,
+            currentRate: 0.50,
             isTimerRunning: false,
             timerSeconds: 0,
-            timerInterval: null,
+            startTimeEpoch: null,
             editMode: false,
             currentEditCoords: { hour: null, day: null }
         };
@@ -399,32 +384,94 @@
         const hoursCount = 10;
 
         const sampleInit = {
-            1: [["PH","PH1","Wu"], ["PH","PH1","Wu"], ["Wu","1.01","Mü"], ["GEO","GEO","Kl"], ["D1","1.01","Mü"]],
-            2: [["m1","1.04","Ga"], ["PH","PH1","Wu"], ["Wu","1.01","Mü"], ["GEO","GEO","Kl"], ["D1","1.01","Mü"]],
-            3: [["PH","PH1","Wu"], ["D1","1.01","Mü"], ["gk3","1.01","Kl"], ["m1","1.04","Ga"], ["rel1","1.01","Im"]],
-            4: [["PH","PH1","Wu"], ["D1","1.01","Mü"], ["gk3","1.01","Kl"], ["m1","1.04","Ga"], ["rel1","1.01","Im"]],
-            5: [["Freistunde","-","-"], ["bk2","BK 3","Mai"], ["e1","1.01","Be"], ["bio2","BIO 2","Mg"], ["bio2","NWT","-"]],
-            6: [["Freistunde","-","-"], ["bk2","BK 3","Mai"], ["e1","1.01","Be"], ["D1","1.01","Mü"], ["bio2","NWT","-"]],
-            7: [["Freistunde","-","-"], ["GEO","GEO","Kl"], ["lth","SH","Mü"], ["PH","PH1","Wu"], ["GEO","GEO","Kl"]],
-            8: [["Freistunde","-","-"], ["GEO","GEO","Kl"], ["lth","SH","Mü"], ["e1","1.01","Be"], ["GEO","GEO","Kl"]],
-            9: [["Freistunde","-","-"], ["Freistunde","-","-"], ["s2","SP 2","Pi"], ["g3","1.03","Hö"], ["Freistunde","-","-"]],
-            10: [["Freistunde","-","-"], ["Freistunde","-","-"], ["s2","SP 2","Pi"], ["g3","1.03","Hö"], ["Freistunde","-","-"]]
+            1: [["PH","PH1","Wu", 0.6], ["PH","PH1","Wu", 0.6], ["Freistunde","-","-", 0], ["GEO","GEO","Kl", 0.5], ["D1","1.01","Mü", 0.5]],
+            2: [["m1","1.04","Ga", 0.5], ["PH","PH1","Wu", 0.6], ["Freistunde","-","-", 0], ["GEO","GEO","Kl", 0.5], ["D1","1.01","Mü", 0.5]],
+            3: [["PH","PH1","Wu", 0.6], ["D1","1.01","Mü", 0.5], ["gk3","1.01","Kl", 0.5], ["m1","1.04","Ga", 0.5], ["rel1","1.01","Im", 0.4]],
+            4: [["PH","PH1","Wu", 0.6], ["D1","1.01","Mü", 0.5], ["gk3","1.01","Kl", 0.5], ["m1","1.04","Ga", 0.5], ["rel1","1.01","Im", 0.4]],
+            5: [["Freistunde","-","-", 0], ["bk2","BK 3","Mai", 0.4], ["e1","1.01","Be", 0.5], ["bio2","BIO 2","Mg", 0.5], ["bio2","NWT","-", 0.5]],
+            6: [["Freistunde","-","-", 0], ["bk2","BK 3","Mai", 0.4], ["e1","1.01","Be", 0.5], ["D1","1.01","Mü", 0.5], ["bio2","NWT","-", 0.5]],
+            7: [["Freistunde","-","-", 0], ["GEO","GEO","Kl", 0.5], ["lth","SH","Mü", 0.4], ["PH","PH1","Wu", 0.6], ["GEO","GEO","Kl", 0.5]],
+            8: [["Freistunde","-","-", 0], ["GEO","GEO","Kl", 0.5], ["lth","SH","Mü", 0.4], ["e1","1.01","Be", 0.5], ["GEO","GEO","Kl", 0.5]],
+            9: [["Freistunde","-","-", 0], ["Freistunde","-","-", 0], ["s2","SP 2","Pi", 0.4], ["g3","1.03","Hö", 0.4], ["Freistunde","-","-", 0]],
+            10: [["Freistunde","-","-", 0], ["Freistunde","-","-", 0], ["s2","SP 2","Pi", 0.4], ["g3","1.03","Hö", 0.4], ["Freistunde","-","-", 0]]
         };
 
-        for(let h=1; h<=hoursCount; h++) {
-            timetableData[h] = {};
-            for(let d=0; d<daysCount; d++) {
-                if(sampleInit[h] && sampleInit[h][d]) {
-                    timetableData[h][d] = {
-                        subject: sampleInit[h][d][0],
-                        room: sampleInit[h][d][1],
-                        teacher: sampleInit[h][d][2]
-                    };
-                } else {
-                    timetableData[h][d] = { subject: "Freistunde", room: "-", teacher: "-" };
+        // Lade Speicherstände wenn vorhanden
+        function loadGame() {
+            let saved = localStorage.getItem("schoolSimState");
+            if (saved) {
+                let parsed = JSON.parse(saved);
+                gameState = { ...gameState, ...parsed };
+            }
+            let savedTable = localStorage.getItem("schoolSimTable");
+            if (savedTable) {
+                timetableData = JSON.parse(savedTable);
+            } else {
+                initDefaultTable();
+            }
+        }
+
+        function saveGame() {
+            localStorage.setItem("schoolSimState", JSON.stringify(gameState));
+            localStorage.setItem("schoolSimTable", JSON.stringify(timetableData));
+        }
+
+        function initDefaultTable() {
+            for(let h=1; h<=hoursCount; h++) {
+                timetableData[h] = {};
+                for(let d=0; d<daysCount; d++) {
+                    if(sampleInit[h] && sampleInit[h][d]) {
+                        let item = sampleInit[h][d];
+                        timetableData[h][d] = { subject: item[0], room: item[1], teacher: item[2], rate: item[3] };
+                    } else {
+                        timetableData[h][d] = { subject: "Freistunde", room: "-", teacher: "-", rate: 0 };
+                    }
                 }
             }
         }
+
+        window.onload = () => {
+            loadGame();
+            renderSchedule();
+            checkAutoCurrentLesson();
+            updateUI();
+
+            // Wenn Timer lief vor dem Schließen, berechne verflossene Zeit nach
+            if (gameState.isTimerRunning && gameState.startTimeEpoch) {
+                let nowEpoch = Date.now();
+                let diffSeconds = Math.floor((nowEpoch - gameState.startTimeEpoch) / 1000);
+                gameState.timerSeconds += diffSeconds;
+                let earnedExtra = (diffSeconds / 60) * gameState.currentRate;
+                gameState.pendingEarnings += earnedExtra;
+                gameState.totalEarnings += earnedExtra;
+            }
+
+            // Haupt-Interval für Timer & automatischen Stat-Abfall (alle 1 Sek)
+            setInterval(() => {
+                if (gameState.isTimerRunning) {
+                    gameState.timerSeconds++;
+                    let earningsPerSec = gameState.currentRate / 60;
+                    gameState.pendingEarnings += earningsPerSec;
+                    gameState.totalEarnings += earningsPerSec;
+                    gameState.startTimeEpoch = Date.now();
+                    updateTimerDisplay();
+                    updateUI();
+                    saveGame();
+                }
+            }, 1000);
+
+            // Alle 60 Sekunden Stats (Essen, Trinken, Schlaf) minimal senken
+            setInterval(() => {
+                gameState.food = Math.max(0, gameState.food - 0.2);
+                gameState.drink = Math.max(0, gameState.drink - 0.3);
+                gameState.sleep = Math.max(0, gameState.sleep - 0.1);
+                updateUI();
+                saveGame();
+            }, 60000);
+
+            // Prüfe Auto-Stunde alle 30 Sek
+            setInterval(checkAutoCurrentLesson, 30000);
+        };
 
         function openTab(evt, tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -447,7 +494,7 @@
                     let cellData = timetableData[hour][d];
                     row += `<td class="schedule-cell" onclick="handleCellClick(${hour}, ${d})">
                         <div class="cell-subject">${cellData.subject}</div>
-                        <div class="cell-details">${cellData.room} | ${cellData.teacher}</div>
+                        <div class="cell-details">${cellData.room} | ${cellData.rate}€/m</div>
                     </td>`;
                 }
                 row += `</tr>`;
@@ -462,39 +509,44 @@
                 document.getElementById("modal-subject").value = cellData.subject;
                 document.getElementById("modal-room").value = cellData.room;
                 document.getElementById("modal-teacher").value = cellData.teacher;
+                document.getElementById("modal-rate").value = cellData.rate !== undefined ? cellData.rate : 0.50;
                 document.getElementById("edit-modal").style.display = "flex";
             } else {
                 let cellData = timetableData[hour][day];
                 gameState.activeLesson = cellData.subject;
+                gameState.currentRate = cellData.rate !== undefined ? cellData.rate : 0.50;
                 document.getElementById("timer-status").innerText = cellData.subject.toUpperCase();
+                document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2) + " €";
             }
         }
 
         function saveLessonEdit() {
             let { hour, day } = gameState.currentEditCoords;
+            let sub = document.getElementById("modal-subject").value || "Freistunde";
+            let rateVal = sub.toLowerCase().includes("freistunde") ? 0 : parseFloat(document.getElementById("modal-rate").value) || 0.50;
+            
             timetableData[hour][day] = {
-                subject: document.getElementById("modal-subject").value || "Freistunde",
+                subject: sub,
                 room: document.getElementById("modal-room").value || "-",
-                teacher: document.getElementById("modal-teacher").value || "-"
+                teacher: document.getElementById("modal-teacher").value || "-",
+                rate: rateVal
             };
             closeModal();
             renderSchedule();
+            saveGame();
         }
 
         function closeModal() {
             document.getElementById("edit-modal").style.display = "none";
         }
 
-        // Automatische Erkennung anhand Uhrzeit (Schulstunden-Raster beispielhaft)
         function checkAutoCurrentLesson() {
             let now = new Date();
-            let day = now.getDay(); // 0 = Sonntag, 1 = Montag ... 5 = Freitag
+            let day = now.getDay();
             let hourNum = now.getHours();
             let minuteNum = now.getMinutes();
             let totalMins = hourNum * 60 + minuteNum;
 
-            // Beispiel-Zeiten für Schulstunden (kannst du anpassen)
-            // 1. Std: 7:45 - 8:30, 2. Std: 8:35 - 9:20 usw. Vereinfacht nach Stundenblock:
             let detectedHour = null;
             if (totalMins >= 465 && totalMins < 515) detectedHour = 1;
             else if (totalMins >= 515 && totalMins < 570) detectedHour = 2;
@@ -513,50 +565,42 @@
                 let lesson = timetableData[detectedHour][dayIndex];
                 if (gameState.activeLesson === null && !gameState.isTimerRunning) {
                     gameState.activeLesson = lesson.subject;
+                    gameState.currentRate = lesson.rate !== undefined ? lesson.rate : 0.50;
                     document.getElementById("timer-status").innerText = lesson.subject.toUpperCase();
+                    document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2) + " €";
                 }
-                infoBox.innerText = `Automatisch erkannt: ${detectedHour}. Stunde (${lesson.subject})`;
+                infoBox.innerText = `Erkannt: ${detectedHour}. Stunde (${lesson.subject} - ${gameState.currentRate} €/Min)`;
             } else {
-                infoBox.innerText = `Keine Schulstunde aktiv (Wochenende oder Freizeit)`;
+                infoBox.innerText = `Keine Schulstunde aktiv`;
             }
         }
 
         function toggleTimer() {
             if (gameState.isTimerRunning) {
-                // Stoppen
-                clearInterval(gameState.timerInterval);
                 gameState.isTimerRunning = false;
+                gameState.startTimeEpoch = null;
                 document.getElementById("timer-status").innerText += " (PAUSE)";
             } else {
-                // Starten
                 if (!gameState.activeLesson) {
                     gameState.activeLesson = "Unterricht";
+                    gameState.currentRate = 0.50;
                 }
                 gameState.isTimerRunning = true;
-                if(gameState.timerInterval) clearInterval(gameState.timerInterval);
-                
-                gameState.timerInterval = setInterval(() => {
-                    gameState.timerSeconds++;
-                    updateTimerDisplay();
-                    
-                    let earningsPerSec = 0.50 / 60; // 0.50 € pro Minute
-                    gameState.pendingEarnings += earningsPerSec;
-                    gameState.totalEarnings += earningsPerSec;
-                    updateUI();
-                }, 1000);
+                gameState.startTimeEpoch = Date.now();
+                document.getElementById("timer-status").innerText = gameState.activeLesson.toUpperCase();
             }
+            saveGame();
         }
 
         function startFreistunde() {
-            if (gameState.isTimerRunning) {
-                clearInterval(gameState.timerInterval);
-                gameState.isTimerRunning = false;
-            }
+            gameState.isTimerRunning = false;
             gameState.activeLesson = "Freistunde";
+            gameState.currentRate = 0; // Freistunde bringt kein Geld
             gameState.timerSeconds = 0;
-            document.getElementById("timer-status").innerText = "FREISTUNDE";
+            document.getElementById("timer-status").innerText = "FREISTUNDE (0 €)";
+            document.getElementById("current-rate").innerText = "0.00 €";
             updateTimerDisplay();
-            updateUI();
+            saveGame();
         }
 
         function startCustomActivity() {
@@ -565,23 +609,40 @@
                 alert("Bitte gib eine Aktivität ein!");
                 return;
             }
-            if (gameState.isTimerRunning) {
-                clearInterval(gameState.timerInterval);
-            }
             gameState.activeLesson = activityName;
+            gameState.currentRate = 0.50;
             gameState.timerSeconds = 0;
             gameState.isTimerRunning = true;
+            gameState.startTimeEpoch = Date.now();
             document.getElementById("timer-status").innerText = activityName.toUpperCase();
-            
-            if(gameState.timerInterval) clearInterval(gameState.timerInterval);
-            gameState.timerInterval = setInterval(() => {
-                gameState.timerSeconds++;
-                updateTimerDisplay();
-                let earningsPerSec = 0.50 / 60;
-                gameState.pendingEarnings += earningsPerSec;
-                gameState.totalEarnings += earningsPerSec;
-                updateUI();
-            }, 1000);
+            document.getElementById("current-rate").innerText = "0.50 €";
+            saveGame();
+        }
+
+        function claimEarnings() {
+            if (gameState.pendingEarnings <= 0) {
+                alert("Kein Guthaben zum Auszahlen vorhanden!");
+                return;
+            }
+            gameState.money += gameState.pendingEarnings;
+            alert(`Erfolgreich ${gameState.pendingEarnings.toFixed(2)} € ausgezahlt!`);
+            gameState.pendingEarnings = 0;
+            updateUI();
+            saveGame();
+        }
+
+        function logRealSleep() {
+            let hours = parseFloat(document.getElementById("sleep-hours-input").value);
+            if (isNaN(hours) || hours <= 0) {
+                alert("Bitte gültige Stunden eingeben!");
+                return;
+            }
+            let recovered = Math.min(100, hours * 12.5); // 8h = 100%
+            gameState.sleep = Math.min(100, gameState.sleep + recovered);
+            alert(`${hours} Stunden Schlaf eingetragen! Energie aufgeladen.`);
+            document.getElementById("sleep-hours-input").value = "";
+            updateUI();
+            saveGame();
         }
 
         function updateTimerDisplay() {
@@ -599,34 +660,39 @@
             if (type === 'food') gameState.food = Math.min(100, gameState.food + amount);
             if (type === 'drink') gameState.drink = Math.min(100, gameState.drink + amount);
             updateUI();
+            saveGame();
         }
 
         function setHousing(name, rent, water, electricity) {
             gameState.housing = { name, rent, water, electricity };
-            alert(name + " erfolgreich gemietet!");
+            alert(name + " gemietet!");
             updateUI();
+            saveGame();
         }
 
         function toggleContract(name, cost) {
             gameState.activeContracts[name] = !gameState.activeContracts[name];
             alert("Vertragsstatus geändert.");
             updateUI();
+            saveGame();
         }
 
         function takeLoan(amount) {
             gameState.loan += amount;
             gameState.money += amount;
             updateUI();
+            saveGame();
         }
 
         function payLoan(amount) {
             if (gameState.money < amount || gameState.loan < amount) {
-                alert("Nicht genug Geld oder Kredit zu niedrig.");
+                alert("Nicht genug Geld!");
                 return;
             }
             gameState.loan -= amount;
             gameState.money -= amount;
             updateUI();
+            saveGame();
         }
 
         function getContractsCost() {
@@ -635,7 +701,6 @@
             if (gameState.activeContracts.wifi) c += 1.5;
             if (gameState.activeContracts.netflix) c += 0.6;
             if (gameState.activeContracts.spotify) c += 0.4;
-            if (gameState.activeContracts.insurance) c += 0.5;
             return c;
         }
 
@@ -649,7 +714,6 @@
 
         function endDay() {
             if(gameState.isTimerRunning) {
-                clearInterval(gameState.timerInterval);
                 gameState.isTimerRunning = false;
                 document.getElementById("timer-status").innerText = "BEREIT";
             }
@@ -662,50 +726,35 @@
             gameState.taxToday = tax;
             gameState.totalTaxes += tax;
             gameState.pendingEarnings = 0;
-
-            gameState.food = Math.max(0, gameState.food - 20);
-            gameState.drink = Math.max(0, gameState.drink - 25);
-            gameState.sleep = Math.max(0, gameState.sleep - 15);
+            gameState.timerSeconds = 0;
 
             updateUI();
-            alert(`Tagesabschluss:\nNetto-Ertrag nach Steuern & Fixkosten: ${net.toFixed(2)} €`);
+            saveGame();
+            alert(`Tagesabschluss!\nNetto nach Steuern & Fixkosten: ${net.toFixed(2)} €`);
         }
 
         function updateUI() {
-            // Header Stats
             document.getElementById("header-money").innerText = gameState.money.toFixed(2) + " €";
-            document.getElementById("header-food").innerText = gameState.food + "%";
-            document.getElementById("header-drink").innerText = gameState.drink + "%";
-            document.getElementById("header-sleep").innerText = gameState.sleep + "%";
+            document.getElementById("header-food").innerText = Math.round(gameState.food) + "%";
+            document.getElementById("header-drink").innerText = Math.round(gameState.drink) + "%";
+            document.getElementById("header-sleep").innerText = Math.round(gameState.sleep) + "%";
 
-            // Dashboard Bars
             document.getElementById("fill-food").style.width = gameState.food + "%";
-            document.getElementById("val-food").innerText = gameState.food + "%";
+            document.getElementById("val-food").innerText = Math.round(gameState.food) + "%";
             document.getElementById("fill-drink").style.width = gameState.drink + "%";
-            document.getElementById("val-drink").innerText = gameState.drink + "%";
+            document.getElementById("val-drink").innerText = Math.round(gameState.drink) + "%";
             document.getElementById("fill-sleep").style.width = gameState.sleep + "%";
-            document.getElementById("val-sleep").innerText = gameState.sleep + "%";
+            document.getElementById("val-sleep").innerText = Math.round(gameState.sleep) + "%";
 
-            // Fixkosten auf Dashboard
-            let housingTotal = getHousingCost();
-            let contractsTotal = getContractsCost();
-            document.getElementById("dash-housing-cost").innerText = housingTotal.toFixed(2) + " €";
-            document.getElementById("dash-contracts-cost").innerText = contractsTotal.toFixed(2) + " €";
             document.getElementById("dash-total-fixed").innerText = getFixedCosts().toFixed(2) + " €";
-
             document.getElementById("current-housing").innerText = gameState.housing.name;
             document.getElementById("loan-status").innerText = gameState.loan.toFixed(2) + " €";
             document.getElementById("stat-earnings").innerText = gameState.totalEarnings.toFixed(2) + " €";
             document.getElementById("stat-taxes").innerText = gameState.totalTaxes.toFixed(2) + " €";
             document.getElementById("session-earned").innerText = gameState.pendingEarnings.toFixed(2) + " €";
+            document.getElementById("current-rate").innerText = gameState.currentRate.toFixed(2) + " €";
+            updateTimerDisplay();
         }
-
-        window.onload = () => {
-            renderSchedule();
-            checkAutoCurrentLesson();
-            updateUI();
-            setInterval(checkAutoCurrentLesson, 30000); // Prüfe alle 30 Sek die Uhrzeit
-        };
     </script>
 </body>
 </html>
