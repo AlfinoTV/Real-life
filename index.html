@@ -30,7 +30,7 @@
         }
         h1 { margin: 0; font-size: 1.4rem; color: #fff; }
         .header-right {
-            display: flex; gap: 15px; align-items: center; font-size: 0.9rem; font-weight: bold; flex-wrap: wrap;
+            display: flex; gap: 15px; align-items: center; font-size: 0.85rem; font-weight: bold; flex-wrap: wrap;
         }
         .header-stat { display: flex; gap: 5px; align-items: center; }
 
@@ -173,9 +173,11 @@
     <header>
         <h1>School Life Simulator</h1>
         <div class="header-right">
-            <div class="header-stat" title="Verfügbares Bargeld">💰 Guthaben: <span id="header-money" class="money">500.00 €</span></div>
-            <div class="header-stat" title="Noch nicht versteuert/ausgezahlt">📥 Zwischenspeicher: <span id="header-pending" style="color: var(--accent-orange);">0.00 €</span></div>
-            <div class="header-stat">💤 Schlaf: <span id="header-sleep">80%</span></div>
+            <div class="header-stat" title="Verfügbares Bargeld">💰 <span id="header-money" class="money">500.00 €</span></div>
+            <div class="header-stat" title="Zwischenspeicher">📥 <span id="header-pending" style="color: var(--accent-orange);">0.00 €</span></div>
+            <div class="header-stat" title="Schlaf">💤 <span id="header-sleep">80%</span></div>
+            <div class="header-stat" title="Hunger">🍔 <span id="header-hunger">100%</span></div>
+            <div class="header-stat" title="Durst">🥤 <span id="header-thirst">100%</span></div>
         </div>
     </header>
 
@@ -820,7 +822,6 @@
             checkAutoCurrentLesson(true);
             updateUI();
 
-            // Background-Tab & Throttling Fix via visibilitychange & Date.now delta catch-up
             document.addEventListener("visibilitychange", () => {
                 if (!document.hidden) {
                     gameState.lastTickTimestamp = Date.now();
@@ -875,20 +876,22 @@
                 }
             }, 200);
 
+            // Realistischere, schnellere Abnahme für Schlaf, Hunger & Durst
             setInterval(() => {
                 let buffs = calculateBuffs();
                 let decayMod = buffs.generalDecayMod || 1.0;
                 
                 let workMultiplier = 1.0;
                 let isWorking = (gameState.isTimerRunning && gameState.activeLesson && !gameState.activeLesson.toLowerCase().includes("freistunde")) || gameState.isBonusTimerRunning;
-                if (isWorking) workMultiplier = 3.5;
+                if (isWorking) workMultiplier = 2.0;
                 
                 let sleepVal = gameState.sleep - (0.15 * decayMod * (buffs.sleepDecayMod || 1.0) * workMultiplier);
                 if (buffs.minSleep > 0 && sleepVal < buffs.minSleep) sleepVal = buffs.minSleep;
                 gameState.sleep = Math.max(0, sleepVal);
 
-                let hungerDecay = isWorking ? 0.25 : 0.12;
-                let thirstDecay = isWorking ? 0.35 : 0.18;
+                // Schnellere, realistische Abnahme für Hunger und Durst pro Minute
+                let hungerDecay = isWorking ? 1.2 : 0.6;
+                let thirstDecay = isWorking ? 1.8 : 0.9;
 
                 gameState.hunger = Math.max(0, gameState.hunger - hungerDecay * decayMod);
                 gameState.thirst = Math.max(0, gameState.thirst - thirstDecay * decayMod);
@@ -1272,7 +1275,7 @@
                 if (buffs.freeTransit) {
                     alert(`Dank des Deutschlandtickets kostenlose ÖPNV-Fahrt über ${km} km durchgeführt!`);
                 } else {
-                    let ticketCost = 2.80 + (km * 0.15); // Realistischer Streckentarif
+                    let ticketCost = 2.80 + (km * 0.15);
                     if (gameState.money < ticketCost) {
                         alert(`Nicht genug Guthaben für das ÖPNV-Ticket (${ticketCost.toFixed(2)} €)!`);
                         return;
@@ -1284,7 +1287,6 @@
                 updateUI();
                 saveGame();
             } else {
-                // Fahrzeug-Fahrt
                 let v = vehicleCatalog.find(item => item.id === choice);
                 let state = gameState.vehicleStates[choice];
                 if (!v || !state) return;
@@ -1572,7 +1574,6 @@
             saveGame();
         }
 
-        // Stundenerkennung hält nun an und wartet auf Start (Pause-Modus)
         function checkAutoCurrentLesson(isInitial = false) {
             let now = new Date();
             let day = now.getDay();
@@ -1604,7 +1605,6 @@
                 if (gameState.lastDetectedHourKey !== currentHourKey) {
                     gameState.lastDetectedHourKey = currentHourKey;
                     if (!isInitial) {
-                        // Fach wechseln, aber Timer PAUSIEREN (warten auf Start)
                         gameState.activeLesson = lesson.subject;
                         gameState.currentRate = lesson.rate !== undefined ? lesson.rate : 0.50;
                         gameState.timerSeconds = 0;
@@ -1795,6 +1795,8 @@
             document.getElementById("header-money").innerText = (gameState.money || 0).toFixed(2) + " €";
             document.getElementById("header-pending").innerText = (gameState.pendingEarnings || 0).toFixed(2) + " €";
             document.getElementById("header-sleep").innerText = Math.round(gameState.sleep || 0) + "%";
+            document.getElementById("header-hunger").innerText = Math.round(gameState.hunger || 0) + "%";
+            document.getElementById("header-thirst").innerText = Math.round(gameState.thirst || 0) + "%";
 
             document.getElementById("val-sleep").innerText = Math.round(gameState.sleep || 0) + "%";
             document.getElementById("fill-sleep").style.width = (gameState.sleep || 0) + "%";
