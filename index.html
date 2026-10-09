@@ -134,6 +134,10 @@
         .garage-container {
             background: #21262d; border: 2px dashed var(--accent-orange); border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: center;
         }
+        .clickable-stat {
+            cursor: pointer; padding: 2px 4px; border-radius: 4px; border: 1px dashed var(--accent-blue); transition: 0.2s;
+        }
+        .clickable-stat:hover { background-color: rgba(88, 166, 255, 0.15); }
 
         table.schedule-table, table.grades-table, table.loan-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
         table.schedule-table th, table.schedule-table td, table.grades-table th, table.grades-table td, table.loan-table th, table.loan-table td { border: 1px solid var(--border); padding: 8px; text-align: center; vertical-align: middle; }
@@ -432,10 +436,25 @@
             </div>
 
             <h2>Fahrzeug-Shop & Mobilität</h2>
-            <p style="font-size: 0.85rem; color: #8b949e;">Kaufe Fahrzeuge oder nutze ÖPNV / Laufen.</p>
+            <p style="font-size: 0.85rem; color: #8b949e;">Wähle dein Transportmittel, trage die gefahrenen Kilometer ein und verwalte Tank und Verschleiß.</p>
             
             <div id="public-transport-banner" style="background: #21262d; border: 1px solid var(--accent-blue); padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none;">
-                <strong style="color: var(--accent-blue);">💡 ÖPNV-Empfehlung:</strong> Du hast kein eigenes Fahrzeug zur Verfügung. Es wird empfohlen, die Öffis zu nutzen (kostenlos mit Deutschlandticket im Abo-Bereich, sonst Einzelticket). Alternativ kannst du laufen (kostet viel Energie, macht hungrig & durstig!).
+                <strong style="color: var(--accent-blue);">💡 ÖPNV-Empfehlung:</strong> Du hast kein eigenes Fahrzeug zur Verfügung. Es wird empfohlen, die Öffis zu nutzen (kostenlos mit Deutschlandticket im Abo-Bereich, sonst Einzelticket). Alternativ kannst du laufen (kostet Energie, macht hungrig & durstig!).
+            </div>
+
+            <div class="shop-item" style="margin-bottom: 20px; background: #161b22; border: 1px solid var(--accent-orange);">
+                <div>
+                    <strong style="color: var(--accent-orange);">🛣️ Fahrt erfassen & Kilometer eintragen</strong>
+                    <div class="shop-info">Wähle das Fahrzeug oder den ÖPNV/Laufen aus, trage die Kilometer ein und starte die Fahrt.</div>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <select id="trip-vehicle-select" style="padding: 6px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.85rem;">
+                        <option value="walk">Zu Fuß (Laufen)</option>
+                        <option value="transit">ÖPNV (Öffentliche Verkehrsmittel)</option>
+                    </select>
+                    <input type="number" id="trip-km-input" placeholder="Km" min="1" max="200" style="width: 70px; padding: 6px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px;">
+                    <button class="action-btn" style="background-color: var(--accent-orange);" onclick="makeGeneralTrip()">Fahrt starten</button>
+                </div>
             </div>
 
             <div class="grid-shop" id="vehicle-shop-container"></div>
@@ -566,6 +585,19 @@
         </div>
     </div>
 
+    <!-- MODAL FÜR VERSCHLEISS / REPARATUR -->
+    <div id="repair-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="repair-modal-title">Fahrzeug reparieren</h2>
+            <p id="repair-info" style="font-size: 0.85rem; color: #8b949e;"></p>
+            <div style="font-size: 0.85rem; margin-bottom: 10px;">Reparaturkosten: <strong id="repair-cost-display" class="money">0.00 €</strong></div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="action-btn" onclick="confirmRepair()" style="flex:1;">Reparieren</button>
+                <button class="action-btn danger-btn" onclick="closeRepairModal()" style="flex:1;">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL FÜR UHRZEIT-BEARBEITUNG -->
     <div id="time-modal" class="modal">
         <div class="modal-content">
@@ -599,7 +631,7 @@
             insurances: {},
             foodItems: {},
             vehicles: {},
-            vehicleStates: {}, // Speichert Tank/Akku & Verschleiß pro Fahrzeug
+            vehicleStates: {},
             miningRigs: {},
             grades: {},
             activeLesson: null,
@@ -618,8 +650,7 @@
             currentTimeEditHour: null,
             streaks: {},
             payoutHistory: [],
-            dailyFoodSpent: 0,
-            activeVehicleId: null
+            dailyFoodSpent: 0
         };
 
         const btcPriceEur = 60000.00;
@@ -656,13 +687,11 @@
         ];
 
         const foodCatalog = [
-            // Essen
             { id: "apple", name: "Frischer Apfel", cost: 1.50, hunger: 15, thirst: 5, category: "food" },
             { id: "sandwich", name: "Belegtes Sandwich", cost: 3.50, hunger: 40, thirst: 10, category: "food" },
             { id: "salad", name: "Gesunder Caesar Salad", cost: 5.50, hunger: 50, thirst: 15, category: "food" },
             { id: "pizza", name: "Ganze Pizza Salami", cost: 8.00, hunger: 90, thirst: 20, category: "food" },
             { id: "döner", name: "Großer Döner Kebap", cost: 7.00, hunger: 85, thirst: 15, category: "food" },
-            // Trinken
             { id: "water_bottle", name: "Mineralwasser (0,5l)", cost: 1.00, hunger: 0, thirst: 40, category: "drink" },
             { id: "club_mate", name: "Club-Mate (0,5l)", cost: 1.80, hunger: 2, thirst: 55, category: "drink" },
             { id: "energy", name: "Energy Drink", cost: 2.20, hunger: 5, thirst: 50, category: "drink" },
@@ -718,11 +747,15 @@
             if (saved) {
                 let parsed = JSON.parse(saved);
                 gameState = { ...gameState, ...parsed };
+                if(isNaN(gameState.money)) gameState.money = 500.00;
+                if(isNaN(gameState.pendingEarnings)) gameState.pendingEarnings = 0.00;
+                if(isNaN(gameState.totalEarnings)) gameState.totalEarnings = 0.00;
+                if(isNaN(gameState.totalTaxes)) gameState.totalTaxes = 0.00;
                 if(gameState.hunger === undefined) gameState.hunger = 100;
                 if(gameState.thirst === undefined) gameState.thirst = 100;
                 if(gameState.btcBalance === undefined) gameState.btcBalance = 0;
                 if(!gameState.streaks) gameState.streaks = {};
-                if(!gameState.payoutHistory) gameState.payoutHistory = [];
+                if(!gameState.payoutHistory) gameState.payoutHistory = {};
                 if(!gameState.furniture) gameState.furniture = {};
                 if(!gameState.contracts) gameState.contracts = {};
                 if(!gameState.insurances) gameState.insurances = {};
@@ -787,6 +820,13 @@
             checkAutoCurrentLesson(true);
             updateUI();
 
+            // Background-Tab & Throttling Fix via visibilitychange & Date.now delta catch-up
+            document.addEventListener("visibilitychange", () => {
+                if (!document.hidden) {
+                    gameState.lastTickTimestamp = Date.now();
+                }
+            });
+
             setInterval(() => {
                 let now = Date.now();
                 if (!gameState.lastTickTimestamp) gameState.lastTickTimestamp = now;
@@ -819,7 +859,6 @@
                         updateBonusTimerDisplay();
                     }
 
-                    // Bitcoin Mining Tick (per Sekunde)
                     let totalHashrate = 0;
                     miningCatalog.forEach(rig => {
                         if (gameState.miningRigs[rig.id]) totalHashrate += rig.hashrate;
@@ -836,21 +875,18 @@
                 }
             }, 200);
 
-            // Bedürfnissenkung (realistischer, schneller und auch wenn Timer nicht läuft)
             setInterval(() => {
                 let buffs = calculateBuffs();
-                let decayMod = buffs.generalDecayMod;
+                let decayMod = buffs.generalDecayMod || 1.0;
                 
                 let workMultiplier = 1.0;
                 let isWorking = (gameState.isTimerRunning && gameState.activeLesson && !gameState.activeLesson.toLowerCase().includes("freistunde")) || gameState.isBonusTimerRunning;
-                if (isWorking) workMultiplier = 3.5; // Erhöht während der Arbeit
+                if (isWorking) workMultiplier = 3.5;
                 
-                // Schlaf sinkt kontinuierlich, beschleunigt beim Arbeiten
-                let sleepVal = gameState.sleep - (0.15 * decayMod * buffs.sleepDecayMod * workMultiplier);
+                let sleepVal = gameState.sleep - (0.15 * decayMod * (buffs.sleepDecayMod || 1.0) * workMultiplier);
                 if (buffs.minSleep > 0 && sleepVal < buffs.minSleep) sleepVal = buffs.minSleep;
                 gameState.sleep = Math.max(0, sleepVal);
 
-                // Hunger und Durst sinken jetzt deutlich schneller und IMMER (auch ohne aktiven Timer)
                 let hungerDecay = isWorking ? 0.25 : 0.12;
                 let thirstDecay = isWorking ? 0.35 : 0.18;
 
@@ -941,7 +977,7 @@
             if(tabId === 'tab-housing') renderRoomVisual();
             if(tabId === 'tab-bank') renderLoansTable();
             if(tabId === 'tab-crypto') updateCryptoDisplay();
-            if(tabId === 'tab-vehicles') renderGarage();
+            if(tabId === 'tab-vehicles') { renderGarage(); updateVehicleSelectOptions(); }
         }
 
         function renderRoomVisual() {
@@ -1143,15 +1179,32 @@
             if (vehicleDef) {
                 gameState.vehicleStates[id] = {
                     fuelOrBattery: vehicleDef.maxFuelOrBattery,
-                    wear: 0 // in % Verschleiß
+                    wear: 0
                 };
             }
 
             renderVehicleShop();
             renderGarage();
+            updateVehicleSelectOptions();
             updateUI();
             saveGame();
             alert("Fahrzeug erfolgreich gekauft und in der Garage abgestellt!");
+        }
+
+        function updateVehicleSelectOptions() {
+            let select = document.getElementById("trip-vehicle-select");
+            if (!select) return;
+            
+            let html = `
+                <option value="walk">Zu Fuß (Laufen)</option>
+                <option value="transit">ÖPNV (Öffentliche Verkehrsmittel)</option>
+            `;
+            vehicleCatalog.forEach(v => {
+                if (gameState.vehicles[v.id]) {
+                    html += `<option value="${v.id}">🚗 ${v.name}</option>`;
+                }
+            });
+            select.innerHTML = html;
         }
 
         function renderGarage() {
@@ -1178,35 +1231,81 @@
                 html += `<div style="background: #161b22; border: 1px solid var(--border); border-radius: 8px; padding: 12px; min-width: 220px; text-align: left;">
                     <strong>🚗 ${v.name}</strong>
                     <div style="font-size: 0.8rem; margin: 6px 0; color: #8b949e;">
-                        ${indicatorLabel}: <span style="color:#fff; font-weight:bold;">${Math.round(state.fuelOrBattery)} / ${v.maxFuelOrBattery} ${indicatorUnit}</span><br>
-                        Verschleiß: <span style="color: ${state.wear > 50 ? 'var(--danger)' : 'var(--accent-green)'}; font-weight:bold;">${state.wear.toFixed(1)}%</span>
+                        ${indicatorLabel}: <span class="clickable-stat" title="Klicken zum Auftanken/Laden" onclick="openRefuelModal('${v.id}')" style="color:#fff; font-weight:bold;">${Math.round(state.fuelOrBattery)} / ${v.maxFuelOrBattery} ${indicatorUnit}</span><br>
+                        Verschleiß: <span class="clickable-stat" title="Klicken zum Reparieren" onclick="openRepairModal('${v.id}')" style="color: ${state.wear > 50 ? 'var(--danger)' : 'var(--accent-green)'}; font-weight:bold;">${state.wear.toFixed(1)}%</span>
                     </div>
                     <div style="display: flex; gap: 6px; margin-top: 8px;">
                         <button class="action-btn" style="flex:1; font-size:0.75rem; padding:4px;" onclick="openRefuelModal('${v.id}')">${isElectric ? 'Laden' : 'Tanken'}</button>
-                        <button class="action-btn danger-btn" style="flex:1; font-size:0.75rem; padding:4px;" onclick="repairVehicle('${v.id}')">Reparieren</button>
-                    </div>
-                    <div style="margin-top: 8px; display: flex; gap: 4px; align-items: center;">
-                        <input type="number" id="trip-km-${v.id}" placeholder="Km" min="1" max="200" style="width: 50px; padding: 2px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.75rem;">
-                        <button class="action-btn" style="flex:1; font-size:0.75rem; padding:4px; background-color: var(--accent-blue);" onclick="makeTrip('${v.id}')">Fahrt machen</button>
+                        <button class="action-btn danger-btn" style="flex:1; font-size:0.75rem; padding:4px;" onclick="openRepairModal('${v.id}')">Reparieren</button>
                     </div>
                 </div>`;
             });
 
-            // ÖPNV oder Laufen Option für Fahrten
-            html += `<div style="background: #161b22; border: 1px solid var(--border); border-radius: 8px; padding: 12px; min-width: 220px; text-align: left;">
-                <strong>🚶‍♂️ Zu Fuß / ÖPNV</strong>
-                <div style="font-size: 0.8rem; margin: 6px 0; color: #8b949e;">
-                    Kostenlos laufen oder Öffis nutzen<br>
-                    (Laufen kostet Energie & macht hungrig!)
-                </div>
-                <div style="margin-top: 18px; display: flex; gap: 4px; align-items: center;">
-                    <input type="number" id="trip-km-walk" placeholder="Km" min="1" max="50" style="width: 50px; padding: 2px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 4px; font-size: 0.75rem;">
-                    <button class="action-btn" style="flex:1; font-size:0.75rem; padding:4px; background-color: var(--accent-orange);" onclick="makeWalkOrTransitTrip()">Strecke machen</button>
-                </div>
-            </div>`;
-
             html += `</div>`;
             garageContainer.innerHTML = html;
+        }
+
+        function makeGeneralTrip() {
+            let select = document.getElementById("trip-vehicle-select");
+            let kmInput = document.getElementById("trip-km-input");
+            if (!select || !kmInput) return;
+
+            let choice = select.value;
+            let km = parseFloat(kmInput.value) || 0;
+            if (km <= 0) { alert("Bitte gib eine gültige Kilometerstrecke ein!"); return; }
+
+            if (choice === 'walk') {
+                let energyCost = km * 3.5;
+                let hungerCost = km * 2.5;
+                let thirstCost = km * 3.0;
+
+                gameState.sleep = Math.max(0, gameState.sleep - energyCost);
+                gameState.hunger = Math.max(0, gameState.hunger - hungerCost);
+                gameState.thirst = Math.max(0, gameState.thirst - thirstCost);
+
+                kmInput.value = "";
+                updateUI();
+                saveGame();
+                alert(`Du bist ${km} km zu Fuß gegangen!\nEnergie, Hunger und Durst sind gesunken.`);
+            } else if (choice === 'transit') {
+                let buffs = calculateBuffs();
+                if (buffs.freeTransit) {
+                    alert(`Dank des Deutschlandtickets kostenlose ÖPNV-Fahrt über ${km} km durchgeführt!`);
+                } else {
+                    let ticketCost = 2.80 + (km * 0.15); // Realistischer Streckentarif
+                    if (gameState.money < ticketCost) {
+                        alert(`Nicht genug Guthaben für das ÖPNV-Ticket (${ticketCost.toFixed(2)} €)!`);
+                        return;
+                    }
+                    gameState.money -= ticketCost;
+                    alert(`ÖPNV-Fahrt über ${km} km für ${ticketCost.toFixed(2)} € absolviert.`);
+                }
+                kmInput.value = "";
+                updateUI();
+                saveGame();
+            } else {
+                // Fahrzeug-Fahrt
+                let v = vehicleCatalog.find(item => item.id === choice);
+                let state = gameState.vehicleStates[choice];
+                if (!v || !state) return;
+
+                let consumptionRate = v.type === 'electric' ? 0.8 : 0.07;
+                let totalNeeded = km * consumptionRate;
+
+                if (state.fuelOrBattery < totalNeeded) {
+                    alert(`Nicht genügend ${v.type === 'electric' ? 'Akku' : 'Kraftstoff'} für ${km} km! Bitte vorher aufladen/tanken.`);
+                    return;
+                }
+
+                state.fuelOrBattery -= totalNeeded;
+                state.wear += km * 0.35;
+
+                kmInput.value = "";
+                renderGarage();
+                updateUI();
+                saveGame();
+                alert(`Fahrt über ${km} km mit ${v.name} erfolgreich absolviert!\nVerbrauch: ${totalNeeded.toFixed(1)} ${v.unit}, Neuer Verschleiß: ${state.wear.toFixed(1)}%`);
+            }
         }
 
         let selectedRefuelVehicleId = null;
@@ -1261,14 +1360,35 @@
             alert("Erfolgreich nachgefüllt!");
         }
 
-        function repairVehicle(vehicleId) {
+        let selectedRepairVehicleId = null;
+
+        function openRepairModal(vehicleId) {
+            selectedRepairVehicleId = vehicleId;
+            let v = vehicleCatalog.find(item => item.id === vehicleId);
             let state = gameState.vehicleStates[vehicleId];
+
+            let repairCost = state.wear * 4.50;
+            if (gameState.insurances['ins_auto_med']) repairCost *= 0.7;
+
+            document.getElementById("repair-modal-title").innerText = `${v.name} reparieren`;
+            document.getElementById("repair-info").innerText = `Aktueller Verschleiß: ${state.wear.toFixed(1)}%`;
+            document.getElementById("repair-cost-display").innerText = repairCost.toFixed(2) + " €";
+            document.getElementById("repair-modal").style.display = "flex";
+        }
+
+        function closeRepairModal() {
+            document.getElementById("repair-modal").style.display = "none";
+        }
+
+        function confirmRepair() {
+            let state = gameState.vehicleStates[selectedRepairVehicleId];
             if (state.wear <= 0) {
                 alert("Das Fahrzeug ist bereits in einwandfreiem Zustand!");
+                closeRepairModal();
                 return;
             }
-            let repairCost = state.wear * 4.50; // Realistischer Reparaturpreis pro % Verschleiß
-            if (gameState.insurances['ins_auto_med']) repairCost *= 0.7; // 30% Rabatt durch Versicherung
+            let repairCost = state.wear * 4.50;
+            if (gameState.insurances['ins_auto_med']) repairCost *= 0.7;
 
             if (gameState.money < repairCost) {
                 alert(`Nicht genug Guthaben für die Reparatur! Benötigt: ${repairCost.toFixed(2)} €`);
@@ -1277,81 +1397,11 @@
 
             gameState.money -= repairCost;
             state.wear = 0;
+            closeRepairModal();
             renderGarage();
             updateUI();
             saveGame();
-            alert(`Fahrzeug erfolgreich für ${repairCost.toFixed(2)} € repariert! Alle Verschleißteile behoben.`);
-        }
-
-        function makeTrip(vehicleId) {
-            let kmInput = document.getElementById(`trip-km-${vehicleId}`);
-            let km = parseFloat(kmInput.value) || 0;
-            if (km <= 0) { alert("Bitte gib eine gültige Kilometerstrecke ein!"); return; }
-
-            let v = vehicleCatalog.find(item => item.id === vehicleId);
-            let state = gameState.vehicleStates[vehicleId];
-
-            // Verbrauch pro km berechnen
-            let consumptionRate = v.type === 'electric' ? 0.8 : 0.07; // 0.8% Akku pro km oder 0.07l pro km
-            let totalNeeded = km * consumptionRate;
-
-            if (state.fuelOrBattery < totalNeeded) {
-                alert(`Nicht genügend ${v.type === 'electric' ? 'Akku' : 'Kraftstoff'} für ${km} km! Bitte vorher aufladen/tanken.`);
-                return;
-            }
-
-            state.fuelOrBattery -= totalNeeded;
-            state.wear += km * 0.35; // Verschleiß steigt pro km
-
-            kmInput.value = "";
-            renderGarage();
-            updateUI();
-            saveGame();
-            alert(`Fahrt über ${km} km mit ${v.name} erfolgreich absolviert!\nVerbrauch: ${totalNeeded.toFixed(1)} ${v.unit}, Neuer Verschleiß: ${state.wear.toFixed(1)}%`);
-        }
-
-        function makeWalkOrTransitTrip() {
-            let kmInput = document.getElementById("trip-km-walk");
-            let km = parseFloat(kmInput.value) || 0;
-            if (km <= 0) { alert("Bitte gib eine gültige Kilometerstrecke ein!"); return; }
-
-            let buffs = calculateBuffs();
-            let useTransit = buffs.freeTransit;
-
-            if (!useTransit) {
-                let ticketCost = 2.80; // Busticket
-                if (gameState.money < ticketCost) {
-                    alert(`Kein Deutschlandticket vorhanden und nicht genug Geld für ein Busticket (${ticketCost.toFixed(2)} €)! Du musst zu Fuß gehen.`);
-                } else {
-                    let choice = confirm(`Kein Deutschlandticket aktiv. Ein Einzelticket kostet ${ticketCost.toFixed(2)} €. Möchtest du zahlen oder zu Fuß gehen (OK = Ticket kaufen, Abbrechen = Laufen)?`);
-                    if (choice) {
-                        gameState.money -= ticketCost;
-                        kmInput.value = "";
-                        updateUI();
-                        saveGame();
-                        alert(`ÖPNV-Fahrt über ${km} km für ${ticketCost.toFixed(2)} € absolviert.`);
-                        return;
-                    }
-                }
-            } else {
-                alert(`Dank des Deutschlandtickets kostenlose ÖPNV-Fahrt über ${km} km durchgeführt!`);
-                kmInput.value = "";
-                return;
-            }
-
-            // Wenn zu Fuß gegangen wird:
-            let energyCost = km * 4.0;
-            let hungerCost = km * 3.0;
-            let thirstCost = km * 3.5;
-
-            gameState.sleep = Math.max(0, gameState.sleep - energyCost);
-            gameState.hunger = Math.max(0, gameState.hunger - hungerCost);
-            gameState.thirst = Math.max(0, gameState.thirst - thirstCost);
-
-            kmInput.value = "";
-            updateUI();
-            saveGame();
-            alert(`Du bist ${km} km zu Fuß gegangen!\nEnergie, Hunger und Durst sind stark gesunken.`);
+            alert(`Fahrzeug erfolgreich für ${repairCost.toFixed(2)} € repariert!`);
         }
 
         function renderCryptoShop() {
@@ -1427,22 +1477,6 @@
             alert(`${amountInput.toFixed(8)} BTC erfolgreich abgehoben und ${eurValue.toFixed(2)} € in Euro ausgezahlt!`);
         }
 
-        function renderFurnitureShop() {
-            const container = document.getElementById("furniture-shop-container");
-            if (!container) return;
-            container.innerHTML = "";
-            furnitureCatalog.forEach(item => {
-                let owned = gameState.furniture[item.id];
-                container.innerHTML += `<div class="shop-item">
-                    <div>
-                        <strong>${item.name}</strong> (${item.cost} € | ${item.daily} €/Tag)
-                        <div class="shop-info" style="color:var(--accent-blue);">Vorteil: +${item.bonusText}</div>
-                    </div>
-                    <button class="action-btn" ${owned ? 'disabled style="background:#30363d;color:#6e7681;"' : ''} onclick="buyFurniture('${item.id}', ${item.cost})">${owned ? 'Gekauft' : 'Kaufen'}</button>
-                </div>`;
-            });
-        }
-
         function buyFurniture(id, cost) {
             if (gameState.money < cost) { alert("Nicht genug Guthaben!"); return; }
             gameState.money -= cost;
@@ -1456,7 +1490,7 @@
         function toggleContract(id) {
             gameState.contracts[id] = !gameState.contracts[id];
             renderContractsShop();
-            renderFoodShop(); // Aktualisiert Rabatte im Shop sofort
+            renderFoodShop();
             updateUI();
             saveGame();
         }
@@ -1538,6 +1572,7 @@
             saveGame();
         }
 
+        // Stundenerkennung hält nun an und wartet auf Start (Pause-Modus)
         function checkAutoCurrentLesson(isInitial = false) {
             let now = new Date();
             let day = now.getDay();
@@ -1569,7 +1604,12 @@
                 if (gameState.lastDetectedHourKey !== currentHourKey) {
                     gameState.lastDetectedHourKey = currentHourKey;
                     if (!isInitial) {
-                        switchTask(lesson.subject, lesson.rate !== undefined ? lesson.rate : 0.50);
+                        // Fach wechseln, aber Timer PAUSIEREN (warten auf Start)
+                        gameState.activeLesson = lesson.subject;
+                        gameState.currentRate = lesson.rate !== undefined ? lesson.rate : 0.50;
+                        gameState.timerSeconds = 0;
+                        gameState.isTimerRunning = false;
+                        document.getElementById("timer-status").innerText = lesson.subject.toUpperCase() + " (BEREIT)";
                     } else if (!gameState.activeLesson) {
                         gameState.activeLesson = lesson.subject;
                         gameState.currentRate = lesson.rate !== undefined ? lesson.rate : 0.50;
@@ -1651,10 +1691,10 @@
                 }
             }
 
-            let gross = gameState.pendingEarnings;
+            let gross = gameState.pendingEarnings || 0;
             let buffs = calculateBuffs();
             
-            let fixedTotal = gameState.housing.rent;
+            let fixedTotal = gameState.housing.rent || 0;
             utilitiesCatalog.forEach(item => { if (gameState.utilities[item.id]) fixedTotal += item.daily; });
             furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
             contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
@@ -1681,7 +1721,7 @@
             gameState.money -= fixedTotal;
             gameState.totalTaxes += taxes;
 
-            let foodSpentToday = gameState.dailyFoodSpent;
+            let foodSpentToday = gameState.dailyFoodSpent || 0;
 
             let payoutEntry = {
                 date: new Date().toLocaleTimeString() + " (" + new Date().toLocaleDateString() + ")",
@@ -1691,9 +1731,9 @@
                 fixed: fixedTotal,
                 foodSpent: foodSpentToday
             };
+            if(!Array.isArray(gameState.payoutHistory)) gameState.payoutHistory = [];
             gameState.payoutHistory.unshift(payoutEntry);
 
-            // Zurücksetzen für den nächsten Tag
             gameState.dailyFoodSpent = 0;
             gameState.pendingEarnings = 0;
             gameState.timerSeconds = 0;
@@ -1708,7 +1748,7 @@
 
         function renderPayoutHistory() {
             const container = document.getElementById("payout-log-container");
-            if (!gameState.payoutHistory || gameState.payoutHistory.length === 0) {
+            if (!Array.isArray(gameState.payoutHistory) || gameState.payoutHistory.length === 0) {
                 container.innerHTML = `<div style="color: #8b949e; text-align: center;">Noch keine Abrechnungen erfolgt.</div>`;
                 return;
             }
@@ -1739,8 +1779,8 @@
             let secs = gameState.timerSeconds % 60;
             document.getElementById("timer-clock").innerText = 
                 (mins < 10 ? "0" + mins : mins) + ":" + (secs < 10 ? "0" + secs : secs);
-            document.getElementById("session-earned").innerText = gameState.pendingEarnings.toFixed(2) + " €";
-            document.getElementById("header-pending").innerText = gameState.pendingEarnings.toFixed(2) + " €";
+            document.getElementById("session-earned").innerText = (gameState.pendingEarnings || 0).toFixed(2) + " €";
+            document.getElementById("header-pending").innerText = (gameState.pendingEarnings || 0).toFixed(2) + " €";
 
             let progressDeg = (secs / 60) * 360;
             let circle = document.getElementById("timer-circle");
@@ -1752,18 +1792,18 @@
         }
 
         function updateUI() {
-            document.getElementById("header-money").innerText = gameState.money.toFixed(2) + " €";
-            document.getElementById("header-pending").innerText = gameState.pendingEarnings.toFixed(2) + " €";
-            document.getElementById("header-sleep").innerText = Math.round(gameState.sleep) + "%";
+            document.getElementById("header-money").innerText = (gameState.money || 0).toFixed(2) + " €";
+            document.getElementById("header-pending").innerText = (gameState.pendingEarnings || 0).toFixed(2) + " €";
+            document.getElementById("header-sleep").innerText = Math.round(gameState.sleep || 0) + "%";
 
-            document.getElementById("val-sleep").innerText = Math.round(gameState.sleep) + "%";
-            document.getElementById("fill-sleep").style.width = gameState.sleep + "%";
-            document.getElementById("val-hunger").innerText = Math.round(gameState.hunger) + "%";
-            document.getElementById("fill-hunger").style.width = gameState.hunger + "%";
-            document.getElementById("val-thirst").innerText = Math.round(gameState.thirst) + "%";
-            document.getElementById("fill-thirst").style.width = gameState.thirst + "%";
+            document.getElementById("val-sleep").innerText = Math.round(gameState.sleep || 0) + "%";
+            document.getElementById("fill-sleep").style.width = (gameState.sleep || 0) + "%";
+            document.getElementById("val-hunger").innerText = Math.round(gameState.hunger || 0) + "%";
+            document.getElementById("fill-hunger").style.width = (gameState.hunger || 0) + "%";
+            document.getElementById("val-thirst").innerText = Math.round(gameState.thirst || 0) + "%";
+            document.getElementById("fill-thirst").style.width = (gameState.thirst || 0) + "%";
 
-            let fixedTotal = gameState.housing.rent;
+            let fixedTotal = gameState.housing.rent || 0;
             utilitiesCatalog.forEach(item => { if (gameState.utilities[item.id]) fixedTotal += item.daily; });
             furnitureCatalog.forEach(item => { if (gameState.furniture[item.id]) fixedTotal += item.daily; });
             contractsCatalog.forEach(item => { if (gameState.contracts[item.id]) fixedTotal += item.daily; });
@@ -1778,8 +1818,8 @@
             gameState.loansList.forEach(loan => { fixedTotal += (loan.amount * loan.dailyRate); });
 
             document.getElementById("dash-total-fixed").innerText = fixedTotal.toFixed(2) + " €";
-            document.getElementById("stat-earnings").innerText = gameState.totalEarnings.toFixed(2) + " €";
-            document.getElementById("stat-taxes").innerText = gameState.totalTaxes.toFixed(2) + " €";
+            document.getElementById("stat-earnings").innerText = (gameState.totalEarnings || 0).toFixed(2) + " €";
+            document.getElementById("stat-taxes").innerText = (gameState.totalTaxes || 0).toFixed(2) + " €";
 
             let buffs = calculateBuffs();
             document.getElementById("tax-rate-display").innerText = `(${(buffs.taxRate * 100).toFixed(0)}% aktiv)`;
